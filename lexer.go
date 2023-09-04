@@ -34,6 +34,7 @@ const (
 	NUMBER
 	STRING
 
+	EOF
 	UNKNOWN
 )
 
@@ -69,7 +70,6 @@ var operators map[string]TokenType = map[string]TokenType{
 }
 
 func NewLexer(input string) *Lexer {
-
 	return &Lexer{input: input, len: len(input), pos: 0}
 }
 
@@ -86,6 +86,9 @@ func (l *Lexer) GetToken() (*Token, error) {
 		return tok, nil
 	} else if tok = l.tryTokenizeOperator(); tok != nil {
 		return tok, nil
+	} else if l.pos >= l.len {
+		return &Token{Type: EOF}, nil
+
 	} else {
 		return nil, (fmt.Errorf("invalid token %c at position %d", l.current(), l.pos))
 	}
@@ -99,7 +102,6 @@ func (l *Lexer) GetTokens() ([]*Token, error) {
 		if err != nil {
 			return tokens, err
 		}
-		fmt.Println(tok)
 		tokens = append(tokens, tok)
 	}
 	return tokens, nil
