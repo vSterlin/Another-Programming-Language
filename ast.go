@@ -30,3 +30,13 @@ type CallExpr struct {
 }
 
 func (c *CallExpr) exprNode() {}
+
+type Stmt interface {
+	stmtNode()
+}
+
+type Program struct {
+	Stmts []Stmt
+}
+
+func (p *Program) stmtNode() {}
