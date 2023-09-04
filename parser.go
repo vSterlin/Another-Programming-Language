@@ -36,17 +36,53 @@ func (p *Parser) parseVariableExpr() Expr {
 	return &VariableExpr{Name: name}
 }
 
+func (p *Parser) parsePrimaryExpr() Expr {
+	switch p.current().Type {
+	case IDENTIFIER:
+		return p.parseVariableExpr()
+	case NUMBER:
+		return p.parseNumberExpr()
+	}
+
+	return nil
+}
+
+func (p *Parser) parseAdditiveExpr() Expr {
+	lhs := p.parsePrimaryExpr()
+
+	for p.pos < p.len && (p.current().Type == ADD || p.current().Type == SUB) {
+		switch p.current().Type {
+		case ADD:
+			// to account for operator
+			p.next()
+			rhs := p.parsePrimaryExpr()
+			lhs = &BinaryExpr{Op: "+", Lhs: lhs, Rhs: rhs}
+		case SUB:
+			p.next()
+			rhs := p.parsePrimaryExpr()
+			lhs = &BinaryExpr{Op: "-", Lhs: lhs, Rhs: rhs}
+		default:
+			return lhs
+		}
+	}
+	return lhs
+}
+
+func (p *Parser) parseExpr() Expr {
+	return p.parsePrimaryExpr()
+}
+
 func temp() {
-	l := NewLexer("1123 xxx")
+	l := NewLexer("1 + 77")
 
 	tokens, _ := l.GetTokens()
 
 	p := NewParser(tokens)
 
-	_ = p.parseNumberExpr()
-	expVar := p.parseVariableExpr()
+	ex := p.parseAdditiveExpr()
 
-	fmt.Printf("exp: %#v\n", expVar)
+	fmt.Printf("ex: %#v\n", ex)
+
 }
 
 // helper functions
