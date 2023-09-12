@@ -14,6 +14,7 @@ func TestTypecheck(t *testing.T) {
 	}{
 		{expr: &NumberExpr{Val: 1}, expected: NumberType},
 		{expr: &BooleanExpr{Val: true}, expected: BooleanType},
+		{expr: &BinaryExpr{Op: "+", Lhs: &NumberExpr{Val: 1}, Rhs: &NumberExpr{Val: 2}}, expected: NumberType},
 	}
 	for _, i := range tests {
 		if tc.typecheckExpr(i.expr) != i.expected {

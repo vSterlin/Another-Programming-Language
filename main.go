@@ -9,7 +9,7 @@ import (
 )
 
 func main() {
-	l := NewLexer("true false")
+	l := NewLexer("let x = 1")
 
 	tokens, err := l.GetTokens()
 
@@ -18,19 +18,24 @@ func main() {
 		return
 	}
 
+	fmt.Println(tokens)
 	// for _, tok := range tokens {
 	// 	fmt.Println(tok)
 	// }
 
 	p := NewParser(tokens)
 
-	prog := p.parseProgram()
+	stmt := p.parseVarDecStmt()
 
-	t := Typechecker{}
+	fmt.Println(stmt)
 
-	t.typecheckProgram(prog)
+	// prog := p.parseProgram()
 
-	fmt.Println(prog)
+	// t := Typechecker{}
+
+	// t.typecheckProgram(prog)
+
+	// fmt.Println(prog)
 
 	// fmt.Println(ex)
 	// repl()

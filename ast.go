@@ -58,9 +58,19 @@ type ExprStmt struct {
 	Expr Expr
 }
 
-func (e *ExprStmt) stmtNode() {}
+type VarDecStmt struct {
+	Id   *IdentifierExpr
+	Init Expr
+}
+
+func (e *ExprStmt) stmtNode()   {}
+func (v *VarDecStmt) stmtNode() {}
 func (e *ExprStmt) String() string {
 	return fmt.Sprintf("expressionStatement(%s)", e.Expr)
+}
+func (v *VarDecStmt) String() string {
+	fmt.Println(v.Id)
+	return fmt.Sprintf("variableDeclarationStatement(%s, %s)", v.Id, v.Init)
 }
 
 type Program struct {

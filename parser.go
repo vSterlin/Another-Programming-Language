@@ -122,10 +122,30 @@ func (p *Parser) parseExpr() Expr {
 	return p.parseAdditiveExpr()
 }
 
-// statement ::= expression
-func (p *Parser) parseStmt() Stmt {
+// variableDeclarationStatement ::= 'let' identifier '=' expression
+func (p *Parser) parseVarDecStmt() Stmt {
+	p.next()
+	id := p.parseIdentifierExpr()
+
+	if p.current().Type != ASSIGN {
+		return nil
+	}
+	p.next()
 	ex := p.parseExpr()
-	return &ExprStmt{Expr: ex}
+
+	// TODO: do some type checking here
+	return &VarDecStmt{Id: id.(*IdentifierExpr), Init: ex}
+}
+
+// statement ::= expression | variableDeclarationStatement
+func (p *Parser) parseStmt() Stmt {
+
+	if p.current().Type == LET {
+		return p.parseVarDecStmt()
+	} else {
+		ex := p.parseExpr()
+		return &ExprStmt{Expr: ex}
+	}
 }
 
 // program ::= statement*
