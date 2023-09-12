@@ -30,8 +30,9 @@ const (
 
 	operator_end
 
-	IDENTIFIER
 	NUMBER
+	BOOLEAN
+	IDENTIFIER
 	STRING
 
 	EOF
@@ -54,6 +55,9 @@ var keywords map[string]TokenType = map[string]TokenType{
 	"if":     IF,
 	"else":   ELSE,
 	"return": RETURN,
+
+	"true":  BOOLEAN,
+	"false": BOOLEAN,
 }
 
 var operators map[string]TokenType = map[string]TokenType{

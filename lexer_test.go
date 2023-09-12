@@ -21,6 +21,9 @@ var tests = []struct {
 	{input: ")", expected: RPAREN},
 
 	{input: "1", expected: NUMBER},
+
+	{input: "true", expected: BOOLEAN},
+	{input: "false", expected: BOOLEAN},
 }
 
 func TestTokenTypes(t *testing.T) {

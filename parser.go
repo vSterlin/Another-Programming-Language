@@ -29,37 +29,65 @@ func (p *Parser) parseNumberExpr() Expr {
 	return &NumberExpr{Val: val}
 }
 
-func (p *Parser) parseVariableExpr() Expr {
-	name := p.current().Value
+func (p *Parser) parseBooleanExpr() Expr {
+	val, err := strconv.ParseBool(p.current().Value)
+	if err != nil {
+		return nil
+	}
 	p.next()
 
-	return &VariableExpr{Name: name}
+	return &BooleanExpr{Val: val}
+}
+
+func (p *Parser) parseIdentifierExpr() Expr {
+	name := p.current().Value
+	p.next()
+	return &IdentifierExpr{Name: name}
+}
+
+func (p *Parser) parseParenExpr() Expr {
+	p.next()
+	val := p.parseExpr()
+	curr := p.current()
+	if curr.Type != RPAREN {
+		//	TODO: return error
+		fmt.Println("BOOO!")
+	}
+	// eat the RPAREN
+	p.next()
+
+	return val
 }
 
 func (p *Parser) parsePrimaryExpr() Expr {
 	switch p.current().Type {
 	case IDENTIFIER:
-		return p.parseVariableExpr()
+		return p.parseIdentifierExpr()
 	case NUMBER:
 		return p.parseNumberExpr()
+	case BOOLEAN:
+		return p.parseBooleanExpr()
+
+	case LPAREN:
+		return p.parseParenExpr()
 	}
 
 	return nil
 }
 
+// additiveOperator ::= '+' | '-'
+// additiveExpression ::= multiplicativeExpression (additiveOperator multiplicativeExpression)*
 func (p *Parser) parseAdditiveExpr() Expr {
-	lhs := p.parsePrimaryExpr()
+	lhs := p.parseMultiplicativeExpr()
 
 	for p.pos < p.len && (p.current().Type == ADD || p.current().Type == SUB) {
-		switch p.current().Type {
+		curr := p.current()
+		p.next()
+		rhs := p.parseMultiplicativeExpr()
+		switch curr.Type {
 		case ADD:
-			// to account for operator
-			p.next()
-			rhs := p.parsePrimaryExpr()
 			lhs = &BinaryExpr{Op: "+", Lhs: lhs, Rhs: rhs}
 		case SUB:
-			p.next()
-			rhs := p.parsePrimaryExpr()
 			lhs = &BinaryExpr{Op: "-", Lhs: lhs, Rhs: rhs}
 		default:
 			return lhs
@@ -68,21 +96,45 @@ func (p *Parser) parseAdditiveExpr() Expr {
 	return lhs
 }
 
-func (p *Parser) parseExpr() Expr {
-	return p.parsePrimaryExpr()
+// multiplicativeOperator ::= '*' | '/'
+// multiplicativeExpression ::= primaryExpression (multiplicativeOperator primaryExpression)*
+func (p *Parser) parseMultiplicativeExpr() Expr {
+	lhs := p.parsePrimaryExpr()
+
+	for p.pos < p.len && (p.current().Type == MUL || p.current().Type == DIV) {
+		curr := p.current()
+		p.next()
+		rhs := p.parsePrimaryExpr()
+		switch curr.Type {
+		case MUL:
+			lhs = &BinaryExpr{Op: "*", Lhs: lhs, Rhs: rhs}
+		case DIV:
+			lhs = &BinaryExpr{Op: "/", Lhs: lhs, Rhs: rhs}
+		default:
+			return lhs
+		}
+	}
+	return lhs
 }
 
-func temp() {
-	l := NewLexer("1 + 77")
+// expression ::= primaryExpression | additiveExpression
+func (p *Parser) parseExpr() Expr {
+	return p.parseAdditiveExpr()
+}
 
-	tokens, _ := l.GetTokens()
+// statement ::= expression
+func (p *Parser) parseStmt() Stmt {
+	ex := p.parseExpr()
+	return &ExprStmt{Expr: ex}
+}
 
-	p := NewParser(tokens)
-
-	ex := p.parseAdditiveExpr()
-
-	fmt.Printf("ex: %#v\n", ex)
-
+// program ::= statement*
+func (p *Parser) parseProgram() *Program {
+	var stmts []Stmt
+	for p.pos < p.len {
+		stmts = append(stmts, p.parseStmt())
+	}
+	return &Program{Stmts: stmts}
 }
 
 // helper functions
@@ -92,5 +144,4 @@ func (p *Parser) current() *Token {
 
 func (p *Parser) next() {
 	p.pos++
-
 }

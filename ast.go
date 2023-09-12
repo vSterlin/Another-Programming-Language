@@ -1,5 +1,8 @@
 package main
 
+import "fmt"
+
+// Expressions
 type Expr interface {
 	exprNode()
 }
@@ -8,13 +11,12 @@ type NumberExpr struct {
 	Val int
 }
 
-func (n *NumberExpr) exprNode() {}
-
-type VariableExpr struct {
+type BooleanExpr struct {
+	Val bool
+}
+type IdentifierExpr struct {
 	Name string
 }
-
-func (v *VariableExpr) exprNode() {}
 
 type BinaryExpr struct {
 	Op  string
@@ -22,21 +24,49 @@ type BinaryExpr struct {
 	Rhs Expr
 }
 
-func (b *BinaryExpr) exprNode() {}
-
 type CallExpr struct {
 	Callee string
 	Args   []Expr
 }
 
-func (c *CallExpr) exprNode() {}
+func (n *NumberExpr) exprNode()     {}
+func (v *IdentifierExpr) exprNode() {}
+func (b *BooleanExpr) exprNode()    {}
+func (b *BinaryExpr) exprNode()     {}
+func (c *CallExpr) exprNode()       {}
 
+func (n *NumberExpr) String() string {
+	return fmt.Sprintf("numberExpression(%d)", n.Val)
+}
+func (b *BooleanExpr) String() string {
+	return fmt.Sprintf("booleanExpression(%t)", b.Val)
+}
+
+func (v *IdentifierExpr) String() string {
+	return fmt.Sprintf("identifierExpression(%s)", v.Name)
+}
+func (b *BinaryExpr) String() string {
+	return fmt.Sprintf("binaryExpression(%s, %s, %s)", b.Lhs, b.Op, b.Rhs)
+}
+
+// Statements
 type Stmt interface {
 	stmtNode()
+}
+
+type ExprStmt struct {
+	Expr Expr
+}
+
+func (e *ExprStmt) stmtNode() {}
+func (e *ExprStmt) String() string {
+	return fmt.Sprintf("expressionStatement(%s)", e.Expr)
 }
 
 type Program struct {
 	Stmts []Stmt
 }
 
-func (p *Program) stmtNode() {}
+func (p *Program) String() string {
+	return fmt.Sprintf("program(%s)", p.Stmts)
+}
