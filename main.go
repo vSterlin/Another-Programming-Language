@@ -18,22 +18,31 @@ func main() {
 		return
 	}
 
-	fmt.Println(tokens)
+	// fmt.Println(tokens)
 	// for _, tok := range tokens {
 	// 	fmt.Println(tok)
 	// }
 
-	p := NewParser(tokens)
+	// p := NewParser(tokens)
 
-	stmt := p.parseVarDecStmt()
+	NewParser(tokens)
 
-	fmt.Println(stmt)
+	// stmt := p.parseVarDecStmt()
+
+	// fmt.Println(stmt)
 
 	// prog := p.parseProgram()
 
-	// t := Typechecker{}
+	tc := Typechecker{}
 
-	// t.typecheckProgram(prog)
+	te := TypeEnv{}
+
+	te.DefineVar("x", NumberType)
+	te.DefineVar("z", BooleanType)
+
+	tp := tc.typeofVar(&IdentifierExpr{Name: "xx"}, te)
+
+	fmt.Println(tp)
 
 	// fmt.Println(prog)
 

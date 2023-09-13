@@ -59,6 +59,7 @@ func (p *Parser) parseParenExpr() Expr {
 	return val
 }
 
+// primaryExpression ::= identifier | number | boolean | '(' expression ')'
 func (p *Parser) parsePrimaryExpr() Expr {
 	switch p.current().Type {
 	case IDENTIFIER:

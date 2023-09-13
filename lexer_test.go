@@ -29,7 +29,7 @@ var tests = []struct {
 func TestTokenTypes(t *testing.T) {
 	for _, i := range tests {
 		l := NewLexer(i.input)
-		tok, err := l.GetToken()
+		tok, err := l.getToken()
 		if err != nil {
 			t.Errorf("Did not expect error, got: %s", err)
 
@@ -43,7 +43,7 @@ func TestTokenTypes(t *testing.T) {
 
 func TestInvalidInput(t *testing.T) {
 	l := NewLexer("!")
-	_, err := l.GetToken()
+	_, err := l.getToken()
 	if err == nil {
 		t.Errorf("Expected error, got nil")
 	}

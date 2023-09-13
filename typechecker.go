@@ -4,39 +4,51 @@ import "fmt"
 
 type Typechecker struct {
 	program *Program
+	global  TypeEnv
 }
 
 func NewTypechecker(program *Program) *Typechecker {
+	global := TypeEnv{
+		"VERSION": StringType,
+	}
 	return &Typechecker{
 		program: program,
+		global:  global,
 	}
 }
 
 type Type int
 
 const (
-	NumberType Type = iota
-	BooleanType
+	// Undefined has to be 0th cause maps assign 0 by default
+	// if you look up non existent key
+	// alternatively we can check if the key exists
+	UndefinedType Type = iota
 
-	UndefinedType
+	BooleanType
+	NumberType
+	StringType
 )
 
 func (t Type) String() string {
-	switch t {
-	case NumberType:
-		return "number"
-	case BooleanType:
-		return "boolean"
-	default:
+
+	strMap := map[Type]string{
+		UndefinedType: "undefined",
+		BooleanType:   "boolean",
+		NumberType:    "number",
+	}
+	str, ok := strMap[t]
+	if !ok {
 		return "undefined"
 	}
+	return str
 }
 
-func (t *Typechecker) typecheckBinaryExpr(ex *BinaryExpr) Type {
-	lhsType := t.typecheckExpr(ex.Lhs)
-	rhsType := t.typecheckExpr(ex.Rhs)
+func (tc *Typechecker) typeofBinaryExpr(ex *BinaryExpr) Type {
+	lhsType := tc.typeofExpr(ex.Lhs, nil)
+	rhsType := tc.typeofExpr(ex.Rhs, nil)
 
-	if !t.expectTypeEqual(NumberType, lhsType, rhsType) {
+	if !tc.expectTypeEqual(NumberType, lhsType, rhsType) {
 		return UndefinedType
 	}
 
@@ -50,43 +62,85 @@ func (t *Typechecker) typecheckBinaryExpr(ex *BinaryExpr) Type {
 	}
 }
 
-func (t *Typechecker) typecheckExpr(ex Expr) Type {
+func (tc *Typechecker) typeofExpr(ex Expr, typeEnv TypeEnv) Type {
 	switch ex := ex.(type) {
 	case *NumberExpr:
 		return NumberType
 	case *BooleanExpr:
 		return BooleanType
 	case *BinaryExpr:
-		return t.typecheckBinaryExpr(ex)
+		return tc.typeofBinaryExpr(ex)
+
+	case *IdentifierExpr:
+		return tc.typeofVar(ex, typeEnv)
 	default:
 		return UndefinedType
 	}
 }
 
-func (t *Typechecker) typecheckStmt(stmt Stmt) Type {
+// TODO: error handling
+func (tc *Typechecker) typeofVar(id *IdentifierExpr, typeEnv TypeEnv) Type {
+	varType := typeEnv.LookupVar(id.Name)
+	return varType
+}
+
+func (tc *Typechecker) typeofStmt(stmt Stmt, typeEnv TypeEnv) Type {
 
 	switch stmt := stmt.(type) {
+
+	// case *VarDecStmt:
+	// 	return tc.typeofVarDec(stmt, typeEnv)
 	case *ExprStmt:
-		return t.typecheckExpr(stmt.Expr)
+		return tc.typeofExpr(stmt.Expr, typeEnv)
+
+	// case *VarDecStmt:
+	// 	return tc.typeofVarDec(stmt)
 	default:
 		return UndefinedType
 	}
 }
 
-func (t *Typechecker) typecheckProgram(program *Program) {
+func (tc *Typechecker) typeofProgram(program *Program) {
 
 	for _, stmt := range program.Stmts {
-		fmt.Println(t.typecheckStmt(stmt))
+		fmt.Println(tc.typeofStmt(stmt, tc.global))
 	}
 
 }
 
 // Helpers
-func (t *Typechecker) expectTypeEqual(expected Type, actual ...Type) bool {
+func (tc *Typechecker) expectTypeEqual(expected Type, actual ...Type) bool {
 	for _, a := range actual {
 		if expected != a {
 			return false
 		}
 	}
 	return true
+}
+
+// Type Env
+// type TypeEnv struct {
+// 	env    map[string]Type
+// 	parent *TypeEnv
+// }
+
+// func (te *TypeEnv) Define(name string, t Type) {
+// 	te.env[name] = t
+// }
+
+// func NewTypeEnv(parent *TypeEnv) *TypeEnv {
+// 	return &TypeEnv{
+// 		env:    make(map[string]Type),
+// 		parent: parent,
+// 	}
+// }
+
+type TypeEnv map[string]Type
+
+func (te TypeEnv) DefineVar(name string, t Type) {
+	(te)[name] = t
+}
+
+func (te TypeEnv) LookupVar(name string) Type {
+	return (te)[name]
 }

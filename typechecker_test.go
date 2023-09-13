@@ -17,8 +17,8 @@ func TestTypecheck(t *testing.T) {
 		{expr: &BinaryExpr{Op: "+", Lhs: &NumberExpr{Val: 1}, Rhs: &NumberExpr{Val: 2}}, expected: NumberType},
 	}
 	for _, i := range tests {
-		if tc.typecheckExpr(i.expr) != i.expected {
-			t.Errorf("Expected %s, got: %s", i.expected, tc.typecheckExpr(i.expr))
+		if tc.typeofExpr(i.expr, nil) != i.expected {
+			t.Errorf("Expected %s, got: %s", i.expected, tc.typeofExpr(i.expr, nil))
 		}
 	}
 
@@ -43,4 +43,56 @@ func TestExpectTypeEqual(t *testing.T) {
 		}
 	}
 
+}
+
+// func TestVarDec(t *testing.T) {
+
+// 	tokens, _ := NewLexer("let x = 1").GetTokens()
+
+// 	prog := NewParser(tokens).parseProgram()
+
+// 	tc := NewTypechecker(prog)
+
+// }
+
+func TestGlobalVar(t *testing.T) {
+
+	prog := buildProgram("let x = 1")
+
+	tc := NewTypechecker(prog)
+
+	expectedType := StringType
+
+	tc.typeofProgram(prog)
+
+	actualType := tc.typeofVar(&IdentifierExpr{Name: "VERSION"}, tc.global)
+
+	if expectedType != actualType {
+		t.Errorf("Expected %s, got: %s", expectedType, actualType)
+	}
+}
+
+func TestVar(t *testing.T) {
+
+	prog := buildProgram("let x = 1")
+
+	tc := NewTypechecker(prog)
+
+	expectedType := NumberType
+
+	typeEnv := TypeEnv{}
+
+	typeEnv.DefineVar("x", NumberType)
+
+	actualType := tc.typeofVar(&IdentifierExpr{Name: "x"}, typeEnv)
+
+	if expectedType != actualType {
+		t.Errorf("Expected %s, got: %s", expectedType, actualType)
+	}
+}
+
+func buildProgram(code string) *Program {
+	tokens, _ := NewLexer(code).GetTokens()
+	prog := NewParser(tokens).parseProgram()
+	return prog
 }

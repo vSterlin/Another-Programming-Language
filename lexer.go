@@ -77,7 +77,7 @@ func NewLexer(input string) *Lexer {
 	return &Lexer{input: input, len: len(input), pos: 0}
 }
 
-func (l *Lexer) GetToken() (*Token, error) {
+func (l *Lexer) getToken() (*Token, error) {
 	if isWhitespace(l.current()) {
 		l.skipWhitespace()
 	}
@@ -102,7 +102,7 @@ func (l *Lexer) GetToken() (*Token, error) {
 func (l *Lexer) GetTokens() ([]*Token, error) {
 	var tokens []*Token
 	for l.pos < l.len {
-		tok, err := l.GetToken()
+		tok, err := l.getToken()
 		if err != nil {
 			return tokens, err
 		}
