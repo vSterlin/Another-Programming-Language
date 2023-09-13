@@ -80,7 +80,7 @@ func TestVar(t *testing.T) {
 
 	expectedType := NumberType
 
-	typeEnv := TypeEnv{}
+	typeEnv := NewTypeEnv(nil, nil)
 
 	typeEnv.DefineVar("x", NumberType)
 
@@ -88,6 +88,12 @@ func TestVar(t *testing.T) {
 
 	if expectedType != actualType {
 		t.Errorf("Expected %s, got: %s", expectedType, actualType)
+	}
+
+	nonExistentType := tc.typeofVar(&IdentifierExpr{Name: "y"}, typeEnv)
+
+	if nonExistentType != UndefinedType {
+		t.Errorf("Expected %s, got: %s", UndefinedType, nonExistentType)
 	}
 }
 

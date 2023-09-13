@@ -2,13 +2,14 @@ package main
 
 type Typechecker struct {
 	program       *Program
-	globalTypeEnv TypeEnv
+	globalTypeEnv *TypeEnv
 }
 
 func NewTypechecker(program *Program) *Typechecker {
-	global := TypeEnv{
+
+	global := NewTypeEnv(nil, TypeMap{
 		"VERSION": StringType,
-	}
+	})
 	return &Typechecker{
 		program:       program,
 		globalTypeEnv: global,
@@ -60,7 +61,7 @@ func (tc *Typechecker) typeofBinaryExpr(ex *BinaryExpr) Type {
 	}
 }
 
-func (tc *Typechecker) typeofExpr(ex Expr, typeEnv TypeEnv) Type {
+func (tc *Typechecker) typeofExpr(ex Expr, typeEnv *TypeEnv) Type {
 	switch ex := ex.(type) {
 	case *NumberExpr:
 		return NumberType
@@ -68,7 +69,6 @@ func (tc *Typechecker) typeofExpr(ex Expr, typeEnv TypeEnv) Type {
 		return BooleanType
 	case *BinaryExpr:
 		return tc.typeofBinaryExpr(ex)
-
 	case *IdentifierExpr:
 		return tc.typeofVar(ex, typeEnv)
 	default:
@@ -77,18 +77,18 @@ func (tc *Typechecker) typeofExpr(ex Expr, typeEnv TypeEnv) Type {
 }
 
 // TODO: error handling
-func (tc *Typechecker) typeofVar(id *IdentifierExpr, typeEnv TypeEnv) Type {
+func (tc *Typechecker) typeofVar(id *IdentifierExpr, typeEnv *TypeEnv) Type {
 	varType := typeEnv.LookupVar(id.Name)
 	return varType
 }
 
-func (tc *Typechecker) typeofVarDec(stmt *VarDecStmt, typeEnv TypeEnv) Type {
+func (tc *Typechecker) typeofVarDec(stmt *VarDecStmt, typeEnv *TypeEnv) Type {
 	valueType := tc.typeofExpr(stmt.Init, typeEnv)
 	typeEnv.DefineVar(stmt.Id.Name, valueType)
 	return valueType
 }
 
-func (tc *Typechecker) typeofStmt(stmt Stmt, typeEnv TypeEnv) Type {
+func (tc *Typechecker) typeofStmt(stmt Stmt, typeEnv *TypeEnv) Type {
 
 	switch stmt := stmt.(type) {
 
@@ -120,28 +120,27 @@ func (tc *Typechecker) expectTypeEqual(expected Type, actual ...Type) bool {
 }
 
 // Type Env
-// type TypeEnv struct {
-// 	env    map[string]Type
-// 	parent *TypeEnv
-// }
 
-// func (te *TypeEnv) Define(name string, t Type) {
-// 	te.env[name] = t
-// }
-
-// func NewTypeEnv(parent *TypeEnv) *TypeEnv {
-// 	return &TypeEnv{
-// 		env:    make(map[string]Type),
-// 		parent: parent,
-// 	}
-// }
-
-type TypeEnv map[string]Type
-
-func (te TypeEnv) DefineVar(name string, t Type) {
-	(te)[name] = t
+type TypeMap map[string]Type
+type TypeEnv struct {
+	env    TypeMap
+	parent *TypeEnv
 }
 
-func (te TypeEnv) LookupVar(name string) Type {
-	return (te)[name]
+func NewTypeEnv(parent *TypeEnv, env TypeMap) *TypeEnv {
+	if env == nil {
+		env = make(TypeMap)
+	}
+	return &TypeEnv{
+		env:    env,
+		parent: parent,
+	}
+}
+
+func (te *TypeEnv) DefineVar(name string, t Type) {
+	(te).env[name] = t
+}
+
+func (te *TypeEnv) LookupVar(name string) Type {
+	return (te).env[name]
 }

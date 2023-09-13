@@ -33,16 +33,16 @@ func main() {
 
 	// prog := p.parseProgram()
 
-	tc := Typechecker{}
+	// tc := Typechecker{}
 
 	te := TypeEnv{}
 
 	te.DefineVar("x", NumberType)
 	te.DefineVar("z", BooleanType)
 
-	tp := tc.typeofVar(&IdentifierExpr{Name: "xx"}, te)
+	// tp := tc.typeofVar(&IdentifierExpr{Name: "xx"}, te)
 
-	fmt.Println(tp)
+	// fmt.Println(tp)
 
 	// fmt.Println(prog)
 
