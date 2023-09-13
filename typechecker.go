@@ -1,10 +1,8 @@
 package main
 
-import "fmt"
-
 type Typechecker struct {
-	program *Program
-	global  TypeEnv
+	program       *Program
+	globalTypeEnv TypeEnv
 }
 
 func NewTypechecker(program *Program) *Typechecker {
@@ -12,8 +10,8 @@ func NewTypechecker(program *Program) *Typechecker {
 		"VERSION": StringType,
 	}
 	return &Typechecker{
-		program: program,
-		global:  global,
+		program:       program,
+		globalTypeEnv: global,
 	}
 }
 
@@ -84,17 +82,20 @@ func (tc *Typechecker) typeofVar(id *IdentifierExpr, typeEnv TypeEnv) Type {
 	return varType
 }
 
+func (tc *Typechecker) typeofVarDec(stmt *VarDecStmt, typeEnv TypeEnv) Type {
+	valueType := tc.typeofExpr(stmt.Init, typeEnv)
+	typeEnv.DefineVar(stmt.Id.Name, valueType)
+	return valueType
+}
+
 func (tc *Typechecker) typeofStmt(stmt Stmt, typeEnv TypeEnv) Type {
 
 	switch stmt := stmt.(type) {
 
-	// case *VarDecStmt:
-	// 	return tc.typeofVarDec(stmt, typeEnv)
+	case *VarDecStmt:
+		return tc.typeofVarDec(stmt, typeEnv)
 	case *ExprStmt:
 		return tc.typeofExpr(stmt.Expr, typeEnv)
-
-	// case *VarDecStmt:
-	// 	return tc.typeofVarDec(stmt)
 	default:
 		return UndefinedType
 	}
@@ -103,7 +104,7 @@ func (tc *Typechecker) typeofStmt(stmt Stmt, typeEnv TypeEnv) Type {
 func (tc *Typechecker) typeofProgram(program *Program) {
 
 	for _, stmt := range program.Stmts {
-		fmt.Println(tc.typeofStmt(stmt, tc.global))
+		tc.typeofStmt(stmt, tc.globalTypeEnv)
 	}
 
 }

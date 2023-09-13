@@ -65,7 +65,7 @@ func TestGlobalVar(t *testing.T) {
 
 	tc.typeofProgram(prog)
 
-	actualType := tc.typeofVar(&IdentifierExpr{Name: "VERSION"}, tc.global)
+	actualType := tc.typeofVar(&IdentifierExpr{Name: "VERSION"}, tc.globalTypeEnv)
 
 	if expectedType != actualType {
 		t.Errorf("Expected %s, got: %s", expectedType, actualType)
@@ -85,6 +85,23 @@ func TestVar(t *testing.T) {
 	typeEnv.DefineVar("x", NumberType)
 
 	actualType := tc.typeofVar(&IdentifierExpr{Name: "x"}, typeEnv)
+
+	if expectedType != actualType {
+		t.Errorf("Expected %s, got: %s", expectedType, actualType)
+	}
+}
+
+func TestVarDec(t *testing.T) {
+
+	prog := buildProgram("let x = 1")
+
+	tc := NewTypechecker(prog)
+
+	expectedType := NumberType
+
+	tc.typeofProgram(prog)
+
+	actualType := tc.typeofVar(&IdentifierExpr{Name: "x"}, tc.globalTypeEnv)
 
 	if expectedType != actualType {
 		t.Errorf("Expected %s, got: %s", expectedType, actualType)
