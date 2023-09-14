@@ -17,7 +17,7 @@ type BinaryExpr struct {
 }
 
 type CallExpr struct {
-	Callee string
+	Callee *IdentifierExpr
 	Args   []Expr
 }
 
@@ -33,6 +33,13 @@ func (v *IdentifierExpr) String() string { return fmt.Sprintf("identifierExpress
 func (b *BinaryExpr) String() string {
 	return fmt.Sprintf("binaryExpression(%s, %s, %s)", b.Lhs, b.Op, b.Rhs)
 }
+func (c *CallExpr) String() string {
+	args := ""
+	for _, arg := range c.Args {
+		args += fmt.Sprintf("%s, ", arg)
+	}
+	return fmt.Sprintf("callExpression(%s, %s)", c.Callee, args)
+}
 
 // Statements
 type Stmt interface{ stmtNode() }
@@ -44,8 +51,9 @@ type VarDecStmt struct {
 	Init Expr
 }
 
-func (e *ExprStmt) stmtNode()      {}
-func (v *VarDecStmt) stmtNode()    {}
+func (e *ExprStmt) stmtNode()   {}
+func (v *VarDecStmt) stmtNode() {}
+
 func (e *ExprStmt) String() string { return fmt.Sprintf("expressionStatement(%s)", e.Expr) }
 func (v *VarDecStmt) String() string {
 	return fmt.Sprintf("variableDeclarationStatement(%s, %s)", v.Id, v.Init)
@@ -53,4 +61,11 @@ func (v *VarDecStmt) String() string {
 
 type Program struct{ Stmts []Stmt }
 
-func (p *Program) String() string { return fmt.Sprintf("program(%s)", p.Stmts) }
+func (p *Program) String() string {
+
+	stmts := ""
+	for _, stmt := range p.Stmts {
+		stmts += fmt.Sprintf("%s\n", stmt)
+	}
+	return fmt.Sprintf("program(%s)", stmts)
+}

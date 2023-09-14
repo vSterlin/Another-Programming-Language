@@ -61,11 +61,17 @@ func (p *Parser) parseParenExpr() ast.Expr {
 	return val
 }
 
-// primaryExpression ::= identifier | number | boolean | '(' expression ')'
+// primaryExpression ::= identifier | number | boolean | '(' expression ')' | callExpression
 func (p *Parser) parsePrimaryExpr() ast.Expr {
 	switch p.current().Type {
 	case IDENTIFIER:
-		return p.parseIdentifierExpr()
+		// if followed by LPAREN, then it's a call expression
+		if p.pos+1 < p.len && p.tokens[p.pos+1].Type == LPAREN {
+			fmt.Println("CALL EXPRESSION")
+			return p.parseCallExpr()
+		} else {
+			return p.parseIdentifierExpr()
+		}
 	case NUMBER:
 		return p.parseNumberExpr()
 	case BOOLEAN:
@@ -73,9 +79,32 @@ func (p *Parser) parsePrimaryExpr() ast.Expr {
 
 	case LPAREN:
 		return p.parseParenExpr()
+
 	}
 
 	return nil
+}
+
+// TODO: this is temporary, it should take 0+ params not exactly 1
+// callExpression ::= identifier '(' expression ')'
+func (p *Parser) parseCallExpr() ast.Expr {
+
+	calleeId := p.parseIdentifierExpr()
+	if p.current().Type != LPAREN {
+		fmt.Println("BOOO!")
+	}
+	p.next()
+
+	arg := p.parseExpr()
+
+	// eat the RPAREN
+	p.next()
+
+	return &ast.CallExpr{
+		Callee: calleeId.(*ast.IdentifierExpr),
+		Args:   []ast.Expr{arg},
+	}
+
 }
 
 // additiveOperator ::= '+' | '-'

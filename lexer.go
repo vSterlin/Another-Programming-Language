@@ -82,6 +82,10 @@ func (l *Lexer) getToken() (*Token, error) {
 		l.skipWhitespace()
 	}
 
+	if l.pos >= l.len {
+		return &Token{Type: EOF}, nil
+	}
+
 	if tok := l.tryTokenizeIdentifier(); tok != nil {
 		return tok, nil
 	} else if tok = l.tryTokenizeNumber(); tok != nil {
@@ -90,9 +94,6 @@ func (l *Lexer) getToken() (*Token, error) {
 		return tok, nil
 	} else if tok = l.tryTokenizeOperator(); tok != nil {
 		return tok, nil
-	} else if l.pos >= l.len {
-		return &Token{Type: EOF}, nil
-
 	} else {
 		return nil, (fmt.Errorf("invalid token %c at position %d", l.current(), l.pos))
 	}
@@ -175,7 +176,7 @@ func (l *Lexer) next() {
 }
 
 func (l *Lexer) skipWhitespace() {
-	for isWhitespace(l.current()) {
+	for l.pos < l.len && isWhitespace(l.current()) {
 		l.next()
 	}
 }
