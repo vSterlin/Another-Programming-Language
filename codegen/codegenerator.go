@@ -1,8 +1,9 @@
-package main
+package codegen
 
 import (
 	"fmt"
 	"language/ast"
+	"strings"
 )
 
 type CodeGenerator interface {
@@ -26,6 +27,7 @@ func (j *JavascriptCodeGenerator) Generate(program *ast.Program) string {
 		}
 	}
 
+	code = strings.TrimSpace(code)
 	return code
 }
 

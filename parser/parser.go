@@ -1,9 +1,9 @@
-package main
+package parser
 
 import (
 	"fmt"
 	"language/ast"
-
+	. "language/lexer"
 	"strconv"
 )
 
@@ -190,7 +190,7 @@ func (p *Parser) parseStmt() ast.Stmt {
 }
 
 // program ::= statement*
-func (p *Parser) parseProgram() *ast.Program {
+func (p *Parser) ParseProgram() *ast.Program {
 	var stmts []ast.Stmt
 	for p.pos < p.len {
 		stmts = append(stmts, p.parseStmt())

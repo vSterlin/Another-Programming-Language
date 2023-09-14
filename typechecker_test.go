@@ -2,6 +2,8 @@ package main
 
 import (
 	"language/ast"
+	"language/lexer"
+	"language/parser"
 	"testing"
 )
 
@@ -116,7 +118,7 @@ func TestVarDec(t *testing.T) {
 }
 
 func buildProgram(code string) *ast.Program {
-	tokens, _ := NewLexer(code).GetTokens()
-	prog := NewParser(tokens).parseProgram()
+	tokens, _ := lexer.NewLexer(code).GetTokens()
+	prog := parser.NewParser(tokens).ParseProgram()
 	return prog
 }

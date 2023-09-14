@@ -1,12 +1,13 @@
-package main
+package parser
 
 import (
 	"language/ast"
+	"language/lexer"
 	"testing"
 )
 
 func TestParseVarDecStmt(t *testing.T) {
-	l := NewLexer("let x = 1")
+	l := lexer.NewLexer("let x = 1")
 
 	tokens, _ := l.GetTokens()
 
