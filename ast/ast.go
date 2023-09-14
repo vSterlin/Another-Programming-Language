@@ -6,8 +6,8 @@ import "fmt"
 type Expr interface{ exprNode() }
 
 type NumberExpr struct{ Val int }
-
 type BooleanExpr struct{ Val bool }
+type StringExpr struct{ Val string }
 type IdentifierExpr struct{ Name string }
 
 type BinaryExpr struct {
@@ -24,21 +24,19 @@ type CallExpr struct {
 func (n *NumberExpr) exprNode()     {}
 func (v *IdentifierExpr) exprNode() {}
 func (b *BooleanExpr) exprNode()    {}
+func (s *StringExpr) exprNode()     {}
 func (b *BinaryExpr) exprNode()     {}
 func (c *CallExpr) exprNode()       {}
 
 func (n *NumberExpr) String() string     { return fmt.Sprintf("numberExpression(%d)", n.Val) }
 func (b *BooleanExpr) String() string    { return fmt.Sprintf("booleanExpression(%t)", b.Val) }
+func (s *StringExpr) String() string     { return fmt.Sprintf("stringExpression(%s)", s.Val) }
 func (v *IdentifierExpr) String() string { return fmt.Sprintf("identifierExpression(%s)", v.Name) }
 func (b *BinaryExpr) String() string {
 	return fmt.Sprintf("binaryExpression(%s, %s, %s)", b.Lhs, b.Op, b.Rhs)
 }
 func (c *CallExpr) String() string {
-	args := ""
-	for _, arg := range c.Args {
-		args += fmt.Sprintf("%s, ", arg)
-	}
-	return fmt.Sprintf("callExpression(%s, %s)", c.Callee, args)
+	return fmt.Sprintf("callExpression(%s, %s)", c.Callee, c.Args)
 }
 
 // Statements

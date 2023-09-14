@@ -40,6 +40,8 @@ func (j *JavascriptCodeGenerator) generateExpr(expr ast.Expr) string {
 		return fmt.Sprint(expr.Val)
 	case *ast.BooleanExpr:
 		return fmt.Sprint(expr.Val)
+	case *ast.StringExpr:
+		return fmt.Sprintf("\"%s\"", expr.Val)
 	case *ast.IdentifierExpr:
 		return expr.Name
 	case *ast.BinaryExpr:

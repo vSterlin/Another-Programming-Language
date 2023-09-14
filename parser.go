@@ -41,6 +41,13 @@ func (p *Parser) parseBooleanExpr() ast.Expr {
 	return &ast.BooleanExpr{Val: val}
 }
 
+func (p *Parser) parseStringExpr() ast.Expr {
+	val := p.current().Value
+	p.next()
+
+	return &ast.StringExpr{Val: val}
+}
+
 func (p *Parser) parseIdentifierExpr() ast.Expr {
 	name := p.current().Value
 	p.next()
@@ -61,7 +68,7 @@ func (p *Parser) parseParenExpr() ast.Expr {
 	return val
 }
 
-// primaryExpression ::= identifier | number | boolean | '(' expression ')' | callExpression
+// primaryExpression ::= identifier | number | boolean | string | '(' expression ')' | callExpression
 func (p *Parser) parsePrimaryExpr() ast.Expr {
 	switch p.current().Type {
 	case IDENTIFIER:
@@ -76,6 +83,8 @@ func (p *Parser) parsePrimaryExpr() ast.Expr {
 		return p.parseNumberExpr()
 	case BOOLEAN:
 		return p.parseBooleanExpr()
+	case STRING:
+		return p.parseStringExpr()
 
 	case LPAREN:
 		return p.parseParenExpr()

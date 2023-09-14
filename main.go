@@ -7,7 +7,7 @@ import (
 
 func main() {
 	l := NewLexer(`
-	print(11 + 2 - 3)
+	print("Hello World!")
 	`)
 
 	tokens, _ := l.GetTokens()
