@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"strings"
 	"unicode"
 )
 
@@ -74,6 +75,7 @@ var operators map[string]TokenType = map[string]TokenType{
 }
 
 func NewLexer(input string) *Lexer {
+	input = strings.TrimSpace(input)
 	return &Lexer{input: input, len: len(input), pos: 0}
 }
 
