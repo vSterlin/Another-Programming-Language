@@ -1,4 +1,4 @@
-package main
+package ast
 
 import "fmt"
 
@@ -35,16 +35,9 @@ func (b *BooleanExpr) exprNode()    {}
 func (b *BinaryExpr) exprNode()     {}
 func (c *CallExpr) exprNode()       {}
 
-func (n *NumberExpr) String() string {
-	return fmt.Sprintf("numberExpression(%d)", n.Val)
-}
-func (b *BooleanExpr) String() string {
-	return fmt.Sprintf("booleanExpression(%t)", b.Val)
-}
-
-func (v *IdentifierExpr) String() string {
-	return fmt.Sprintf("identifierExpression(%s)", v.Name)
-}
+func (n *NumberExpr) String() string     { return fmt.Sprintf("numberExpression(%d)", n.Val) }
+func (b *BooleanExpr) String() string    { return fmt.Sprintf("booleanExpression(%t)", b.Val) }
+func (v *IdentifierExpr) String() string { return fmt.Sprintf("identifierExpression(%s)", v.Name) }
 func (b *BinaryExpr) String() string {
 	return fmt.Sprintf("binaryExpression(%s, %s, %s)", b.Lhs, b.Op, b.Rhs)
 }

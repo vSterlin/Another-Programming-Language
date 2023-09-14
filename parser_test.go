@@ -1,6 +1,7 @@
 package main
 
 import (
+	"language/ast"
 	"testing"
 )
 
@@ -13,7 +14,7 @@ func TestParseVarDecStmt(t *testing.T) {
 
 	stmt := p.parseVarDecStmt()
 
-	varDecStmt, ok := stmt.(*VarDecStmt)
+	varDecStmt, ok := stmt.(*ast.VarDecStmt)
 
 	if !ok {
 		t.Errorf("Expected VarDecStmt, got: %T", stmt)
@@ -23,8 +24,8 @@ func TestParseVarDecStmt(t *testing.T) {
 		t.Errorf("Expected x, got: %s", varDecStmt.Id.Name)
 	}
 
-	if varDecStmt.Init.(*NumberExpr).Val != 1 {
-		t.Errorf("Expected 1, got: %d", varDecStmt.Init.(*NumberExpr).Val)
+	if varDecStmt.Init.(*ast.NumberExpr).Val != 1 {
+		t.Errorf("Expected 1, got: %d", varDecStmt.Init.(*ast.NumberExpr).Val)
 	}
 
 }

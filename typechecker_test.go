@@ -1,20 +1,21 @@
 package main
 
 import (
+	"language/ast"
 	"testing"
 )
 
 func TestTypecheck(t *testing.T) {
 
-	tc := NewTypechecker(&Program{})
+	tc := NewTypechecker(&ast.Program{})
 
 	tests := []struct {
-		expr     Expr
+		expr     ast.Expr
 		expected Type
 	}{
-		{expr: &NumberExpr{Val: 1}, expected: NumberType},
-		{expr: &BooleanExpr{Val: true}, expected: BooleanType},
-		{expr: &BinaryExpr{Op: "+", Lhs: &NumberExpr{Val: 1}, Rhs: &NumberExpr{Val: 2}}, expected: NumberType},
+		{expr: &ast.NumberExpr{Val: 1}, expected: NumberType},
+		{expr: &ast.BooleanExpr{Val: true}, expected: BooleanType},
+		{expr: &ast.BinaryExpr{Op: "+", Lhs: &ast.NumberExpr{Val: 1}, Rhs: &ast.NumberExpr{Val: 2}}, expected: NumberType},
 	}
 	for _, i := range tests {
 		if tc.typeofExpr(i.expr, nil) != i.expected {
@@ -26,7 +27,7 @@ func TestTypecheck(t *testing.T) {
 
 func TestExpectTypeEqual(t *testing.T) {
 
-	tc := NewTypechecker(&Program{})
+	tc := NewTypechecker(&ast.Program{})
 	tests := []struct {
 		types    []Type
 		expected bool
@@ -65,7 +66,7 @@ func TestGlobalVar(t *testing.T) {
 
 	tc.typeofProgram(prog)
 
-	actualType := tc.typeofVar(&IdentifierExpr{Name: "VERSION"}, tc.globalTypeEnv)
+	actualType := tc.typeofVar(&ast.IdentifierExpr{Name: "VERSION"}, tc.globalTypeEnv)
 
 	if expectedType != actualType {
 		t.Errorf("Expected %s, got: %s", expectedType, actualType)
@@ -84,13 +85,13 @@ func TestVar(t *testing.T) {
 
 	typeEnv.DefineVar("x", NumberType)
 
-	actualType := tc.typeofVar(&IdentifierExpr{Name: "x"}, typeEnv)
+	actualType := tc.typeofVar(&ast.IdentifierExpr{Name: "x"}, typeEnv)
 
 	if expectedType != actualType {
 		t.Errorf("Expected %s, got: %s", expectedType, actualType)
 	}
 
-	nonExistentType := tc.typeofVar(&IdentifierExpr{Name: "y"}, typeEnv)
+	nonExistentType := tc.typeofVar(&ast.IdentifierExpr{Name: "y"}, typeEnv)
 
 	if nonExistentType != UndefinedType {
 		t.Errorf("Expected %s, got: %s", UndefinedType, nonExistentType)
@@ -107,14 +108,14 @@ func TestVarDec(t *testing.T) {
 
 	tc.typeofProgram(prog)
 
-	actualType := tc.typeofVar(&IdentifierExpr{Name: "x"}, tc.globalTypeEnv)
+	actualType := tc.typeofVar(&ast.IdentifierExpr{Name: "x"}, tc.globalTypeEnv)
 
 	if expectedType != actualType {
 		t.Errorf("Expected %s, got: %s", expectedType, actualType)
 	}
 }
 
-func buildProgram(code string) *Program {
+func buildProgram(code string) *ast.Program {
 	tokens, _ := NewLexer(code).GetTokens()
 	prog := NewParser(tokens).parseProgram()
 	return prog

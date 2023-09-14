@@ -2,6 +2,8 @@ package main
 
 import (
 	"fmt"
+	"language/ast"
+
 	"strconv"
 )
 
@@ -19,33 +21,33 @@ func NewParser(tokens []*Token) *Parser {
 	}
 }
 
-func (p *Parser) parseNumberExpr() Expr {
+func (p *Parser) parseNumberExpr() ast.Expr {
 	val, err := strconv.Atoi(p.current().Value)
 	if err != nil {
 		return nil
 	}
 	p.next()
 
-	return &NumberExpr{Val: val}
+	return &ast.NumberExpr{Val: val}
 }
 
-func (p *Parser) parseBooleanExpr() Expr {
+func (p *Parser) parseBooleanExpr() ast.Expr {
 	val, err := strconv.ParseBool(p.current().Value)
 	if err != nil {
 		return nil
 	}
 	p.next()
 
-	return &BooleanExpr{Val: val}
+	return &ast.BooleanExpr{Val: val}
 }
 
-func (p *Parser) parseIdentifierExpr() Expr {
+func (p *Parser) parseIdentifierExpr() ast.Expr {
 	name := p.current().Value
 	p.next()
-	return &IdentifierExpr{Name: name}
+	return &ast.IdentifierExpr{Name: name}
 }
 
-func (p *Parser) parseParenExpr() Expr {
+func (p *Parser) parseParenExpr() ast.Expr {
 	p.next()
 	val := p.parseExpr()
 	curr := p.current()
@@ -60,7 +62,7 @@ func (p *Parser) parseParenExpr() Expr {
 }
 
 // primaryExpression ::= identifier | number | boolean | '(' expression ')'
-func (p *Parser) parsePrimaryExpr() Expr {
+func (p *Parser) parsePrimaryExpr() ast.Expr {
 	switch p.current().Type {
 	case IDENTIFIER:
 		return p.parseIdentifierExpr()
@@ -78,7 +80,7 @@ func (p *Parser) parsePrimaryExpr() Expr {
 
 // additiveOperator ::= '+' | '-'
 // additiveExpression ::= multiplicativeExpression (additiveOperator multiplicativeExpression)*
-func (p *Parser) parseAdditiveExpr() Expr {
+func (p *Parser) parseAdditiveExpr() ast.Expr {
 	lhs := p.parseMultiplicativeExpr()
 
 	for p.pos < p.len && (p.current().Type == ADD || p.current().Type == SUB) {
@@ -87,9 +89,9 @@ func (p *Parser) parseAdditiveExpr() Expr {
 		rhs := p.parseMultiplicativeExpr()
 		switch curr.Type {
 		case ADD:
-			lhs = &BinaryExpr{Op: "+", Lhs: lhs, Rhs: rhs}
+			lhs = &ast.BinaryExpr{Op: "+", Lhs: lhs, Rhs: rhs}
 		case SUB:
-			lhs = &BinaryExpr{Op: "-", Lhs: lhs, Rhs: rhs}
+			lhs = &ast.BinaryExpr{Op: "-", Lhs: lhs, Rhs: rhs}
 		default:
 			return lhs
 		}
@@ -99,7 +101,7 @@ func (p *Parser) parseAdditiveExpr() Expr {
 
 // multiplicativeOperator ::= '*' | '/'
 // multiplicativeExpression ::= primaryExpression (multiplicativeOperator primaryExpression)*
-func (p *Parser) parseMultiplicativeExpr() Expr {
+func (p *Parser) parseMultiplicativeExpr() ast.Expr {
 	lhs := p.parsePrimaryExpr()
 
 	for p.pos < p.len && (p.current().Type == MUL || p.current().Type == DIV) {
@@ -108,9 +110,9 @@ func (p *Parser) parseMultiplicativeExpr() Expr {
 		rhs := p.parsePrimaryExpr()
 		switch curr.Type {
 		case MUL:
-			lhs = &BinaryExpr{Op: "*", Lhs: lhs, Rhs: rhs}
+			lhs = &ast.BinaryExpr{Op: "*", Lhs: lhs, Rhs: rhs}
 		case DIV:
-			lhs = &BinaryExpr{Op: "/", Lhs: lhs, Rhs: rhs}
+			lhs = &ast.BinaryExpr{Op: "/", Lhs: lhs, Rhs: rhs}
 		default:
 			return lhs
 		}
@@ -119,12 +121,12 @@ func (p *Parser) parseMultiplicativeExpr() Expr {
 }
 
 // expression ::= primaryExpression | additiveExpression
-func (p *Parser) parseExpr() Expr {
+func (p *Parser) parseExpr() ast.Expr {
 	return p.parseAdditiveExpr()
 }
 
 // variableDeclarationStatement ::= 'let' identifier '=' expression
-func (p *Parser) parseVarDecStmt() Stmt {
+func (p *Parser) parseVarDecStmt() ast.Stmt {
 	p.next()
 	id := p.parseIdentifierExpr()
 
@@ -135,27 +137,27 @@ func (p *Parser) parseVarDecStmt() Stmt {
 	ex := p.parseExpr()
 
 	// TODO: do some type checking here
-	return &VarDecStmt{Id: id.(*IdentifierExpr), Init: ex}
+	return &ast.VarDecStmt{Id: id.(*ast.IdentifierExpr), Init: ex}
 }
 
 // statement ::= expression | variableDeclarationStatement
-func (p *Parser) parseStmt() Stmt {
+func (p *Parser) parseStmt() ast.Stmt {
 
 	if p.current().Type == LET {
 		return p.parseVarDecStmt()
 	} else {
 		ex := p.parseExpr()
-		return &ExprStmt{Expr: ex}
+		return &ast.ExprStmt{Expr: ex}
 	}
 }
 
 // program ::= statement*
-func (p *Parser) parseProgram() *Program {
-	var stmts []Stmt
+func (p *Parser) parseProgram() *ast.Program {
+	var stmts []ast.Stmt
 	for p.pos < p.len {
 		stmts = append(stmts, p.parseStmt())
 	}
-	return &Program{Stmts: stmts}
+	return &ast.Program{Stmts: stmts}
 }
 
 // helper functions

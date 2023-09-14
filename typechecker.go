@@ -1,11 +1,15 @@
 package main
 
+import (
+	"language/ast"
+)
+
 type Typechecker struct {
-	program       *Program
+	program       *ast.Program
 	globalTypeEnv *TypeEnv
 }
 
-func NewTypechecker(program *Program) *Typechecker {
+func NewTypechecker(program *ast.Program) *Typechecker {
 
 	global := NewTypeEnv(nil, TypeMap{
 		"VERSION": StringType,
@@ -43,7 +47,7 @@ func (t Type) String() string {
 	return str
 }
 
-func (tc *Typechecker) typeofBinaryExpr(ex *BinaryExpr) Type {
+func (tc *Typechecker) typeofBinaryExpr(ex *ast.BinaryExpr) Type {
 	lhsType := tc.typeofExpr(ex.Lhs, nil)
 	rhsType := tc.typeofExpr(ex.Rhs, nil)
 
@@ -61,15 +65,15 @@ func (tc *Typechecker) typeofBinaryExpr(ex *BinaryExpr) Type {
 	}
 }
 
-func (tc *Typechecker) typeofExpr(ex Expr, typeEnv *TypeEnv) Type {
+func (tc *Typechecker) typeofExpr(ex ast.Expr, typeEnv *TypeEnv) Type {
 	switch ex := ex.(type) {
-	case *NumberExpr:
+	case *ast.NumberExpr:
 		return NumberType
-	case *BooleanExpr:
+	case *ast.BooleanExpr:
 		return BooleanType
-	case *BinaryExpr:
+	case *ast.BinaryExpr:
 		return tc.typeofBinaryExpr(ex)
-	case *IdentifierExpr:
+	case *ast.IdentifierExpr:
 		return tc.typeofVar(ex, typeEnv)
 	default:
 		return UndefinedType
@@ -77,31 +81,31 @@ func (tc *Typechecker) typeofExpr(ex Expr, typeEnv *TypeEnv) Type {
 }
 
 // TODO: error handling
-func (tc *Typechecker) typeofVar(id *IdentifierExpr, typeEnv *TypeEnv) Type {
+func (tc *Typechecker) typeofVar(id *ast.IdentifierExpr, typeEnv *TypeEnv) Type {
 	varType := typeEnv.LookupVar(id.Name)
 	return varType
 }
 
-func (tc *Typechecker) typeofVarDec(stmt *VarDecStmt, typeEnv *TypeEnv) Type {
+func (tc *Typechecker) typeofVarDec(stmt *ast.VarDecStmt, typeEnv *TypeEnv) Type {
 	valueType := tc.typeofExpr(stmt.Init, typeEnv)
 	typeEnv.DefineVar(stmt.Id.Name, valueType)
 	return valueType
 }
 
-func (tc *Typechecker) typeofStmt(stmt Stmt, typeEnv *TypeEnv) Type {
+func (tc *Typechecker) typeofStmt(stmt ast.Stmt, typeEnv *TypeEnv) Type {
 
 	switch stmt := stmt.(type) {
 
-	case *VarDecStmt:
+	case *ast.VarDecStmt:
 		return tc.typeofVarDec(stmt, typeEnv)
-	case *ExprStmt:
+	case *ast.ExprStmt:
 		return tc.typeofExpr(stmt.Expr, typeEnv)
 	default:
 		return UndefinedType
 	}
 }
 
-func (tc *Typechecker) typeofProgram(program *Program) {
+func (tc *Typechecker) typeofProgram(program *ast.Program) {
 
 	for _, stmt := range program.Stmts {
 		tc.typeofStmt(stmt, tc.globalTypeEnv)
