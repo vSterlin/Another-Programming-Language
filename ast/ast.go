@@ -3,20 +3,12 @@ package ast
 import "fmt"
 
 // Expressions
-type Expr interface {
-	exprNode()
-}
+type Expr interface{ exprNode() }
 
-type NumberExpr struct {
-	Val int
-}
+type NumberExpr struct{ Val int }
 
-type BooleanExpr struct {
-	Val bool
-}
-type IdentifierExpr struct {
-	Name string
-}
+type BooleanExpr struct{ Val bool }
+type IdentifierExpr struct{ Name string }
 
 type BinaryExpr struct {
 	Op  string
@@ -43,33 +35,22 @@ func (b *BinaryExpr) String() string {
 }
 
 // Statements
-type Stmt interface {
-	stmtNode()
-}
+type Stmt interface{ stmtNode() }
 
-type ExprStmt struct {
-	Expr Expr
-}
+type ExprStmt struct{ Expr Expr }
 
 type VarDecStmt struct {
 	Id   *IdentifierExpr
 	Init Expr
 }
 
-func (e *ExprStmt) stmtNode()   {}
-func (v *VarDecStmt) stmtNode() {}
-func (e *ExprStmt) String() string {
-	return fmt.Sprintf("expressionStatement(%s)", e.Expr)
-}
+func (e *ExprStmt) stmtNode()      {}
+func (v *VarDecStmt) stmtNode()    {}
+func (e *ExprStmt) String() string { return fmt.Sprintf("expressionStatement(%s)", e.Expr) }
 func (v *VarDecStmt) String() string {
-	fmt.Println(v.Id)
 	return fmt.Sprintf("variableDeclarationStatement(%s, %s)", v.Id, v.Init)
 }
 
-type Program struct {
-	Stmts []Stmt
-}
+type Program struct{ Stmts []Stmt }
 
-func (p *Program) String() string {
-	return fmt.Sprintf("program(%s)", p.Stmts)
-}
+func (p *Program) String() string { return fmt.Sprintf("program(%s)", p.Stmts) }
