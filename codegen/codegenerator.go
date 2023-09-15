@@ -30,6 +30,8 @@ func (j *JavascriptCodeGenerator) generateStmt(stmt ast.Stmt) string {
 	switch stmt := stmt.(type) {
 	case *ast.VarDecStmt:
 		return j.generateVarDecStmt(stmt)
+	case *ast.VarAssignStmt:
+		return j.generateVarAssignStmt(stmt)
 	case *ast.ExprStmt:
 		return j.generateExpr(stmt.Expr)
 	case *ast.BlockStmt:
@@ -74,6 +76,15 @@ func (j *JavascriptCodeGenerator) generateBlockStmt(stmt *ast.BlockStmt) string 
 
 func (j *JavascriptCodeGenerator) generateVarDecStmt(stmt *ast.VarDecStmt) string {
 	return fmt.Sprintf("var %s = %s", stmt.Id.Name, j.generateExpr(stmt.Init))
+}
+
+func (j *JavascriptCodeGenerator) generateVarAssignStmt(stmt *ast.VarAssignStmt) string {
+	init := j.generateExpr(stmt.Init)
+	if stmt.Op == "=" {
+		return fmt.Sprintf("%s = %s", stmt.Id.Name, init)
+	} else { // ":="
+		return fmt.Sprintf("var %s = %s", stmt.Id.Name, init)
+	}
 }
 
 func (j *JavascriptCodeGenerator) generateExpr(expr ast.Expr) string {

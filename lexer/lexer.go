@@ -20,6 +20,7 @@ const (
 
 	operator_beg
 
+	DECLARE
 	ASSIGN
 
 	ADD
@@ -75,7 +76,8 @@ var keywords map[string]TokenType = map[string]TokenType{
 
 var operators map[string]TokenType = map[string]TokenType{
 
-	"=": ASSIGN,
+	":=": DECLARE,
+	"=":  ASSIGN,
 
 	"+":  ADD,
 	"-":  SUB,
@@ -182,6 +184,12 @@ func (l *Lexer) tryTokenizeString() *Token {
 }
 
 func (l *Lexer) tryTokenizeOperator() *Token {
+	if l.current() == ':' && l.peek() == '=' {
+		l.next()
+		l.next()
+		return &Token{Type: DECLARE, Value: ":="}
+	}
+
 	if tokType, ok := operators[string(l.current())]; ok {
 		val := string(l.current())
 		if tokType == MUL {

@@ -194,6 +194,7 @@ func (p *Parser) parseExpr() ast.Expr {
 	return p.parseAdditiveExpr()
 }
 
+// TODO: I will get rid of this
 // variableDeclarationStatement ::= 'let' identifier '=' expression;
 func (p *Parser) parseVarDecStmt() ast.Stmt {
 	p.next()
@@ -207,6 +208,18 @@ func (p *Parser) parseVarDecStmt() ast.Stmt {
 
 	// TODO: do some type checking here
 	return &ast.VarDecStmt{Id: id.(*ast.IdentifierExpr), Init: ex}
+}
+
+// variableAssignmentStatement ::= identifier ('=' | ':=') expression;
+func (p *Parser) parseVarAssignStmt() ast.Stmt {
+	id := p.parseIdentifierExpr()
+	if p.current().Type != ASSIGN && p.current().Type != DECLARE {
+		return nil
+	}
+	assignOp := p.current().Value
+	p.next()
+	ex := p.parseExpr()
+	return &ast.VarAssignStmt{Id: id.(*ast.IdentifierExpr), Init: ex, Op: assignOp}
 }
 
 // blockStatement ::= '{' statement* '}';
@@ -265,6 +278,10 @@ func (p *Parser) parseStmt() ast.Stmt {
 		return p.parseWhileStmt()
 	case IF:
 		return p.parseIfStmt()
+	case IDENTIFIER:
+		v := p.current()
+		fmt.Println(v)
+		return p.parseVarAssignStmt()
 	default:
 		ex := p.parseExpr()
 		return &ast.ExprStmt{Expr: ex}

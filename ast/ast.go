@@ -60,6 +60,12 @@ type VarDecStmt struct {
 	Init Expr
 }
 
+type VarAssignStmt struct {
+	Id   *IdentifierExpr
+	Op   string
+	Init Expr
+}
+
 type BlockStmt struct {
 	Stmts []Stmt
 }
@@ -75,15 +81,19 @@ type IfStmt struct {
 	Alternate  Stmt
 }
 
-func (e *ExprStmt) stmtNode()   {}
-func (v *VarDecStmt) stmtNode() {}
-func (b *BlockStmt) stmtNode()  {}
-func (w *WhileStmt) stmtNode()  {}
-func (i *IfStmt) stmtNode()     {}
+func (e *ExprStmt) stmtNode()      {}
+func (v *VarDecStmt) stmtNode()    {}
+func (v *VarAssignStmt) stmtNode() {}
+func (b *BlockStmt) stmtNode()     {}
+func (w *WhileStmt) stmtNode()     {}
+func (i *IfStmt) stmtNode()        {}
 
 func (e *ExprStmt) String() string { return fmt.Sprintf("expressionStatement(%s)", e.Expr) }
 func (v *VarDecStmt) String() string {
 	return fmt.Sprintf("variableDeclarationStatement(%s, %s)", v.Id, v.Init)
+}
+func (v *VarAssignStmt) String() string {
+	return fmt.Sprintf("variableAssignmentStatement(%s, %s)", v.Id, v.Init)
 }
 func (b *BlockStmt) String() string {
 	stmts := ""

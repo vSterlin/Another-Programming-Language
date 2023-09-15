@@ -1,10 +1,9 @@
 
 arrayExpression ::= '[' (expression (',' expression)*)? ']';
 
-primaryExpression ::= identifier | number | boolean | '(' expression ')' | arrayExpression
+primaryExpression ::= identifier | number | boolean | '(' expression ')' | arrayExpression;
 
-(* TODO accept more params *)
-callExpression ::= identifier '(' expression ')' ;
+callExpression ::= identifier '(' expression ')'; (* accept more params *)
 
 multiplicativeOperator ::= '*' | '/' | '**' | '%';
 multiplicativeExpression ::= primaryExpression (multiplicativeOperator primaryExpression)*;
@@ -16,7 +15,10 @@ expression ::= primaryExpression | additiveExpression;
 
 expressionStatement ::= expression;
 blockStatement ::= '{' statement* '}';
-variableDeclarationStatement ::= 'let' identifier '=' expression;
+
+variableDeclarationStatement ::= 'let' identifier '=' expression; (* I will get rid of this one*)
+variableAssignmentStatement ::= identifier ('=' | ':=' ) expression;
+
 whileStatement ::= 'while' [expression]  blockStatement;
 ifStatement ::= 'if' expression blockStatement ('else if' expression blockStatement)* ('else' blockStatement)?;
 
