@@ -20,6 +20,11 @@ var tests = []struct {
 	{input: "(", expected: LPAREN},
 	{input: ")", expected: RPAREN},
 
+	{input: "[", expected: LBRACK},
+	{input: "]", expected: RBRACK},
+
+	{input: ",", expected: COMMA},
+
 	{input: "1", expected: NUMBER},
 
 	{input: "true", expected: BOOLEAN},

@@ -2,26 +2,26 @@ package main
 
 import (
 	"fmt"
-	"language/codegen"
 	"language/lexer"
-	"language/parser"
 	"os"
 )
 
 func main() {
 	l := lexer.NewLexer(`
-	print("Hello World!")
+	[1, 2]
 	`)
 
 	tokens, _ := l.GetTokens()
-	p := parser.NewParser(tokens)
-	prog := p.ParseProgram()
-	fmt.Println(prog)
 
-	cg := codegen.NewJavascriptCodeGenerator()
-	code := cg.Generate(prog)
+	fmt.Println(tokens)
+	// p := parser.NewParser(tokens)
+	// prog := p.ParseProgram()
+	// fmt.Println(prog)
 
-	writeToFile(code)
+	// cg := codegen.NewJavascriptCodeGenerator()
+	// code := cg.Generate(prog)
+
+	// writeToFile(code)
 }
 
 func writeToFile(code string) {

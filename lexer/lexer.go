@@ -29,6 +29,11 @@ const (
 	LPAREN
 	RPAREN
 
+	LBRACK
+	RBRACK
+
+	COMMA
+
 	operator_end
 
 	NUMBER
@@ -72,6 +77,11 @@ var operators map[string]TokenType = map[string]TokenType{
 
 	"(": LPAREN,
 	")": RPAREN,
+
+	"[": LBRACK,
+	"]": RBRACK,
+
+	",": COMMA,
 }
 
 func NewLexer(input string) *Lexer {
