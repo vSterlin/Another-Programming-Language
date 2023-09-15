@@ -14,6 +14,7 @@ const (
 	IF
 	ELSE
 	WHILE
+	FUNC
 	RETURN
 
 	keyword_end
@@ -68,6 +69,7 @@ var keywords map[string]TokenType = map[string]TokenType{
 	"if":     IF,
 	"else":   ELSE,
 	"while":  WHILE,
+	"func":   FUNC,
 	"return": RETURN,
 
 	"true":  BOOLEAN,

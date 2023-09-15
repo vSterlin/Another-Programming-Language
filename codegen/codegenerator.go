@@ -38,6 +38,8 @@ func (j *JavascriptCodeGenerator) generateStmt(stmt ast.Stmt) string {
 		return j.generateBlockStmt(stmt)
 	case *ast.WhileStmt:
 		return j.generateWhileStmt(stmt)
+	case *ast.FuncDecStmt:
+		return j.generateFuncDecStmt(stmt)
 	case *ast.IfStmt:
 		return j.generateIfStmt(stmt)
 	default:
@@ -61,6 +63,17 @@ func (j *JavascriptCodeGenerator) generateWhileStmt(stmt *ast.WhileStmt) string 
 	test := j.generateExpr(stmt.Test)
 	body := j.generateStmt(stmt.Body)
 	return fmt.Sprintf("while (%s) %s", test, body)
+}
+
+func (j *JavascriptCodeGenerator) generateFuncDecStmt(stmt *ast.FuncDecStmt) string {
+	id := stmt.Id.Name
+	args := []string{}
+	for _, arg := range stmt.Args {
+		args = append(args, arg.Name)
+	}
+	body := j.generateBlockStmt(stmt.Body)
+
+	return fmt.Sprintf("function %s(%s)%s", id, strings.Join(args, ", "), body)
 }
 
 func (j *JavascriptCodeGenerator) generateBlockStmt(stmt *ast.BlockStmt) string {

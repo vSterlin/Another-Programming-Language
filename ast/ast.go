@@ -75,6 +75,12 @@ type WhileStmt struct {
 	Body Stmt
 }
 
+type FuncDecStmt struct {
+	Id   *IdentifierExpr
+	Args []*IdentifierExpr
+	Body *BlockStmt
+}
+
 type IfStmt struct {
 	Test       Expr
 	Consequent Stmt
@@ -86,6 +92,7 @@ func (v *VarDecStmt) stmtNode()    {}
 func (v *VarAssignStmt) stmtNode() {}
 func (b *BlockStmt) stmtNode()     {}
 func (w *WhileStmt) stmtNode()     {}
+func (f *FuncDecStmt) stmtNode()   {}
 func (i *IfStmt) stmtNode()        {}
 
 func (e *ExprStmt) String() string { return fmt.Sprintf("expressionStatement(%s)", e.Expr) }
@@ -106,6 +113,11 @@ func (b *BlockStmt) String() string {
 func (w *WhileStmt) String() string {
 	return fmt.Sprintf("whileStatement(%s, %s)", w.Test, w.Body)
 }
+
+func (f *FuncDecStmt) String() string {
+	return fmt.Sprintf("funcDeclarationStatement(%s, %s, %s)", f.Id, f.Args, f.Body)
+}
+
 func (i *IfStmt) String() string {
 	alternate := "nil"
 	if i.Alternate != nil {

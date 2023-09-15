@@ -212,14 +212,36 @@ func (p *Parser) parseVarDecStmt() ast.Stmt {
 
 // variableAssignmentStatement ::= identifier ('=' | ':=') expression;
 func (p *Parser) parseVarAssignStmt() ast.Stmt {
-	id := p.parseIdentifierExpr()
-	if p.current().Type != ASSIGN && p.current().Type != DECLARE {
-		return nil
+	id := p.parseExpr()
+	if p.isEnd() || (p.current().Type != ASSIGN && p.current().Type != DECLARE) {
+		return &ast.ExprStmt{Expr: id}
 	}
 	assignOp := p.current().Value
 	p.next()
 	ex := p.parseExpr()
 	return &ast.VarAssignStmt{Id: id.(*ast.IdentifierExpr), Init: ex, Op: assignOp}
+}
+
+// functionDeclaration ::= 'func' identifier '(' (identifier (',' identifier)*)? ')' blockStatement;
+func (p *Parser) parseFuncDecStmt() ast.Stmt {
+	p.next() // eat the func
+	id := p.parseIdentifierExpr()
+	if p.current().Type != LPAREN {
+		return nil
+	}
+	p.next() // eat the LPAREN
+	var args []*ast.IdentifierExpr
+	for !p.isEnd() && p.current().Type != RPAREN {
+		arg := p.parseIdentifierExpr()
+		args = append(args, arg.(*ast.IdentifierExpr))
+		if p.current().Type == COMMA {
+			p.next()
+		}
+	}
+	// TODO: check if the next token is RPAREN
+	p.next() // eat the RPAREN
+	body := p.parseBlockStmt()
+	return &ast.FuncDecStmt{Id: id.(*ast.IdentifierExpr), Args: args, Body: body.(*ast.BlockStmt)}
 }
 
 // blockStatement ::= '{' statement* '}';
@@ -266,7 +288,9 @@ func (p *Parser) parseIfStmt() ast.Stmt {
 
 }
 
-// statement ::= expression | variableDeclarationStatement | blockStatement | whileStatement | ifStatement;
+// statement ::= expression | variableDeclarationStatement
+// | variableAssignmentStatement | blockStatement
+// | whileStatement | functionDeclaration | ifStatement;
 func (p *Parser) parseStmt() ast.Stmt {
 
 	switch p.current().Type {
@@ -276,11 +300,11 @@ func (p *Parser) parseStmt() ast.Stmt {
 		return p.parseBlockStmt()
 	case WHILE:
 		return p.parseWhileStmt()
+	case FUNC:
+		return p.parseFuncDecStmt()
 	case IF:
 		return p.parseIfStmt()
 	case IDENTIFIER:
-		v := p.current()
-		fmt.Println(v)
 		return p.parseVarAssignStmt()
 	default:
 		ex := p.parseExpr()

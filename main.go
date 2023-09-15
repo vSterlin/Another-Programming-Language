@@ -10,15 +10,16 @@ import (
 
 func main() {
 	l := lexer.NewLexer(`
-	x := 1
-	x = 1 + 2
+	func add(a, b) {
+		a + b
+	}
 	`)
 	tokens, _ := l.GetTokens()
 	fmt.Println(tokens)
 	p := parser.NewParser(tokens)
 
 	prog := p.ParseProgram()
-	fmt.Println(prog)
+	// fmt.Println(prog)
 
 	cg := codegen.NewJavascriptCodeGenerator()
 	code := cg.Generate(prog)
