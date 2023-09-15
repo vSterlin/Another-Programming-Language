@@ -36,8 +36,22 @@ func (j *JavascriptCodeGenerator) generateStmt(stmt ast.Stmt) string {
 		return j.generateBlockStmt(stmt)
 	case *ast.WhileStmt:
 		return j.generateWhileStmt(stmt)
+	case *ast.IfStmt:
+		return j.generateIfStmt(stmt)
 	default:
 		return ""
+	}
+}
+
+func (j *JavascriptCodeGenerator) generateIfStmt(stmt *ast.IfStmt) string {
+	test := j.generateExpr(stmt.Test)
+	consequent := j.generateStmt(stmt.Consequent)
+	alternate := j.generateStmt(stmt.Alternate)
+
+	if alternate != "" {
+		return fmt.Sprintf("if (%s) %s else %s", test, consequent, alternate)
+	} else {
+		return fmt.Sprintf("if (%s) %s", test, consequent)
 	}
 }
 

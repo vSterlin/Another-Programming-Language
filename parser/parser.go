@@ -234,7 +234,26 @@ func (p *Parser) parseWhileStmt() ast.Stmt {
 	return &ast.WhileStmt{Test: test, Body: body}
 }
 
-// statement ::= expression | variableDeclarationStatement | blockStatement | whileStatement;
+// ifStatement ::= 'if' expression blockStatement ('else if' expression blockStatement)* ('else' blockStatement)?;
+func (p *Parser) parseIfStmt() ast.Stmt {
+	p.next() // eat the IF
+	test := p.parseExpr()
+	consequent := p.parseBlockStmt()
+	var alternate ast.Stmt
+	if !p.isEnd() && p.current().Type == ELSE {
+		p.next() // eat the ELSE
+		if p.current().Type == IF {
+			alternate = p.parseIfStmt()
+		} else {
+			alternate = p.parseBlockStmt()
+		}
+	}
+
+	return &ast.IfStmt{Test: test, Consequent: consequent, Alternate: alternate}
+
+}
+
+// statement ::= expression | variableDeclarationStatement | blockStatement | whileStatement | ifStatement;
 func (p *Parser) parseStmt() ast.Stmt {
 
 	switch p.current().Type {
@@ -244,6 +263,8 @@ func (p *Parser) parseStmt() ast.Stmt {
 		return p.parseBlockStmt()
 	case WHILE:
 		return p.parseWhileStmt()
+	case IF:
+		return p.parseIfStmt()
 	default:
 		ex := p.parseExpr()
 		return &ast.ExprStmt{Expr: ex}
@@ -266,4 +287,8 @@ func (p *Parser) current() *Token {
 
 func (p *Parser) next() {
 	p.pos++
+}
+
+func (p *Parser) isEnd() bool {
+	return p.pos >= p.len
 }

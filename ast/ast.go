@@ -69,10 +69,17 @@ type WhileStmt struct {
 	Body Stmt
 }
 
+type IfStmt struct {
+	Test       Expr
+	Consequent Stmt
+	Alternate  Stmt
+}
+
 func (e *ExprStmt) stmtNode()   {}
 func (v *VarDecStmt) stmtNode() {}
 func (b *BlockStmt) stmtNode()  {}
 func (w *WhileStmt) stmtNode()  {}
+func (i *IfStmt) stmtNode()     {}
 
 func (e *ExprStmt) String() string { return fmt.Sprintf("expressionStatement(%s)", e.Expr) }
 func (v *VarDecStmt) String() string {
@@ -88,6 +95,13 @@ func (b *BlockStmt) String() string {
 }
 func (w *WhileStmt) String() string {
 	return fmt.Sprintf("whileStatement(%s, %s)", w.Test, w.Body)
+}
+func (i *IfStmt) String() string {
+	alternate := "nil"
+	if i.Alternate != nil {
+		alternate = fmt.Sprintf("%s", i.Alternate)
+	}
+	return fmt.Sprintf("ifStatement(%s, %s, %s)", i.Test, i.Consequent, alternate)
 }
 
 type Program struct{ Stmts []Stmt }
