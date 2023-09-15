@@ -5,6 +5,9 @@ primaryExpression ::= identifier | number | boolean | '(' expression ')' | array
 
 callExpression ::= identifier '(' (identifier (',' identifier)*)? ')';
 
+(* I will want to change identifier to expression *)
+sliceExpression ::= identifier '[' expression ':' expression (':' expression)? ']'; 
+
 multiplicativeOperator ::= '*' | '/' | '**' | '%';
 multiplicativeExpression ::= primaryExpression (multiplicativeOperator primaryExpression)*;
 
@@ -16,7 +19,8 @@ expression ::= primaryExpression | additiveExpression;
 expressionStatement ::= expression;
 blockStatement ::= '{' statement* '}';
 
-variableDeclarationStatement ::= 'let' identifier '=' expression; (* I will get rid of this one*)
+(* I will get rid of this one*)
+variableDeclarationStatement ::= 'let' identifier '=' expression; 
 variableAssignmentStatement ::= identifier ('=' | ':=' ) expression;
 
 whileStatement ::= 'while' [expression]  blockStatement;

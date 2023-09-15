@@ -115,6 +115,8 @@ func (j *JavascriptCodeGenerator) generateExpr(expr ast.Expr) string {
 		return j.generateBinaryExpr(expr)
 	case *ast.CallExpr:
 		return j.generateCallExpr(expr)
+	case *ast.SliceExpr:
+		return j.generateSliceExpr(expr)
 	case *ast.ArrayExpr:
 		return j.generateArrayExpr(expr)
 	default:
@@ -149,6 +151,20 @@ func (j *JavascriptCodeGenerator) generateCallExpr(expr *ast.CallExpr) string {
 	}
 
 	return fmt.Sprintf("%s(%s)", funcName, strings.Join(args, ", "))
+}
+
+func (j *JavascriptCodeGenerator) generateSliceExpr(expr *ast.SliceExpr) string {
+	id := expr.Id.Name
+	low := j.generateExpr(expr.Low)
+	high := j.generateExpr(expr.High)
+
+	slice := fmt.Sprintf("%s.slice(%s, %s)", id, low, high)
+
+	if expr.Step != nil && expr.Step.(*ast.NumberExpr).Val != 1 {
+		step := j.generateExpr(expr.Step)
+		slice = fmt.Sprintf("%s.filter((_, i) => i %% %s === 0)", slice, step)
+	}
+	return slice
 }
 
 func (j *JavascriptCodeGenerator) generateArrayExpr(expr *ast.ArrayExpr) string {

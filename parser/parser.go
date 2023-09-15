@@ -95,6 +95,8 @@ func (p *Parser) parsePrimaryExpr() ast.Expr {
 		// if followed by LPAREN, then it's a call expression
 		if p.pos+1 < p.len && p.tokens[p.pos+1].Type == LPAREN {
 			return p.parseCallExpr()
+		} else if p.pos+1 < p.len && p.tokens[p.pos+1].Type == LBRACK {
+			return p.parseSliceExpr()
 		} else {
 			return p.parseIdentifierExpr()
 		}
@@ -138,6 +140,34 @@ func (p *Parser) parseCallExpr() ast.Expr {
 		Callee: calleeId.(*ast.IdentifierExpr),
 		Args:   args,
 	}
+
+}
+
+// sliceExpression ::= identifier '[' expression ':' expression ' (':' expression)?]';
+func (p *Parser) parseSliceExpr() ast.Expr {
+	id := p.parseIdentifierExpr()
+	if p.current().Type != LBRACK {
+		fmt.Println("BOOO!")
+	}
+	p.next()
+	low := p.parseExpr()
+	if p.current().Type != COLON {
+		fmt.Println("BOOO!")
+	}
+	p.next()
+	high := p.parseExpr()
+
+	var step ast.Expr
+	if p.current().Type == COLON {
+		p.next()
+		step = p.parseExpr()
+	}
+
+	if p.current().Type != RBRACK {
+		fmt.Println("BOOO!")
+	}
+	p.next()
+	return &ast.SliceExpr{Id: id.(*ast.IdentifierExpr), Low: low, High: high, Step: step}
 
 }
 

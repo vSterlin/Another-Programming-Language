@@ -28,6 +28,13 @@ type ArrayExpr struct {
 	Elements []Expr
 }
 
+type SliceExpr struct {
+	Id   *IdentifierExpr
+	Low  Expr
+	High Expr
+	Step Expr
+}
+
 func (n *NumberExpr) exprNode()     {}
 func (v *IdentifierExpr) exprNode() {}
 func (b *BooleanExpr) exprNode()    {}
@@ -35,6 +42,7 @@ func (s *StringExpr) exprNode()     {}
 func (b *BinaryExpr) exprNode()     {}
 func (c *CallExpr) exprNode()       {}
 func (a *ArrayExpr) exprNode()      {}
+func (s *SliceExpr) exprNode()      {}
 
 func (n *NumberExpr) String() string     { return fmt.Sprintf("numberExpression(%d)", n.Val) }
 func (b *BooleanExpr) String() string    { return fmt.Sprintf("booleanExpression(%t)", b.Val) }
@@ -48,6 +56,10 @@ func (c *CallExpr) String() string {
 }
 func (a *ArrayExpr) String() string {
 	return fmt.Sprintf("arrayExpression(%s)", a.Elements)
+}
+
+func (s *SliceExpr) String() string {
+	return fmt.Sprintf("sliceExpression(%s, %s, %s, %s)", s.Id, s.Low, s.High, s.Step)
 }
 
 // Statements

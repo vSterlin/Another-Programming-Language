@@ -41,6 +41,7 @@ const (
 	RBRACE
 
 	COMMA
+	COLON
 
 	operator_end
 
@@ -98,6 +99,7 @@ var operators map[string]TokenType = map[string]TokenType{
 	"}": RBRACE,
 
 	",": COMMA,
+	":": COLON,
 }
 
 func NewLexer(input string) *Lexer {

@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"language/codegen"
 	"language/lexer"
 	"language/parser"
@@ -10,14 +9,12 @@ import (
 
 func main() {
 	l := lexer.NewLexer(`
-	func add(a, b) {
-		a + b
-	}
-
-	add(1, 2)
+	x := [1,2,3,4,5,6,7,8,9,10]
+	y = x[1:8]
+	z = y[1:5:2]
 	`)
 	tokens, _ := l.GetTokens()
-	fmt.Println(tokens)
+	// fmt.Println(tokens)
 	p := parser.NewParser(tokens)
 
 	prog := p.ParseProgram()
