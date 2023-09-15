@@ -3,7 +3,7 @@ arrayExpression ::= '[' (expression (',' expression)*)? ']';
 
 primaryExpression ::= identifier | number | boolean | '(' expression ')' | arrayExpression;
 
-callExpression ::= identifier '(' expression ')'; (* accept more params *)
+callExpression ::= identifier '(' (identifier (',' identifier)*)? ')';
 
 multiplicativeOperator ::= '*' | '/' | '**' | '%';
 multiplicativeExpression ::= primaryExpression (multiplicativeOperator primaryExpression)*;

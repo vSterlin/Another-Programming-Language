@@ -136,15 +136,19 @@ var globalFuncs map[string]string = map[string]string{
 }
 
 func (j *JavascriptCodeGenerator) generateCallExpr(expr *ast.CallExpr) string {
-	// TODO: handle multiple args
-	arg := j.generateExpr(expr.Args[0])
+
+	args := []string{}
+	for _, arg := range expr.Args {
+		arg := j.generateExpr(arg)
+		args = append(args, arg)
+	}
 	funcName := expr.Callee.Name
 
 	if val, ok := globalFuncs[funcName]; ok {
 		funcName = val
 	}
 
-	return fmt.Sprintf("%s(%s)", funcName, arg)
+	return fmt.Sprintf("%s(%s)", funcName, strings.Join(args, ", "))
 }
 
 func (j *JavascriptCodeGenerator) generateArrayExpr(expr *ast.ArrayExpr) string {

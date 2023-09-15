@@ -13,6 +13,8 @@ func main() {
 	func add(a, b) {
 		a + b
 	}
+
+	add(1, 2)
 	`)
 	tokens, _ := l.GetTokens()
 	fmt.Println(tokens)

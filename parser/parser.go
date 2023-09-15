@@ -114,8 +114,7 @@ func (p *Parser) parsePrimaryExpr() ast.Expr {
 	return nil
 }
 
-// TODO: this is temporary, it should take 0+ params not exactly 1
-// callExpression ::= identifier '(' expression ')';
+// callExpression ::= identifier '(' (identifier (',' identifier)*)? ')';
 func (p *Parser) parseCallExpr() ast.Expr {
 
 	calleeId := p.parseIdentifierExpr()
@@ -124,14 +123,20 @@ func (p *Parser) parseCallExpr() ast.Expr {
 	}
 	p.next()
 
-	arg := p.parseExpr()
-
+	args := []ast.Expr{}
+	for !p.isEnd() && p.current().Type != RPAREN {
+		arg := p.parseExpr()
+		args = append(args, arg)
+		if p.current().Type == COMMA {
+			p.next()
+		}
+	}
 	// eat the RPAREN
 	p.next()
 
 	return &ast.CallExpr{
 		Callee: calleeId.(*ast.IdentifierExpr),
-		Args:   []ast.Expr{arg},
+		Args:   args,
 	}
 
 }
