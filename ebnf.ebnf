@@ -17,6 +17,7 @@ expression ::= primaryExpression | additiveExpression;
 expressionStatement ::= expression;
 blockStatement ::= '{' statement* '}';
 variableDeclarationStatement ::= 'let' identifier '=' expression;
+whileStatement ::= 'while' [expression]  blockStatement;
 
-statement ::= expressionStatement | variableDeclarationStatement | blockStatement;
+statement ::= expressionStatement | variableDeclarationStatement | blockStatement | whileStatement;
 program ::= statement*;

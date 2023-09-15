@@ -34,9 +34,17 @@ func (j *JavascriptCodeGenerator) generateStmt(stmt ast.Stmt) string {
 		return j.generateExpr(stmt.Expr)
 	case *ast.BlockStmt:
 		return j.generateBlockStmt(stmt)
+	case *ast.WhileStmt:
+		return j.generateWhileStmt(stmt)
 	default:
 		return ""
 	}
+}
+
+func (j *JavascriptCodeGenerator) generateWhileStmt(stmt *ast.WhileStmt) string {
+	test := j.generateExpr(stmt.Test)
+	body := j.generateStmt(stmt.Body)
+	return fmt.Sprintf("while (%s) %s", test, body)
 }
 
 func (j *JavascriptCodeGenerator) generateBlockStmt(stmt *ast.BlockStmt) string {

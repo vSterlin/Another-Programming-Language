@@ -13,6 +13,7 @@ const (
 	LET
 	IF
 	ELSE
+	WHILE
 	RETURN
 
 	keyword_end
@@ -65,6 +66,7 @@ var keywords map[string]TokenType = map[string]TokenType{
 	"let":    LET,
 	"if":     IF,
 	"else":   ELSE,
+	"while":  WHILE,
 	"return": RETURN,
 
 	"true":  BOOLEAN,
@@ -249,6 +251,8 @@ func (t *Token) String() string {
 		return "number(" + t.Value + ")"
 	case STRING:
 		return "string(\"" + t.Value + "\")"
+	case BOOLEAN:
+		return "boolean(" + t.Value + ")"
 	default:
 		return "unknown"
 	}

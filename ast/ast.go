@@ -64,9 +64,15 @@ type BlockStmt struct {
 	Stmts []Stmt
 }
 
+type WhileStmt struct {
+	Test Expr
+	Body Stmt
+}
+
 func (e *ExprStmt) stmtNode()   {}
 func (v *VarDecStmt) stmtNode() {}
 func (b *BlockStmt) stmtNode()  {}
+func (w *WhileStmt) stmtNode()  {}
 
 func (e *ExprStmt) String() string { return fmt.Sprintf("expressionStatement(%s)", e.Expr) }
 func (v *VarDecStmt) String() string {
@@ -79,6 +85,9 @@ func (b *BlockStmt) String() string {
 	}
 	stmts = strings.TrimSpace(stmts)
 	return fmt.Sprintf("blockStatement(%s)", stmts)
+}
+func (w *WhileStmt) String() string {
+	return fmt.Sprintf("whileStatement(%s, %s)", w.Test, w.Body)
 }
 
 type Program struct{ Stmts []Stmt }

@@ -10,12 +10,8 @@ import (
 
 func main() {
 	l := lexer.NewLexer(`
-		{
-			{
-				(1 - 2) * 3
-			}
-		}
-	
+		while {}
+		while true {}
 	`)
 	tokens, _ := l.GetTokens()
 	// fmt.Println(tokens)

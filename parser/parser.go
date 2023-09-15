@@ -221,7 +221,20 @@ func (p *Parser) parseBlockStmt() ast.Stmt {
 	return &ast.BlockStmt{Stmts: stmts}
 }
 
-// statement ::= expression | variableDeclarationStatement | blockStatement;
+// whileStatement ::= 'while' [expression] blockStatement;
+func (p *Parser) parseWhileStmt() ast.Stmt {
+	p.next() // eat the WHILE
+	var test ast.Expr
+	if p.current().Type == LBRACE {
+		test = &ast.BooleanExpr{Val: true}
+	} else {
+		test = p.parseExpr()
+	}
+	body := p.parseBlockStmt()
+	return &ast.WhileStmt{Test: test, Body: body}
+}
+
+// statement ::= expression | variableDeclarationStatement | blockStatement | whileStatement;
 func (p *Parser) parseStmt() ast.Stmt {
 
 	switch p.current().Type {
@@ -229,6 +242,8 @@ func (p *Parser) parseStmt() ast.Stmt {
 		return p.parseVarDecStmt()
 	case LBRACE:
 		return p.parseBlockStmt()
+	case WHILE:
+		return p.parseWhileStmt()
 	default:
 		ex := p.parseExpr()
 		return &ast.ExprStmt{Expr: ex}

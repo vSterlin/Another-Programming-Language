@@ -77,3 +77,33 @@ func TestParseArrayExprEmpty(t *testing.T) {
 	}
 
 }
+
+func TestParseWhileStmt(t *testing.T) {
+	l := lexer.NewLexer(`
+		while (true) {}
+		while {}
+	`)
+
+	tokens, _ := l.GetTokens()
+
+	p := NewParser(tokens)
+
+	stmt := p.parseWhileStmt()
+	stmt2 := p.parseWhileStmt()
+
+	whileStmt, ok := stmt.(*ast.WhileStmt)
+	whileStmt2, ok2 := stmt2.(*ast.WhileStmt)
+
+	if !ok || !ok2 {
+		t.Errorf("Expected WhileStmt, got: %T", stmt)
+	}
+
+	if whileStmt.Test.(*ast.BooleanExpr).Val != true {
+		t.Errorf("Expected true, got: %t", whileStmt.Test.(*ast.BooleanExpr).Val)
+	}
+
+	if whileStmt2.Test.(*ast.BooleanExpr).Val != whileStmt.Test.(*ast.BooleanExpr).Val {
+		t.Errorf("Expected true, got: %t", whileStmt2.Test.(*ast.BooleanExpr).Val)
+	}
+
+}
