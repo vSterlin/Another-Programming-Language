@@ -68,9 +68,29 @@ func (p *Parser) parseParenExpr() ast.Expr {
 	return val
 }
 
-// primaryExpression ::= identifier | number | boolean | string | '(' expression ')' | callExpression
+// arrayExpression ::= '[' (expression (',' expression)*)? ']';
+func (p *Parser) parseArrayExpr() ast.Expr {
+	p.next() // eat the LBRACK
+	exprs := []ast.Expr{}
+	for p.pos < p.len && p.current().Type != RBRACK {
+		expr := p.parseExpr()
+		exprs = append(exprs, expr)
+		if p.current().Type == COMMA {
+			p.next()
+		}
+
+	}
+	// eat the RBRACK
+	p.next()
+	return &ast.ArrayExpr{Elements: exprs}
+
+}
+
+// primaryExpression ::= identifier | number | boolean | string | '(' expression ')' | callExpression | arrayExpression;
 func (p *Parser) parsePrimaryExpr() ast.Expr {
+
 	switch p.current().Type {
+
 	case IDENTIFIER:
 		// if followed by LPAREN, then it's a call expression
 		if p.pos+1 < p.len && p.tokens[p.pos+1].Type == LPAREN {
@@ -85,9 +105,10 @@ func (p *Parser) parsePrimaryExpr() ast.Expr {
 		return p.parseBooleanExpr()
 	case STRING:
 		return p.parseStringExpr()
-
 	case LPAREN:
 		return p.parseParenExpr()
+	case LBRACK:
+		return p.parseArrayExpr()
 
 	}
 
@@ -95,7 +116,7 @@ func (p *Parser) parsePrimaryExpr() ast.Expr {
 }
 
 // TODO: this is temporary, it should take 0+ params not exactly 1
-// callExpression ::= identifier '(' expression ')'
+// callExpression ::= identifier '(' expression ')';
 func (p *Parser) parseCallExpr() ast.Expr {
 
 	calleeId := p.parseIdentifierExpr()
@@ -116,8 +137,8 @@ func (p *Parser) parseCallExpr() ast.Expr {
 
 }
 
-// additiveOperator ::= '+' | '-'
-// additiveExpression ::= multiplicativeExpression (additiveOperator multiplicativeExpression)*
+// additiveOperator ::= '+' | '-';
+// additiveExpression ::= multiplicativeExpression (additiveOperator multiplicativeExpression)*;
 func (p *Parser) parseAdditiveExpr() ast.Expr {
 	lhs := p.parseMultiplicativeExpr()
 
@@ -137,8 +158,8 @@ func (p *Parser) parseAdditiveExpr() ast.Expr {
 	return lhs
 }
 
-// multiplicativeOperator ::= '*' | '/'
-// multiplicativeExpression ::= primaryExpression (multiplicativeOperator primaryExpression)*
+// multiplicativeOperator ::= '*' | '/';
+// multiplicativeExpression ::= primaryExpression (multiplicativeOperator primaryExpression)*;
 func (p *Parser) parseMultiplicativeExpr() ast.Expr {
 	lhs := p.parsePrimaryExpr()
 
@@ -158,12 +179,12 @@ func (p *Parser) parseMultiplicativeExpr() ast.Expr {
 	return lhs
 }
 
-// expression ::= primaryExpression | additiveExpression
+// expression ::= primaryExpression | additiveExpression;
 func (p *Parser) parseExpr() ast.Expr {
 	return p.parseAdditiveExpr()
 }
 
-// variableDeclarationStatement ::= 'let' identifier '=' expression
+// variableDeclarationStatement ::= 'let' identifier '=' expression;
 func (p *Parser) parseVarDecStmt() ast.Stmt {
 	p.next()
 	id := p.parseIdentifierExpr()
@@ -178,7 +199,7 @@ func (p *Parser) parseVarDecStmt() ast.Stmt {
 	return &ast.VarDecStmt{Id: id.(*ast.IdentifierExpr), Init: ex}
 }
 
-// statement ::= expression | variableDeclarationStatement
+// statement ::= expression | variableDeclarationStatement;
 func (p *Parser) parseStmt() ast.Stmt {
 
 	if p.current().Type == LET {
@@ -189,7 +210,7 @@ func (p *Parser) parseStmt() ast.Stmt {
 	}
 }
 
-// program ::= statement*
+// program ::= statement*;
 func (p *Parser) ParseProgram() *ast.Program {
 	var stmts []ast.Stmt
 	for p.pos < p.len {

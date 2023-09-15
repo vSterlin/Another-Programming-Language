@@ -50,6 +50,8 @@ func (j *JavascriptCodeGenerator) generateExpr(expr ast.Expr) string {
 		return j.generateBinaryExpr(expr)
 	case *ast.CallExpr:
 		return j.generateCallExpr(expr)
+	case *ast.ArrayExpr:
+		return j.generateArrayExpr(expr)
 	default:
 		return ""
 	}
@@ -73,4 +75,12 @@ func (j *JavascriptCodeGenerator) generateCallExpr(expr *ast.CallExpr) string {
 	}
 
 	return fmt.Sprintf("%s(%s)", funcName, arg)
+}
+
+func (j *JavascriptCodeGenerator) generateArrayExpr(expr *ast.ArrayExpr) string {
+	elements := []string{}
+	for _, e := range expr.Elements {
+		elements = append(elements, j.generateExpr(e))
+	}
+	return fmt.Sprintf("[%s]", strings.Join(elements, ", "))
 }

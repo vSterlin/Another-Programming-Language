@@ -21,12 +21,17 @@ type CallExpr struct {
 	Args   []Expr
 }
 
+type ArrayExpr struct {
+	Elements []Expr
+}
+
 func (n *NumberExpr) exprNode()     {}
 func (v *IdentifierExpr) exprNode() {}
 func (b *BooleanExpr) exprNode()    {}
 func (s *StringExpr) exprNode()     {}
 func (b *BinaryExpr) exprNode()     {}
 func (c *CallExpr) exprNode()       {}
+func (a *ArrayExpr) exprNode()      {}
 
 func (n *NumberExpr) String() string     { return fmt.Sprintf("numberExpression(%d)", n.Val) }
 func (b *BooleanExpr) String() string    { return fmt.Sprintf("booleanExpression(%t)", b.Val) }
@@ -37,6 +42,9 @@ func (b *BinaryExpr) String() string {
 }
 func (c *CallExpr) String() string {
 	return fmt.Sprintf("callExpression(%s, %s)", c.Callee, c.Args)
+}
+func (a *ArrayExpr) String() string {
+	return fmt.Sprintf("arrayExpression(%s)", a.Elements)
 }
 
 // Statements

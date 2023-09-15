@@ -1,5 +1,6 @@
 
-arrayExpression ::= '[' expression (',' expression)* ']';
+arrayExpression ::= '[' (expression (',' expression)*)? ']';
+
 primaryExpression ::= identifier | number | boolean | '(' expression ')' | arrayExpression
 
 // TODO accept more params;
