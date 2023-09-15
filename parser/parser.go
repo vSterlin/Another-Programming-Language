@@ -158,20 +158,31 @@ func (p *Parser) parseAdditiveExpr() ast.Expr {
 	return lhs
 }
 
-// multiplicativeOperator ::= '*' | '/';
+// multiplicativeOperator ::= '*' | '/' | '**' | '%';
 // multiplicativeExpression ::= primaryExpression (multiplicativeOperator primaryExpression)*;
 func (p *Parser) parseMultiplicativeExpr() ast.Expr {
 	lhs := p.parsePrimaryExpr()
 
-	for p.pos < p.len && (p.current().Type == MUL || p.current().Type == DIV) {
+	for p.pos < p.len {
+
 		curr := p.current()
-		p.next()
-		rhs := p.parsePrimaryExpr()
 		switch curr.Type {
-		case MUL:
-			lhs = &ast.BinaryExpr{Op: "*", Lhs: lhs, Rhs: rhs}
-		case DIV:
-			lhs = &ast.BinaryExpr{Op: "/", Lhs: lhs, Rhs: rhs}
+		case MUL, DIV, POW, MOD:
+			p.next()
+			rhs := p.parsePrimaryExpr()
+			switch curr.Type {
+			case MUL:
+				lhs = &ast.BinaryExpr{Op: "*", Lhs: lhs, Rhs: rhs}
+			case DIV:
+				lhs = &ast.BinaryExpr{Op: "/", Lhs: lhs, Rhs: rhs}
+			case POW:
+				lhs = &ast.BinaryExpr{Op: "**", Lhs: lhs, Rhs: rhs}
+			case MOD:
+				lhs = &ast.BinaryExpr{Op: "%", Lhs: lhs, Rhs: rhs}
+			default:
+				return lhs
+			}
+
 		default:
 			return lhs
 		}

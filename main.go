@@ -10,11 +10,9 @@ import (
 
 func main() {
 	l := lexer.NewLexer(`
-		let x = [1, 2]
+		let x = 2 ** 2 ** 10
 	`)
-
 	tokens, _ := l.GetTokens()
-
 	fmt.Println(tokens)
 	p := parser.NewParser(tokens)
 	prog := p.ParseProgram()

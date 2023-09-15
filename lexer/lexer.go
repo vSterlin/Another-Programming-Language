@@ -25,6 +25,8 @@ const (
 	SUB
 	MUL
 	DIV
+	POW
+	MOD
 
 	LPAREN
 	RPAREN
@@ -70,10 +72,12 @@ var operators map[string]TokenType = map[string]TokenType{
 
 	"=": ASSIGN,
 
-	"+": ADD,
-	"-": SUB,
-	"*": MUL,
-	"/": DIV,
+	"+":  ADD,
+	"-":  SUB,
+	"*":  MUL,
+	"/":  DIV,
+	"**": POW,
+	"%":  MOD,
 
 	"(": LPAREN,
 	")": RPAREN,
@@ -172,6 +176,13 @@ func (l *Lexer) tryTokenizeString() *Token {
 func (l *Lexer) tryTokenizeOperator() *Token {
 	if tokType, ok := operators[string(l.current())]; ok {
 		val := string(l.current())
+		if tokType == MUL {
+			if l.pos < (l.len-1) && l.peek() == '*' {
+				val += string(l.peek())
+				l.next()
+				tokType = POW
+			}
+		}
 		l.next()
 		return &Token{Type: tokType, Value: val}
 	}
@@ -185,6 +196,10 @@ func (l *Lexer) current() rune {
 
 func (l *Lexer) next() {
 	l.pos++
+}
+
+func (l *Lexer) peek() rune {
+	return rune(l.input[l.pos+1])
 }
 
 func (l *Lexer) skipWhitespace() {

@@ -58,7 +58,12 @@ func (j *JavascriptCodeGenerator) generateExpr(expr ast.Expr) string {
 }
 
 func (j *JavascriptCodeGenerator) generateBinaryExpr(expr *ast.BinaryExpr) string {
-	return fmt.Sprintf("(%s %s %s)", j.generateExpr(expr.Lhs), expr.Op, j.generateExpr(expr.Rhs))
+	lhs := j.generateExpr(expr.Lhs)
+	rhs := j.generateExpr(expr.Rhs)
+	if expr.Op == "**" {
+		return fmt.Sprintf("Math.pow(%s, %s)", lhs, rhs)
+	}
+	return fmt.Sprintf("(%s %s %s)", lhs, expr.Op, rhs)
 }
 
 var globalFuncs map[string]string = map[string]string{

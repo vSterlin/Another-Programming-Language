@@ -6,7 +6,7 @@ primaryExpression ::= identifier | number | boolean | '(' expression ')' | array
 // TODO accept more params;
 callExpression ::= identifier '(' expression ')' 
 
-multiplicativeOperator ::= '*' | '/';
+multiplicativeOperator ::= '*' | '/' | '**' | '%';
 multiplicativeExpression ::= primaryExpression (multiplicativeOperator primaryExpression)*;
 
 additiveOperator ::= '+' | '-';
