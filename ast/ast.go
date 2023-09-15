@@ -1,6 +1,9 @@
 package ast
 
-import "fmt"
+import (
+	"fmt"
+	"strings"
+)
 
 // Expressions
 type Expr interface{ exprNode() }
@@ -57,12 +60,25 @@ type VarDecStmt struct {
 	Init Expr
 }
 
+type BlockStmt struct {
+	Stmts []Stmt
+}
+
 func (e *ExprStmt) stmtNode()   {}
 func (v *VarDecStmt) stmtNode() {}
+func (b *BlockStmt) stmtNode()  {}
 
 func (e *ExprStmt) String() string { return fmt.Sprintf("expressionStatement(%s)", e.Expr) }
 func (v *VarDecStmt) String() string {
 	return fmt.Sprintf("variableDeclarationStatement(%s, %s)", v.Id, v.Init)
+}
+func (b *BlockStmt) String() string {
+	stmts := ""
+	for _, stmt := range b.Stmts {
+		stmts += fmt.Sprintf("%s\n", stmt)
+	}
+	stmts = strings.TrimSpace(stmts)
+	return fmt.Sprintf("blockStatement(%s)", stmts)
 }
 
 type Program struct{ Stmts []Stmt }
@@ -73,5 +89,7 @@ func (p *Program) String() string {
 	for _, stmt := range p.Stmts {
 		stmts += fmt.Sprintf("%s\n", stmt)
 	}
+
+	stmts = strings.TrimSpace(stmts)
 	return fmt.Sprintf("program(%s)", stmts)
 }

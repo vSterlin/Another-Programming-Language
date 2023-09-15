@@ -34,6 +34,9 @@ const (
 	LBRACK
 	RBRACK
 
+	LBRACE
+	RBRACE
+
 	COMMA
 
 	operator_end
@@ -84,6 +87,9 @@ var operators map[string]TokenType = map[string]TokenType{
 
 	"[": LBRACK,
 	"]": RBRACK,
+
+	"{": LBRACE,
+	"}": RBRACE,
 
 	",": COMMA,
 }

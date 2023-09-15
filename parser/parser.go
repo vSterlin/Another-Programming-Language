@@ -94,7 +94,6 @@ func (p *Parser) parsePrimaryExpr() ast.Expr {
 	case IDENTIFIER:
 		// if followed by LPAREN, then it's a call expression
 		if p.pos+1 < p.len && p.tokens[p.pos+1].Type == LPAREN {
-			fmt.Println("CALL EXPRESSION")
 			return p.parseCallExpr()
 		} else {
 			return p.parseIdentifierExpr()
@@ -210,12 +209,27 @@ func (p *Parser) parseVarDecStmt() ast.Stmt {
 	return &ast.VarDecStmt{Id: id.(*ast.IdentifierExpr), Init: ex}
 }
 
-// statement ::= expression | variableDeclarationStatement;
+// blockStatement ::= '{' statement* '}';
+func (p *Parser) parseBlockStmt() ast.Stmt {
+	p.next() // eat the LBRACE
+	var stmts []ast.Stmt
+	for p.pos < p.len && p.current().Type != RBRACE {
+		stmts = append(stmts, p.parseStmt())
+	}
+	// eat the RBRACE
+	p.next()
+	return &ast.BlockStmt{Stmts: stmts}
+}
+
+// statement ::= expression | variableDeclarationStatement | blockStatement;
 func (p *Parser) parseStmt() ast.Stmt {
 
-	if p.current().Type == LET {
+	switch p.current().Type {
+	case LET:
 		return p.parseVarDecStmt()
-	} else {
+	case LBRACE:
+		return p.parseBlockStmt()
+	default:
 		ex := p.parseExpr()
 		return &ast.ExprStmt{Expr: ex}
 	}
