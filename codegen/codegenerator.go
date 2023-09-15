@@ -19,15 +19,34 @@ func NewJavascriptCodeGenerator() *JavascriptCodeGenerator {
 func (j *JavascriptCodeGenerator) Generate(program *ast.Program) string {
 	code := ""
 	for _, stmt := range program.Stmts {
-		switch stmt := stmt.(type) {
-		case *ast.VarDecStmt:
-			code += j.generateVarDecStmt(stmt) + "\n"
-		case *ast.ExprStmt:
-			code += j.generateExpr(stmt.Expr) + "\n"
-		}
+		code += fmt.Sprintf("%s\n", j.generateStmt(stmt))
 	}
 
 	code = strings.TrimSpace(code)
+	return code
+}
+
+func (j *JavascriptCodeGenerator) generateStmt(stmt ast.Stmt) string {
+	switch stmt := stmt.(type) {
+	case *ast.VarDecStmt:
+		return j.generateVarDecStmt(stmt)
+	case *ast.ExprStmt:
+		return j.generateExpr(stmt.Expr)
+	case *ast.BlockStmt:
+		return j.generateBlockStmt(stmt)
+	default:
+		return ""
+	}
+}
+
+func (j *JavascriptCodeGenerator) generateBlockStmt(stmt *ast.BlockStmt) string {
+	code := "{\n"
+	for _, stmt := range stmt.Stmts {
+		stmtCode := j.generateStmt(stmt)
+		code += stmtCode + "\n"
+	}
+
+	code += "}"
 	return code
 }
 

@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"language/codegen"
 	"language/lexer"
 	"language/parser"
 	"os"
@@ -10,11 +11,11 @@ import (
 func main() {
 	l := lexer.NewLexer(`
 		{
-			let x = 1
+			{
+				(1 - 2) * 3
+			}
 		}
-		{
-			let y = 2
-		}
+	
 	`)
 	tokens, _ := l.GetTokens()
 	// fmt.Println(tokens)
@@ -22,10 +23,10 @@ func main() {
 	prog := p.ParseProgram()
 	fmt.Println(prog)
 
-	// cg := codegen.NewJavascriptCodeGenerator()
-	// code := cg.Generate(prog)
+	cg := codegen.NewJavascriptCodeGenerator()
+	code := cg.Generate(prog)
 
-	// writeToFile(code)
+	writeToFile(code)
 }
 
 func writeToFile(code string) {
