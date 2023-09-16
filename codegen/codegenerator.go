@@ -54,9 +54,18 @@ func (j *JavascriptCodeGenerator) generateStmt(stmt ast.Stmt) string {
 		return j.generateIfStmt(stmt)
 	case *ast.DeferStmt:
 		return j.generateDeferStmt(stmt)
+	case *ast.RangeStmt:
+		return j.generateRangeStmt(stmt)
 	default:
 		return ""
 	}
+}
+
+func (j *JavascriptCodeGenerator) generateRangeStmt(stmt *ast.RangeStmt) string {
+	id := stmt.Id.Name
+	expr := j.generateExpr(stmt.Expr)
+	body := j.generateStmt(stmt.Body)
+	return fmt.Sprintf("%s.forEach(%s => %s)", expr, id, body)
 }
 
 func (j *JavascriptCodeGenerator) generateDeferStmt(stmt *ast.DeferStmt) string {

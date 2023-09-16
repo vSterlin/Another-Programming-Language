@@ -150,6 +150,21 @@ func (p *Parser) parseDeferStmt() ast.Stmt {
 	return &ast.DeferStmt{Call: ex.(*ast.CallExpr)}
 }
 
+// rangeStatement ::= 'for' variableAssignmentStatement 'range' expression blockStatement;
+func (p *Parser) parseRangeStmt() ast.Stmt {
+
+	p.next() // eat the FOR
+	id := p.parseVarAssignStmt()
+	if p.current().Type != RANGE {
+		fmt.Println("parseRangeStmtError!")
+	}
+	p.next() // eat the RANGE
+	ex := p.parseExpr()
+	body := p.parseBlockStmt()
+
+	return &ast.RangeStmt{Id: id.(*ast.VarAssignStmt).Id, Expr: ex, Body: body.(*ast.BlockStmt)}
+}
+
 // sliceExpression ::= identifier '[' expression ':' expression ' (':' expression)?]';
 func (p *Parser) parseSliceExpr() ast.Expr {
 	id := p.parseIdentifierExpr()
@@ -332,7 +347,7 @@ func (p *Parser) parseIfStmt() ast.Stmt {
 
 // statement ::= expression | variableDeclarationStatement
 // | variableAssignmentStatement | blockStatement
-// | whileStatement | functionDeclaration | ifStatement;
+// | whileStatement | functionDeclaration | ifStatement | deferStatement | rangeStatement;
 func (p *Parser) parseStmt() ast.Stmt {
 
 	switch p.current().Type {
@@ -348,6 +363,8 @@ func (p *Parser) parseStmt() ast.Stmt {
 		return p.parseIfStmt()
 	case DEFER:
 		return p.parseDeferStmt()
+	case FOR:
+		return p.parseRangeStmt()
 	case IDENTIFIER:
 		return p.parseVarAssignStmt()
 	default:

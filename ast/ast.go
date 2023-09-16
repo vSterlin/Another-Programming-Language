@@ -103,6 +103,12 @@ type DeferStmt struct {
 	Call *CallExpr
 }
 
+type RangeStmt struct {
+	Id   *IdentifierExpr
+	Expr Expr
+	Body *BlockStmt
+}
+
 func (e *ExprStmt) stmtNode()      {}
 func (v *VarDecStmt) stmtNode()    {}
 func (v *VarAssignStmt) stmtNode() {}
@@ -111,6 +117,7 @@ func (w *WhileStmt) stmtNode()     {}
 func (f *FuncDecStmt) stmtNode()   {}
 func (i *IfStmt) stmtNode()        {}
 func (d *DeferStmt) stmtNode()     {}
+func (r *RangeStmt) stmtNode()     {}
 
 func (e *ExprStmt) String() string { return fmt.Sprintf("expressionStatement(%s)", e.Expr) }
 func (v *VarDecStmt) String() string {
@@ -145,6 +152,10 @@ func (i *IfStmt) String() string {
 
 func (d *DeferStmt) String() string {
 	return fmt.Sprintf("deferStatement(%s)", d.Call)
+}
+
+func (r *RangeStmt) String() string {
+	return fmt.Sprintf("rangeStatement(%s, %s, %s)", r.Id, r.Expr, r.Body)
 }
 
 type Program struct{ Stmts []Stmt }

@@ -26,6 +26,7 @@ variableAssignmentStatement ::= identifier ('=' | ':=' ) expression;
 
 whileStatement ::= 'while' [expression]  blockStatement;
 ifStatement ::= 'if' expression blockStatement ('else if' expression blockStatement)* ('else' blockStatement)?;
+rangeStatement ::= 'for' variableAssignmentStatement 'range' expression blockStatement;
 
 functionDeclaration ::= 'func' identifier '(' (identifier (',' identifier)*)? ')' blockStatement;
 

@@ -13,10 +13,12 @@ const (
 	LET
 	IF
 	ELSE
+	FOR
 	WHILE
 	FUNC
 	RETURN
 	DEFER
+	RANGE
 
 	keyword_end
 
@@ -70,10 +72,12 @@ var keywords map[string]TokenType = map[string]TokenType{
 	"let":    LET,
 	"if":     IF,
 	"else":   ELSE,
+	"for":    FOR,
 	"while":  WHILE,
 	"func":   FUNC,
 	"return": RETURN,
 	"defer":  DEFER,
+	"range":  RANGE,
 
 	"true":  BOOLEAN,
 	"false": BOOLEAN,

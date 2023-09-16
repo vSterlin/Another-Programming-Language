@@ -10,10 +10,8 @@ import (
 
 func main() {
 	l := lexer.NewLexer(`
-		func main() {
-			defer later()
-			defer laterTwo()
-			now()
+		for i := range [1,2,3] {
+			print(i)
 		}
 	`)
 	tokens, _ := l.GetTokens()
@@ -28,18 +26,6 @@ func main() {
 
 	writeToFile(code)
 
-}
-
-func now() {
-	fmt.Println("now")
-}
-
-func later() {
-	fmt.Println("later")
-}
-
-func laterTwo() {
-	fmt.Println("laterTwo")
 }
 
 func writeToFile(code string) {
