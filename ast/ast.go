@@ -99,6 +99,10 @@ type IfStmt struct {
 	Alternate  Stmt
 }
 
+type DeferStmt struct {
+	Call *CallExpr
+}
+
 func (e *ExprStmt) stmtNode()      {}
 func (v *VarDecStmt) stmtNode()    {}
 func (v *VarAssignStmt) stmtNode() {}
@@ -106,6 +110,7 @@ func (b *BlockStmt) stmtNode()     {}
 func (w *WhileStmt) stmtNode()     {}
 func (f *FuncDecStmt) stmtNode()   {}
 func (i *IfStmt) stmtNode()        {}
+func (d *DeferStmt) stmtNode()     {}
 
 func (e *ExprStmt) String() string { return fmt.Sprintf("expressionStatement(%s)", e.Expr) }
 func (v *VarDecStmt) String() string {
@@ -136,6 +141,10 @@ func (i *IfStmt) String() string {
 		alternate = fmt.Sprintf("%s", i.Alternate)
 	}
 	return fmt.Sprintf("ifStatement(%s, %s, %s)", i.Test, i.Consequent, alternate)
+}
+
+func (d *DeferStmt) String() string {
+	return fmt.Sprintf("deferStatement(%s)", d.Call)
 }
 
 type Program struct{ Stmts []Stmt }

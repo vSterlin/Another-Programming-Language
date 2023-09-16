@@ -16,6 +16,7 @@ const (
 	WHILE
 	FUNC
 	RETURN
+	DEFER
 
 	keyword_end
 
@@ -72,6 +73,7 @@ var keywords map[string]TokenType = map[string]TokenType{
 	"while":  WHILE,
 	"func":   FUNC,
 	"return": RETURN,
+	"defer":  DEFER,
 
 	"true":  BOOLEAN,
 	"false": BOOLEAN,

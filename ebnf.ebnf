@@ -18,6 +18,7 @@ expression ::= primaryExpression | additiveExpression;
 
 expressionStatement ::= expression;
 blockStatement ::= '{' statement* '}';
+deferStatement ::= 'defer' callExpression;
 
 (* I will get rid of this one*)
 variableDeclarationStatement ::= 'let' identifier '=' expression; 
@@ -28,6 +29,6 @@ ifStatement ::= 'if' expression blockStatement ('else if' expression blockStatem
 
 functionDeclaration ::= 'func' identifier '(' (identifier (',' identifier)*)? ')' blockStatement;
 
-statement ::= expressionStatement | variableDeclarationStatement | blockStatement | whileStatement;
+statement ::= expressionStatement | variableDeclarationStatement | blockStatement | whileStatement | ifStatement | functionDeclaration | deferStatement;
 
 program ::= statement*;

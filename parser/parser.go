@@ -60,7 +60,7 @@ func (p *Parser) parseParenExpr() ast.Expr {
 	curr := p.current()
 	if curr.Type != RPAREN {
 		//	TODO: return error
-		fmt.Println("BOOO!")
+		fmt.Println("parseParenExprError!")
 	}
 	// eat the RPAREN
 	p.next()
@@ -121,7 +121,7 @@ func (p *Parser) parseCallExpr() ast.Expr {
 
 	calleeId := p.parseIdentifierExpr()
 	if p.current().Type != LPAREN {
-		fmt.Println("BOOO!")
+		fmt.Println("parseCallExprError!")
 	}
 	p.next()
 
@@ -143,16 +143,23 @@ func (p *Parser) parseCallExpr() ast.Expr {
 
 }
 
+// deferStatement ::= 'defer' callExpression;
+func (p *Parser) parseDeferStmt() ast.Stmt {
+	p.next() // eat the DEFER
+	ex := p.parseCallExpr()
+	return &ast.DeferStmt{Call: ex.(*ast.CallExpr)}
+}
+
 // sliceExpression ::= identifier '[' expression ':' expression ' (':' expression)?]';
 func (p *Parser) parseSliceExpr() ast.Expr {
 	id := p.parseIdentifierExpr()
 	if p.current().Type != LBRACK {
-		fmt.Println("BOOO!")
+		fmt.Println("parseDeferStmtError 1!")
 	}
 	p.next()
 	low := p.parseExpr()
 	if p.current().Type != COLON {
-		fmt.Println("BOOO!")
+		fmt.Println("parseDeferStmtError 2!")
 	}
 	p.next()
 	high := p.parseExpr()
@@ -164,7 +171,7 @@ func (p *Parser) parseSliceExpr() ast.Expr {
 	}
 
 	if p.current().Type != RBRACK {
-		fmt.Println("BOOO!")
+		fmt.Println("parseDeferStmtError 3!")
 	}
 	p.next()
 	return &ast.SliceExpr{Id: id.(*ast.IdentifierExpr), Low: low, High: high, Step: step}
@@ -339,6 +346,8 @@ func (p *Parser) parseStmt() ast.Stmt {
 		return p.parseFuncDecStmt()
 	case IF:
 		return p.parseIfStmt()
+	case DEFER:
+		return p.parseDeferStmt()
 	case IDENTIFIER:
 		return p.parseVarAssignStmt()
 	default:

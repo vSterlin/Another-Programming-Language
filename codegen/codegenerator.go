@@ -18,10 +18,20 @@ func NewJavascriptCodeGenerator() *JavascriptCodeGenerator {
 
 func (j *JavascriptCodeGenerator) Generate(program *ast.Program) string {
 	code := ""
+	deferredStmts := []string{}
 	for _, stmt := range program.Stmts {
+		if stmt, ok := stmt.(*ast.DeferStmt); ok {
+			deferredStmts = append([]string{j.generateStmt(stmt)}, deferredStmts...)
+			continue
+		}
 		code += fmt.Sprintf("%s\n", j.generateStmt(stmt))
 	}
 
+	if len(deferredStmts) > 0 {
+		code += "\n"
+		code += strings.Join(deferredStmts, "\n")
+		code += "\n"
+	}
 	code = strings.TrimSpace(code)
 	return code
 }
@@ -42,11 +52,18 @@ func (j *JavascriptCodeGenerator) generateStmt(stmt ast.Stmt) string {
 		return j.generateFuncDecStmt(stmt)
 	case *ast.IfStmt:
 		return j.generateIfStmt(stmt)
+	case *ast.DeferStmt:
+		return j.generateDeferStmt(stmt)
 	default:
 		return ""
 	}
 }
 
+func (j *JavascriptCodeGenerator) generateDeferStmt(stmt *ast.DeferStmt) string {
+	call := j.generateExpr(stmt.Call)
+	// need to execute this call at the end of the statement it is in
+	return call
+}
 func (j *JavascriptCodeGenerator) generateIfStmt(stmt *ast.IfStmt) string {
 	test := j.generateExpr(stmt.Test)
 	consequent := j.generateStmt(stmt.Consequent)
@@ -78,11 +95,21 @@ func (j *JavascriptCodeGenerator) generateFuncDecStmt(stmt *ast.FuncDecStmt) str
 
 func (j *JavascriptCodeGenerator) generateBlockStmt(stmt *ast.BlockStmt) string {
 	code := "{\n"
+	deferredStmts := []string{}
 	for _, stmt := range stmt.Stmts {
+		if stmt, ok := stmt.(*ast.DeferStmt); ok {
+			deferredStmts = append([]string{j.generateStmt(stmt)}, deferredStmts...)
+			continue
+		}
 		stmtCode := j.generateStmt(stmt)
 		code += stmtCode + "\n"
 	}
 
+	if len(deferredStmts) > 0 {
+		code += "\n"
+		code += strings.Join(deferredStmts, "\n")
+		code += "\n"
+	}
 	code += "}"
 	return code
 }
