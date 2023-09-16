@@ -14,7 +14,13 @@ multiplicativeExpression ::= primaryExpression (multiplicativeOperator primaryEx
 additiveOperator ::= '+' | '-';
 additiveExpression ::= multiplicativeExpression (additiveOperator multiplicativeExpression)*;
 
-expression ::= primaryExpression | additiveExpression;
+relationalOperator ::= '<' | '>' | '<=' | '>=';
+relationalExpression ::= additiveExpression (relationalOperator additiveExpression)*;
+
+equalityOperator ::= '==' | '!=';
+equalityExpression ::= relationalExpression (equalityOperator relationalExpression)*;
+
+expression ::= equalityExpression;
 
 expressionStatement ::= expression;
 blockStatement ::= '{' statement* '}';

@@ -193,6 +193,59 @@ func (p *Parser) parseSliceExpr() ast.Expr {
 
 }
 
+// equalityExpression ::= relationalExpression (equalityOperator relationalExpression)*;
+func (p *Parser) parseEqualityExpr() ast.Expr {
+	lhs := p.parseRelationalExpr()
+
+	for !p.isEnd() {
+		switch p.current().Type {
+		case EQ, NEQ:
+			curr := p.current()
+			p.next()
+			rhs := p.parseRelationalExpr()
+			switch curr.Type {
+			case EQ:
+				lhs = &ast.BinaryExpr{Op: "==", Lhs: lhs, Rhs: rhs}
+			case NEQ:
+				lhs = &ast.BinaryExpr{Op: "!=", Lhs: lhs, Rhs: rhs}
+			}
+		default:
+			return lhs
+
+		}
+	}
+	return lhs
+}
+
+// relationalExpression ::= additiveExpression (relationalOperator additiveExpression)*;
+func (p *Parser) parseRelationalExpr() ast.Expr {
+	lhs := p.parseAdditiveExpr()
+
+	for !p.isEnd() {
+		switch p.current().Type {
+		case LT, GT, LTE, GTE:
+			curr := p.current()
+			p.next()
+			rhs := p.parseAdditiveExpr()
+			switch curr.Type {
+			case LT:
+				lhs = &ast.BinaryExpr{Op: "<", Lhs: lhs, Rhs: rhs}
+			case GT:
+				lhs = &ast.BinaryExpr{Op: ">", Lhs: lhs, Rhs: rhs}
+			case LTE:
+				lhs = &ast.BinaryExpr{Op: "<=", Lhs: lhs, Rhs: rhs}
+			case GTE:
+				lhs = &ast.BinaryExpr{Op: ">=", Lhs: lhs, Rhs: rhs}
+			}
+		default:
+			return lhs
+
+		}
+	}
+	return lhs
+
+}
+
 // additiveOperator ::= '+' | '-';
 // additiveExpression ::= multiplicativeExpression (additiveOperator multiplicativeExpression)*;
 func (p *Parser) parseAdditiveExpr() ast.Expr {
@@ -246,9 +299,9 @@ func (p *Parser) parseMultiplicativeExpr() ast.Expr {
 	return lhs
 }
 
-// expression ::= primaryExpression | additiveExpression;
+// expression ::= additiveExpression;
 func (p *Parser) parseExpr() ast.Expr {
-	return p.parseAdditiveExpr()
+	return p.parseEqualityExpr()
 }
 
 // TODO: I will get rid of this

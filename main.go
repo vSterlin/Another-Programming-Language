@@ -10,9 +10,7 @@ import (
 
 func main() {
 	l := lexer.NewLexer(`
-		for i := range [1,2,3] {
-			print(i)
-		}
+		i == 2 > 2
 	`)
 	tokens, _ := l.GetTokens()
 	fmt.Println(tokens)

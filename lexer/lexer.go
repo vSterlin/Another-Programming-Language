@@ -34,6 +34,13 @@ const (
 	POW
 	MOD
 
+	GT
+	LT
+	GTE
+	LTE
+	EQ
+	NEQ
+
 	LPAREN
 	RPAREN
 
@@ -94,6 +101,13 @@ var operators map[string]TokenType = map[string]TokenType{
 	"/":  DIV,
 	"**": POW,
 	"%":  MOD,
+
+	">":  GT,
+	"<":  LT,
+	">=": GTE,
+	"<=": LTE,
+	"==": EQ,
+	"!=": NEQ,
 
 	"(": LPAREN,
 	")": RPAREN,
@@ -202,13 +216,38 @@ func (l *Lexer) tryTokenizeOperator() *Token {
 
 	if tokType, ok := operators[string(l.current())]; ok {
 		val := string(l.current())
-		if tokType == MUL {
-			if l.pos < (l.len-1) && l.peek() == '*' {
-				val += string(l.peek())
-				l.next()
-				tokType = POW
+
+		if l.pos < (l.len - 1) {
+
+			switch tokType {
+			case MUL:
+				if l.peek() == '*' {
+					val += string(l.peek())
+					l.next()
+					tokType = POW
+				}
+			case ASSIGN:
+				if l.peek() == '=' {
+					val += string(l.peek())
+					l.next()
+					tokType = EQ
+				}
+			case GT:
+				if l.peek() == '=' {
+					val += string(l.peek())
+					l.next()
+					tokType = GTE
+				}
+			case LT:
+				if l.peek() == '=' {
+					val += string(l.peek())
+					l.next()
+					tokType = LTE
+				}
+
 			}
 		}
+
 		l.next()
 		return &Token{Type: tokType, Value: val}
 	}
