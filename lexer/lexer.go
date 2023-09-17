@@ -214,11 +214,6 @@ func (l *Lexer) tryTokenizeString() *Token {
 }
 
 func (l *Lexer) tryTokenizeOperator() *Token {
-	if l.current() == ':' && l.peek() == '=' {
-		l.next()
-		l.next()
-		return &Token{Type: DECLARE, Value: ":="}
-	}
 
 	if tokType, ok := operators[string(l.current())]; ok {
 		val := string(l.current())
@@ -226,6 +221,12 @@ func (l *Lexer) tryTokenizeOperator() *Token {
 		if l.pos < (l.len - 1) {
 
 			switch tokType {
+			case COLON:
+				if l.peek() == '=' {
+					val += string(l.peek())
+					l.next()
+					tokType = DECLARE
+				}
 			case MUL:
 				if l.peek() == '*' {
 					val += string(l.peek())
