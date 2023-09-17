@@ -30,6 +30,7 @@ deferStatement ::= 'defer' callExpression;
 variableDeclarationStatement ::= 'let' identifier '=' expression; 
 variableAssignmentStatement ::= identifier ('=' | ':=' ) expression;
 
+incrementDecrementStatement ::= expression ('++' | '--');
 whileStatement ::= 'while' [expression]  blockStatement;
 ifStatement ::= 'if' expression blockStatement ('else if' expression blockStatement)* ('else' blockStatement)?;
 rangeStatement ::= 'for' variableAssignmentStatement 'range' expression blockStatement;

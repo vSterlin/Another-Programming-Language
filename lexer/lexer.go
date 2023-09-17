@@ -34,6 +34,9 @@ const (
 	POW
 	MOD
 
+	INCR
+	DECR
+
 	GT
 	LT
 	GTE
@@ -101,6 +104,9 @@ var operators map[string]TokenType = map[string]TokenType{
 	"/":  DIV,
 	"**": POW,
 	"%":  MOD,
+
+	"++": INCR,
+	"--": DECR,
 
 	">":  GT,
 	"<":  LT,
@@ -244,7 +250,18 @@ func (l *Lexer) tryTokenizeOperator() *Token {
 					l.next()
 					tokType = LTE
 				}
-
+			case ADD:
+				if l.peek() == '+' {
+					val += string(l.peek())
+					l.next()
+					tokType = INCR
+				}
+			case SUB:
+				if l.peek() == '-' {
+					val += string(l.peek())
+					l.next()
+					tokType = DECR
+				}
 			}
 		}
 

@@ -109,6 +109,11 @@ type RangeStmt struct {
 	Body *BlockStmt
 }
 
+type IncrDecrStmt struct {
+	Expr Expr
+	Op   string
+}
+
 func (e *ExprStmt) stmtNode()      {}
 func (v *VarDecStmt) stmtNode()    {}
 func (v *VarAssignStmt) stmtNode() {}
@@ -118,6 +123,7 @@ func (f *FuncDecStmt) stmtNode()   {}
 func (i *IfStmt) stmtNode()        {}
 func (d *DeferStmt) stmtNode()     {}
 func (r *RangeStmt) stmtNode()     {}
+func (i *IncrDecrStmt) stmtNode()  {}
 
 func (e *ExprStmt) String() string { return fmt.Sprintf("expressionStatement(%s)", e.Expr) }
 func (v *VarDecStmt) String() string {
@@ -156,6 +162,10 @@ func (d *DeferStmt) String() string {
 
 func (r *RangeStmt) String() string {
 	return fmt.Sprintf("rangeStatement(%s, %s, %s)", r.Id, r.Expr, r.Body)
+}
+
+func (i *IncrDecrStmt) String() string {
+	return fmt.Sprintf("incrDecrStatement(%s, %s)", i.Expr, i.Op)
 }
 
 type Program struct{ Stmts []Stmt }
