@@ -58,7 +58,10 @@ func (p *Parser) parseIdentifierExpr() (ast.Expr, error) {
 
 func (p *Parser) parseParenExpr() (ast.Expr, error) {
 	p.next()
-	val, _ := p.parseExpr()
+	val, err := p.parseExpr()
+	if err != nil {
+		return nil, err
+	}
 	if err := p.consume(RPAREN); err != nil {
 		return nil, err
 	}
@@ -72,7 +75,10 @@ func (p *Parser) parseArrayExpr() (ast.Expr, error) {
 	}
 	exprs := []ast.Expr{}
 	for p.pos < p.len && p.current().Type != RBRACK {
-		expr, _ := p.parseExpr()
+		expr, err := p.parseExpr()
+		if err != nil {
+			return nil, err
+		}
 		exprs = append(exprs, expr)
 		if p.current().Type == COMMA {
 			p.next()
@@ -174,7 +180,11 @@ func (p *Parser) parseRangeStmt() (ast.Stmt, error) {
 	if err := p.consume(RANGE); err != nil {
 		return nil, err
 	}
-	ex, _ := p.parseExpr()
+	ex, err := p.parseExpr()
+	if err != nil {
+		return nil, err
+	}
+
 	body, err := p.parseBlockStmt()
 
 	if err != nil {
@@ -365,13 +375,19 @@ func (p *Parser) parseExpr() (ast.Expr, error) {
 
 // variableAssignmentStatement ::= identifier ('=' | ':=') expression;
 func (p *Parser) parseVarAssignStmt() (ast.Stmt, error) {
-	id, _ := p.parseExpr()
+	id, err := p.parseExpr()
+	if err != nil {
+		return nil, err
+	}
 	if p.isEnd() || (p.current().Type != ASSIGN && p.current().Type != DECLARE) {
 		return &ast.ExprStmt{Expr: id}, nil
 	}
 	assignOp := p.current().Value
 	p.next()
-	ex, _ := p.parseExpr()
+	ex, err := p.parseExpr()
+	if err != nil {
+		return nil, err
+	}
 	return &ast.VarAssignStmt{Id: id.(*ast.IdentifierExpr), Init: ex, Op: assignOp}, nil
 }
 
