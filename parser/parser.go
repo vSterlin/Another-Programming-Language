@@ -48,15 +48,15 @@ func (p *Parser) parseStringExpr() ast.Expr {
 	return &ast.StringExpr{Val: val}
 }
 
-func (p *Parser) parseIdentifierExpr() ast.Expr {
+func (p *Parser) parseIdentifierExpr() (ast.Expr, error) {
 	name := p.current().Value
 	p.next()
-	return &ast.IdentifierExpr{Name: name}
+	return &ast.IdentifierExpr{Name: name}, nil
 }
 
 func (p *Parser) parseParenExpr() ast.Expr {
 	p.next()
-	val := p.parseExpr()
+	val, _ := p.parseExpr()
 	p.consume(RPAREN)
 	return val
 }
@@ -69,7 +69,7 @@ func (p *Parser) parseArrayExpr() ast.Expr {
 	}
 	exprs := []ast.Expr{}
 	for p.pos < p.len && p.current().Type != RBRACK {
-		expr := p.parseExpr()
+		expr, _ := p.parseExpr()
 		exprs = append(exprs, expr)
 		if p.current().Type == COMMA {
 			p.next()
@@ -85,7 +85,7 @@ func (p *Parser) parseArrayExpr() ast.Expr {
 }
 
 // primaryExpression ::= identifier | number | boolean | string | '(' expression ')' | callExpression | arrayExpression;
-func (p *Parser) parsePrimaryExpr() ast.Expr {
+func (p *Parser) parsePrimaryExpr() (ast.Expr, error) {
 
 	switch p.current().Type {
 
@@ -99,106 +99,147 @@ func (p *Parser) parsePrimaryExpr() ast.Expr {
 			return p.parseIdentifierExpr()
 		}
 	case NUMBER:
-		return p.parseNumberExpr()
+		return p.parseNumberExpr(), nil
 	case BOOLEAN:
-		return p.parseBooleanExpr()
+		return p.parseBooleanExpr(), nil
 	case STRING:
-		return p.parseStringExpr()
+		return p.parseStringExpr(), nil
 	case LPAREN:
-		return p.parseParenExpr()
+		return p.parseParenExpr(), nil
 	case LBRACK:
-		return p.parseArrayExpr()
+		return p.parseArrayExpr(), nil
 
 	}
 
-	return nil
+	return nil, NewParserError(p.pos, fmt.Sprintf("expected primary expression, got %d", p.current().Type))
 }
 
 // callExpression ::= identifier '(' (identifier (',' identifier)*)? ')';
-func (p *Parser) parseCallExpr() ast.Expr {
+func (p *Parser) parseCallExpr() (ast.Expr, error) {
 
-	calleeId := p.parseIdentifierExpr()
-	if p.current().Type != LPAREN {
-		fmt.Println("parseCallExprError!")
+	calleeId, err := p.parseIdentifierExpr()
+	if err != nil {
+		return nil, err
 	}
-	p.next()
+	if err := p.consume(LPAREN); err != nil {
+		return nil, err
+	}
 
 	args := []ast.Expr{}
 	for !p.isEnd() && p.current().Type != RPAREN {
-		arg := p.parseExpr()
+		arg, err := p.parseExpr()
+		if err != nil {
+			return nil, err
+		}
 		args = append(args, arg)
 		if p.current().Type == COMMA {
 			p.next()
 		}
 	}
-	p.consume(RPAREN)
+	if err := p.consume(RPAREN); err != nil {
+		return nil, err
+	}
+
 	return &ast.CallExpr{
 		Callee: calleeId.(*ast.IdentifierExpr),
 		Args:   args,
-	}
+	}, nil
 
 }
 
 // deferStatement ::= 'defer' callExpression;
-func (p *Parser) parseDeferStmt() ast.Stmt {
-	p.consume(DEFER)
-	ex := p.parseCallExpr()
-	return &ast.DeferStmt{Call: ex.(*ast.CallExpr)}
+func (p *Parser) parseDeferStmt() (ast.Stmt, error) {
+	if err := p.consume(DEFER); err != nil {
+		return nil, err
+	}
+	ex, err := p.parseCallExpr()
+	if err != nil {
+		return nil, err
+	}
+	return &ast.DeferStmt{Call: ex.(*ast.CallExpr)}, nil
 }
 
 // rangeStatement ::= 'for' variableAssignmentStatement 'range' expression blockStatement;
-func (p *Parser) parseRangeStmt() ast.Stmt {
+func (p *Parser) parseRangeStmt() (ast.Stmt, error) {
 
-	p.consume(FOR)
-	id := p.parseVarAssignStmt()
-	if p.current().Type != RANGE {
-		fmt.Println("parseRangeStmtError!")
+	id, err := p.parseVarAssignStmt()
+
+	if err != nil {
+		return nil, err
 	}
-	p.consume(RANGE)
-	ex := p.parseExpr()
-	body := p.parseBlockStmt()
 
-	return &ast.RangeStmt{Id: id.(*ast.VarAssignStmt).Id, Expr: ex, Body: body.(*ast.BlockStmt)}
+	if err := p.consume(RANGE); err != nil {
+		return nil, err
+	}
+	ex, _ := p.parseExpr()
+	body, err := p.parseBlockStmt()
+
+	if err != nil {
+		return nil, err
+	}
+
+	return &ast.RangeStmt{Id: id.(*ast.VarAssignStmt).Id, Expr: ex, Body: body.(*ast.BlockStmt)}, nil
 }
 
 // sliceExpression ::= identifier '[' expression ':' expression ' (':' expression)?]';
-func (p *Parser) parseSliceExpr() ast.Expr {
-	id := p.parseIdentifierExpr()
-	if p.current().Type != LBRACK {
-		fmt.Println("parseDeferStmtError 1!")
+func (p *Parser) parseSliceExpr() (ast.Expr, error) {
+	var err error
+	id, err := p.parseIdentifierExpr()
+	if err != nil {
+		return nil, err
 	}
-	p.next()
-	low := p.parseExpr()
-	if p.current().Type != COLON {
-		fmt.Println("parseDeferStmtError 2!")
-	}
-	p.next()
-	high := p.parseExpr()
 
+	if err = p.consume(LBRACK); err != nil {
+		return nil, err
+	}
+
+	low, err := p.parseExpr()
+	if err != nil {
+		return nil, err
+	}
+
+	if err = p.consume(COLON); err != nil {
+		return nil, err
+	}
+	high, err := p.parseExpr()
+	if err != nil {
+		return nil, err
+	}
 	var step ast.Expr
 	if p.current().Type == COLON {
 		p.next()
-		step = p.parseExpr()
+		step, err = p.parseExpr()
+		if err != nil {
+			return nil, err
+		}
+
+	}
+	if err = p.consume(RBRACK); err != nil {
+		return nil, err
 	}
 
-	if p.current().Type != RBRACK {
-		fmt.Println("parseDeferStmtError 3!")
-	}
-	p.next()
-	return &ast.SliceExpr{Id: id.(*ast.IdentifierExpr), Low: low, High: high, Step: step}
+	return &ast.SliceExpr{Id: id.(*ast.IdentifierExpr), Low: low, High: high, Step: step}, nil
 
 }
 
 // equalityExpression ::= relationalExpression (equalityOperator relationalExpression)*;
-func (p *Parser) parseEqualityExpr() ast.Expr {
-	lhs := p.parseRelationalExpr()
+func (p *Parser) parseEqualityExpr() (ast.Expr, error) {
+	lhs, err := p.parseRelationalExpr()
+
+	if err != nil {
+		return nil, err
+	}
 
 	for !p.isEnd() {
 		switch p.current().Type {
 		case EQ, NEQ:
 			curr := p.current()
 			p.next()
-			rhs := p.parseRelationalExpr()
+
+			rhs, err := p.parseRelationalExpr()
+			if err != nil {
+				return nil, err
+			}
 			switch curr.Type {
 			case EQ:
 				lhs = &ast.BinaryExpr{Op: "==", Lhs: lhs, Rhs: rhs}
@@ -206,23 +247,30 @@ func (p *Parser) parseEqualityExpr() ast.Expr {
 				lhs = &ast.BinaryExpr{Op: "!=", Lhs: lhs, Rhs: rhs}
 			}
 		default:
-			return lhs
+			return lhs, nil
 
 		}
 	}
-	return lhs
+	return lhs, nil
 }
 
 // relationalExpression ::= additiveExpression (relationalOperator additiveExpression)*;
-func (p *Parser) parseRelationalExpr() ast.Expr {
-	lhs := p.parseAdditiveExpr()
+func (p *Parser) parseRelationalExpr() (ast.Expr, error) {
+	lhs, err := p.parseAdditiveExpr()
+
+	if err != nil {
+		return nil, err
+	}
 
 	for !p.isEnd() {
 		switch p.current().Type {
 		case LT, GT, LTE, GTE:
 			curr := p.current()
 			p.next()
-			rhs := p.parseAdditiveExpr()
+			rhs, err := p.parseAdditiveExpr()
+			if err != nil {
+				return nil, err
+			}
 			switch curr.Type {
 			case LT:
 				lhs = &ast.BinaryExpr{Op: "<", Lhs: lhs, Rhs: rhs}
@@ -234,47 +282,59 @@ func (p *Parser) parseRelationalExpr() ast.Expr {
 				lhs = &ast.BinaryExpr{Op: ">=", Lhs: lhs, Rhs: rhs}
 			}
 		default:
-			return lhs
+			return lhs, nil
 
 		}
 	}
-	return lhs
+	return lhs, nil
 
 }
 
 // additiveOperator ::= '+' | '-';
 // additiveExpression ::= multiplicativeExpression (additiveOperator multiplicativeExpression)*;
-func (p *Parser) parseAdditiveExpr() ast.Expr {
-	lhs := p.parseMultiplicativeExpr()
+func (p *Parser) parseAdditiveExpr() (ast.Expr, error) {
+	lhs, err := p.parseMultiplicativeExpr()
 
+	if err != nil {
+		return nil, err
+	}
 	for p.pos < p.len && (p.current().Type == ADD || p.current().Type == SUB) {
 		curr := p.current()
 		p.next()
-		rhs := p.parseMultiplicativeExpr()
+		rhs, err := p.parseMultiplicativeExpr()
+		if err != nil {
+			return nil, err
+		}
 		switch curr.Type {
 		case ADD:
 			lhs = &ast.BinaryExpr{Op: "+", Lhs: lhs, Rhs: rhs}
 		case SUB:
 			lhs = &ast.BinaryExpr{Op: "-", Lhs: lhs, Rhs: rhs}
 		default:
-			return lhs
+			return lhs, nil
 		}
 	}
-	return lhs
+	return lhs, nil
 }
 
 // multiplicativeOperator ::= '*' | '/' | '**' | '%';
 // multiplicativeExpression ::= primaryExpression (multiplicativeOperator primaryExpression)*;
-func (p *Parser) parseMultiplicativeExpr() ast.Expr {
-	lhs := p.parsePrimaryExpr()
+func (p *Parser) parseMultiplicativeExpr() (ast.Expr, error) {
+	lhs, err := p.parsePrimaryExpr()
 
+	if err != nil {
+		return nil, err
+	}
 	for p.pos < p.len {
 
 		curr := p.current()
 		switch curr.Type {
 		case MUL, DIV, POW, MOD:
 			p.next()
-			rhs := p.parsePrimaryExpr()
+			rhs, err := p.parsePrimaryExpr()
+			if err != nil {
+				return nil, err
+			}
 			switch curr.Type {
 			case MUL:
 				lhs = &ast.BinaryExpr{Op: "*", Lhs: lhs, Rhs: rhs}
@@ -285,115 +345,152 @@ func (p *Parser) parseMultiplicativeExpr() ast.Expr {
 			case MOD:
 				lhs = &ast.BinaryExpr{Op: "%", Lhs: lhs, Rhs: rhs}
 			default:
-				return lhs
+				return lhs, nil
 			}
 
 		default:
-			return lhs
+			return lhs, nil
 		}
 	}
-	return lhs
+	return lhs, nil
 }
 
-// expression ::= additiveExpression;
-func (p *Parser) parseExpr() ast.Expr {
+// expression ::= equalityExpression;
+func (p *Parser) parseExpr() (ast.Expr, error) {
 	return p.parseEqualityExpr()
 }
 
-// TODO: I will get rid of this
-// variableDeclarationStatement ::= 'let' identifier '=' expression;
-func (p *Parser) parseVarDecStmt() ast.Stmt {
-	p.next()
-	id := p.parseIdentifierExpr()
-
-	err := p.consume(ASSIGN)
-	if err != nil {
-		return nil
-	}
-
-	ex := p.parseExpr()
-
-	// TODO: do some type checking here
-	return &ast.VarDecStmt{Id: id.(*ast.IdentifierExpr), Init: ex}
-}
-
 // variableAssignmentStatement ::= identifier ('=' | ':=') expression;
-func (p *Parser) parseVarAssignStmt() ast.Stmt {
-	id := p.parseExpr()
+func (p *Parser) parseVarAssignStmt() (ast.Stmt, error) {
+	id, _ := p.parseExpr()
 	if p.isEnd() || (p.current().Type != ASSIGN && p.current().Type != DECLARE) {
-		return &ast.ExprStmt{Expr: id}
+		return &ast.ExprStmt{Expr: id}, nil
 	}
 	assignOp := p.current().Value
 	p.next()
-	ex := p.parseExpr()
-	return &ast.VarAssignStmt{Id: id.(*ast.IdentifierExpr), Init: ex, Op: assignOp}
+	ex, _ := p.parseExpr()
+	return &ast.VarAssignStmt{Id: id.(*ast.IdentifierExpr), Init: ex, Op: assignOp}, nil
 }
 
 // functionDeclaration ::= 'func' identifier '(' (identifier (',' identifier)*)? ')' blockStatement;
-func (p *Parser) parseFuncDecStmt() ast.Stmt {
-	p.consume(FUNC)
-	id := p.parseIdentifierExpr()
+func (p *Parser) parseFuncDecStmt() (ast.Stmt, error) {
 
-	p.consume(LPAREN)
+	if err := p.consume(FUNC); err != nil {
+		return nil, err
+	}
+
+	id, err := p.parseIdentifierExpr()
+	if err != nil {
+		return nil, err
+	}
+
+	if err := p.consume(LPAREN); err != nil {
+		return nil, err
+	}
 
 	var args []*ast.IdentifierExpr
 	for !p.isEnd() && p.current().Type != RPAREN {
-		arg := p.parseIdentifierExpr()
+		arg, err := p.parseIdentifierExpr()
+		if err != nil {
+			return nil, err
+		}
 		args = append(args, arg.(*ast.IdentifierExpr))
 		if p.current().Type == COMMA {
 			p.next()
 		}
 	}
-	p.consume(RPAREN)
-	body := p.parseBlockStmt()
-	return &ast.FuncDecStmt{Id: id.(*ast.IdentifierExpr), Args: args, Body: body.(*ast.BlockStmt)}
+
+	if err := p.consume(RPAREN); err != nil {
+		return nil, err
+	}
+
+	body, err := p.parseBlockStmt()
+	if err != nil {
+		return nil, err
+	}
+	return &ast.FuncDecStmt{Id: id.(*ast.IdentifierExpr), Args: args, Body: body.(*ast.BlockStmt)}, nil
 }
 
 // blockStatement ::= '{' statement* '}';
-func (p *Parser) parseBlockStmt() ast.Stmt {
-	p.consume(LBRACE)
+func (p *Parser) parseBlockStmt() (ast.Stmt, error) {
+	if err := p.consume(LBRACE); err != nil {
+		return nil, err
+	}
 	var stmts []ast.Stmt
 	for p.pos < p.len && p.current().Type != RBRACE {
 		stmt, err := p.parseStmt()
 		if err != nil {
-			return nil
+			return nil, err
 		}
 		stmts = append(stmts, stmt)
 	}
-	p.consume(RBRACE)
-	return &ast.BlockStmt{Stmts: stmts}
+	if err := p.consume(LBRACE); err != nil {
+		return nil, err
+	}
+	return &ast.BlockStmt{Stmts: stmts}, nil
 }
 
 // whileStatement ::= 'while' [expression] blockStatement;
-func (p *Parser) parseWhileStmt() ast.Stmt {
-	p.consume(WHILE)
+func (p *Parser) parseWhileStmt() (ast.Stmt, error) {
+	var err error
+	if err = p.consume(WHILE); err != nil {
+		return nil, err
+	}
 	var test ast.Expr
 	if p.current().Type == LBRACE {
 		test = &ast.BooleanExpr{Val: true}
 	} else {
-		test = p.parseExpr()
+		test, err = p.parseExpr()
+		if err != nil {
+			return nil, err
+		}
 	}
-	body := p.parseBlockStmt()
-	return &ast.WhileStmt{Test: test, Body: body}
+	body, err := p.parseBlockStmt()
+	if err != nil {
+		return nil, err
+	}
+	return &ast.WhileStmt{Test: test, Body: body}, nil
 }
 
 // ifStatement ::= 'if' expression blockStatement ('else if' expression blockStatement)* ('else' blockStatement)?;
-func (p *Parser) parseIfStmt() ast.Stmt {
-	p.consume(IF)
-	test := p.parseExpr()
-	consequent := p.parseBlockStmt()
-	var alternate ast.Stmt
-	if !p.isEnd() && p.current().Type == ELSE {
-		p.consume(ELSE)
-		if p.current().Type == IF {
-			alternate = p.parseIfStmt()
-		} else {
-			alternate = p.parseBlockStmt()
-		}
+func (p *Parser) parseIfStmt() (ast.Stmt, error) {
+	var err error
+	if err = p.consume(IF); err != nil {
+		return nil, err
 	}
 
-	return &ast.IfStmt{Test: test, Consequent: consequent, Alternate: alternate}
+	test, err := p.parseExpr()
+	if err != nil {
+		return nil, err
+	}
 
+	consequent, err := p.parseBlockStmt()
+	if err != nil {
+		return nil, err
+	}
+	var alternate ast.Stmt
+
+	if !p.isEnd() && p.current().Type == ELSE {
+
+		if err := p.consume(ELSE); err != nil {
+			return nil, err
+		}
+
+		if p.current().Type == IF {
+			alternate, err = p.parseIfStmt()
+			if err != nil {
+				return nil, err
+			}
+
+		} else {
+			alternate, err = p.parseBlockStmt()
+			if err != nil {
+				return nil, err
+			}
+
+		}
+	}
+	return &ast.IfStmt{Test: test, Consequent: consequent, Alternate: alternate}, nil
 }
 
 // statement ::= expression | variableDeclarationStatement
@@ -402,24 +499,26 @@ func (p *Parser) parseIfStmt() ast.Stmt {
 func (p *Parser) parseStmt() (ast.Stmt, error) {
 
 	switch p.current().Type {
-	case LET:
-		return p.parseVarDecStmt(), nil
+
 	case LBRACE:
-		return p.parseBlockStmt(), nil
+		return p.parseBlockStmt()
 	case WHILE:
-		return p.parseWhileStmt(), nil
+		return p.parseWhileStmt()
 	case FUNC:
-		return p.parseFuncDecStmt(), nil
+		return p.parseFuncDecStmt()
 	case IF:
-		return p.parseIfStmt(), nil
+		return p.parseIfStmt()
 	case DEFER:
-		return p.parseDeferStmt(), nil
+		return p.parseDeferStmt()
 	case FOR:
-		return p.parseRangeStmt(), nil
+		return p.parseRangeStmt()
 	case IDENTIFIER:
-		return p.parseVarAssignStmt(), nil
+		return p.parseVarAssignStmt()
 	default:
-		ex := p.parseExpr()
+		ex, err := p.parseExpr()
+		if err != nil {
+			return nil, err
+		}
 		return &ast.ExprStmt{Expr: ex}, nil
 	}
 }

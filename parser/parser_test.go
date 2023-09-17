@@ -6,31 +6,6 @@ import (
 	"testing"
 )
 
-func TestParseVarDecStmt(t *testing.T) {
-	l := lexer.NewLexer("let x = 1")
-
-	tokens, _ := l.GetTokens()
-
-	p := NewParser(tokens)
-
-	stmt := p.parseVarDecStmt()
-
-	varDecStmt, ok := stmt.(*ast.VarDecStmt)
-
-	if !ok {
-		t.Errorf("Expected VarDecStmt, got: %T", stmt)
-	}
-
-	if varDecStmt.Id.Name != "x" {
-		t.Errorf("Expected x, got: %s", varDecStmt.Id.Name)
-	}
-
-	if varDecStmt.Init.(*ast.NumberExpr).Val != 1 {
-		t.Errorf("Expected 1, got: %d", varDecStmt.Init.(*ast.NumberExpr).Val)
-	}
-
-}
-
 func TestParseArrayExpr(t *testing.T) {
 	l := lexer.NewLexer("[1, 2]")
 
@@ -88,8 +63,12 @@ func TestParseWhileStmt(t *testing.T) {
 
 	p := NewParser(tokens)
 
-	stmt := p.parseWhileStmt()
-	stmt2 := p.parseWhileStmt()
+	stmt, err := p.parseWhileStmt()
+	stmt2, err2 := p.parseWhileStmt()
+
+	if err != nil || err2 != nil {
+		t.Errorf("Expected no error, got: %s", err)
+	}
 
 	whileStmt, ok := stmt.(*ast.WhileStmt)
 	whileStmt2, ok2 := stmt2.(*ast.WhileStmt)
