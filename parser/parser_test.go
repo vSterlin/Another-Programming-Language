@@ -107,3 +107,25 @@ func TestParseWhileStmt(t *testing.T) {
 	}
 
 }
+
+func TestConsume(t *testing.T) {
+	l := lexer.NewLexer(`while`)
+	tokens, _ := l.GetTokens()
+	p := NewParser(tokens)
+	err := p.consume(lexer.WHILE)
+
+	if err != nil {
+		t.Errorf("Expected no error, got: %s", err)
+	}
+}
+
+func TestConsumeError(t *testing.T) {
+	l := lexer.NewLexer(`while`)
+	tokens, _ := l.GetTokens()
+	p := NewParser(tokens)
+	err := p.consume(lexer.FOR)
+
+	if err == nil {
+		t.Error("Expected error but didn't get one")
+	}
+}

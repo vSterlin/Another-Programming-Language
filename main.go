@@ -21,7 +21,12 @@ func main() {
 	fmt.Println(tokens)
 	p := parser.NewParser(tokens)
 
-	prog := p.ParseProgram()
+	prog, err := p.ParseProgram()
+
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
 	jsonStr, _ := json.MarshalIndent(prog, "", "  ")
 
 	fmt.Println(string(jsonStr))

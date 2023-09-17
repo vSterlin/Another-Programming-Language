@@ -38,5 +38,6 @@ func codeToAst(code string) *ast.Program {
 	l := lexer.NewLexer(code)
 	tokens, _ := l.GetTokens()
 	p := parser.NewParser(tokens)
-	return p.ParseProgram()
+	prog, _ := p.ParseProgram()
+	return prog
 }

@@ -119,6 +119,6 @@ func TestVarDec(t *testing.T) {
 
 func buildProgram(code string) *ast.Program {
 	tokens, _ := lexer.NewLexer(code).GetTokens()
-	prog := parser.NewParser(tokens).ParseProgram()
+	prog, _ := parser.NewParser(tokens).ParseProgram()
 	return prog
 }

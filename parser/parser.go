@@ -57,20 +57,16 @@ func (p *Parser) parseIdentifierExpr() ast.Expr {
 func (p *Parser) parseParenExpr() ast.Expr {
 	p.next()
 	val := p.parseExpr()
-	curr := p.current()
-	if curr.Type != RPAREN {
-		//	TODO: return error
-		fmt.Println("parseParenExprError!")
-	}
-	// eat the RPAREN
-	p.next()
-
+	p.consume(RPAREN)
 	return val
 }
 
 // arrayExpression ::= '[' (expression (',' expression)*)? ']';
 func (p *Parser) parseArrayExpr() ast.Expr {
-	p.next() // eat the LBRACK
+	err := p.consume(LBRACK)
+	if err != nil {
+		return nil
+	}
 	exprs := []ast.Expr{}
 	for p.pos < p.len && p.current().Type != RBRACK {
 		expr := p.parseExpr()
@@ -80,8 +76,10 @@ func (p *Parser) parseArrayExpr() ast.Expr {
 		}
 
 	}
-	// eat the RBRACK
-	p.next()
+	err = p.consume(RBRACK)
+	if err != nil {
+		return nil
+	}
 	return &ast.ArrayExpr{Elements: exprs}
 
 }
@@ -133,9 +131,7 @@ func (p *Parser) parseCallExpr() ast.Expr {
 			p.next()
 		}
 	}
-	// eat the RPAREN
-	p.next()
-
+	p.consume(RPAREN)
 	return &ast.CallExpr{
 		Callee: calleeId.(*ast.IdentifierExpr),
 		Args:   args,
@@ -145,7 +141,7 @@ func (p *Parser) parseCallExpr() ast.Expr {
 
 // deferStatement ::= 'defer' callExpression;
 func (p *Parser) parseDeferStmt() ast.Stmt {
-	p.next() // eat the DEFER
+	p.consume(DEFER)
 	ex := p.parseCallExpr()
 	return &ast.DeferStmt{Call: ex.(*ast.CallExpr)}
 }
@@ -153,12 +149,12 @@ func (p *Parser) parseDeferStmt() ast.Stmt {
 // rangeStatement ::= 'for' variableAssignmentStatement 'range' expression blockStatement;
 func (p *Parser) parseRangeStmt() ast.Stmt {
 
-	p.next() // eat the FOR
+	p.consume(FOR)
 	id := p.parseVarAssignStmt()
 	if p.current().Type != RANGE {
 		fmt.Println("parseRangeStmtError!")
 	}
-	p.next() // eat the RANGE
+	p.consume(RANGE)
 	ex := p.parseExpr()
 	body := p.parseBlockStmt()
 
@@ -310,10 +306,11 @@ func (p *Parser) parseVarDecStmt() ast.Stmt {
 	p.next()
 	id := p.parseIdentifierExpr()
 
-	if p.current().Type != ASSIGN {
+	err := p.consume(ASSIGN)
+	if err != nil {
 		return nil
 	}
-	p.next()
+
 	ex := p.parseExpr()
 
 	// TODO: do some type checking here
@@ -334,12 +331,11 @@ func (p *Parser) parseVarAssignStmt() ast.Stmt {
 
 // functionDeclaration ::= 'func' identifier '(' (identifier (',' identifier)*)? ')' blockStatement;
 func (p *Parser) parseFuncDecStmt() ast.Stmt {
-	p.next() // eat the func
+	p.consume(FUNC)
 	id := p.parseIdentifierExpr()
-	if p.current().Type != LPAREN {
-		return nil
-	}
-	p.next() // eat the LPAREN
+
+	p.consume(LPAREN)
+
 	var args []*ast.IdentifierExpr
 	for !p.isEnd() && p.current().Type != RPAREN {
 		arg := p.parseIdentifierExpr()
@@ -348,27 +344,29 @@ func (p *Parser) parseFuncDecStmt() ast.Stmt {
 			p.next()
 		}
 	}
-	// TODO: check if the next token is RPAREN
-	p.next() // eat the RPAREN
+	p.consume(RPAREN)
 	body := p.parseBlockStmt()
 	return &ast.FuncDecStmt{Id: id.(*ast.IdentifierExpr), Args: args, Body: body.(*ast.BlockStmt)}
 }
 
 // blockStatement ::= '{' statement* '}';
 func (p *Parser) parseBlockStmt() ast.Stmt {
-	p.next() // eat the LBRACE
+	p.consume(LBRACE)
 	var stmts []ast.Stmt
 	for p.pos < p.len && p.current().Type != RBRACE {
-		stmts = append(stmts, p.parseStmt())
+		stmt, err := p.parseStmt()
+		if err != nil {
+			return nil
+		}
+		stmts = append(stmts, stmt)
 	}
-	// eat the RBRACE
-	p.next()
+	p.consume(RBRACE)
 	return &ast.BlockStmt{Stmts: stmts}
 }
 
 // whileStatement ::= 'while' [expression] blockStatement;
 func (p *Parser) parseWhileStmt() ast.Stmt {
-	p.next() // eat the WHILE
+	p.consume(WHILE)
 	var test ast.Expr
 	if p.current().Type == LBRACE {
 		test = &ast.BooleanExpr{Val: true}
@@ -381,12 +379,12 @@ func (p *Parser) parseWhileStmt() ast.Stmt {
 
 // ifStatement ::= 'if' expression blockStatement ('else if' expression blockStatement)* ('else' blockStatement)?;
 func (p *Parser) parseIfStmt() ast.Stmt {
-	p.next() // eat the IF
+	p.consume(IF)
 	test := p.parseExpr()
 	consequent := p.parseBlockStmt()
 	var alternate ast.Stmt
 	if !p.isEnd() && p.current().Type == ELSE {
-		p.next() // eat the ELSE
+		p.consume(ELSE)
 		if p.current().Type == IF {
 			alternate = p.parseIfStmt()
 		} else {
@@ -401,38 +399,42 @@ func (p *Parser) parseIfStmt() ast.Stmt {
 // statement ::= expression | variableDeclarationStatement
 // | variableAssignmentStatement | blockStatement
 // | whileStatement | functionDeclaration | ifStatement | deferStatement | rangeStatement;
-func (p *Parser) parseStmt() ast.Stmt {
+func (p *Parser) parseStmt() (ast.Stmt, error) {
 
 	switch p.current().Type {
 	case LET:
-		return p.parseVarDecStmt()
+		return p.parseVarDecStmt(), nil
 	case LBRACE:
-		return p.parseBlockStmt()
+		return p.parseBlockStmt(), nil
 	case WHILE:
-		return p.parseWhileStmt()
+		return p.parseWhileStmt(), nil
 	case FUNC:
-		return p.parseFuncDecStmt()
+		return p.parseFuncDecStmt(), nil
 	case IF:
-		return p.parseIfStmt()
+		return p.parseIfStmt(), nil
 	case DEFER:
-		return p.parseDeferStmt()
+		return p.parseDeferStmt(), nil
 	case FOR:
-		return p.parseRangeStmt()
+		return p.parseRangeStmt(), nil
 	case IDENTIFIER:
-		return p.parseVarAssignStmt()
+		return p.parseVarAssignStmt(), nil
 	default:
 		ex := p.parseExpr()
-		return &ast.ExprStmt{Expr: ex}
+		return &ast.ExprStmt{Expr: ex}, nil
 	}
 }
 
 // program ::= statement*;
-func (p *Parser) ParseProgram() *ast.Program {
+func (p *Parser) ParseProgram() (*ast.Program, error) {
 	var stmts []ast.Stmt
 	for p.pos < p.len {
-		stmts = append(stmts, p.parseStmt())
+		stmt, err := p.parseStmt()
+		if err != nil {
+			return nil, err
+		}
+		stmts = append(stmts, stmt)
 	}
-	return &ast.Program{Stmts: stmts}
+	return &ast.Program{Stmts: stmts}, nil
 }
 
 // helper functions
@@ -446,4 +448,16 @@ func (p *Parser) next() {
 
 func (p *Parser) isEnd() bool {
 	return p.pos >= p.len
+}
+
+func (p *Parser) consume(tokType TokenType) error {
+
+	curr := p.current()
+	if curr.Type != tokType {
+		fmt.Println("consumeError!")
+		return NewParserError(p.pos, fmt.Sprintf("expected %d, got %d", tokType, curr.Type))
+	} else {
+		p.next()
+		return nil
+	}
 }
