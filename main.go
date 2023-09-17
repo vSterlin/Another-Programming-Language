@@ -15,6 +15,9 @@ func main() {
 			defer print("lol")
 			a := 1
 			b := 2
+			c := a + b
+			x := [1, 2, 3]
+			y := x[0:2]
 		}
 	`)
 	tokens, _ := l.GetTokens()

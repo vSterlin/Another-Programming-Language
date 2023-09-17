@@ -7,7 +7,7 @@ import (
 // Expressions
 type Expr interface {
 	exprNode()
-	// json.Marshaler
+	json.Marshaler
 }
 
 type NumberExpr struct {
@@ -54,19 +54,19 @@ func (c *CallExpr) exprNode()       {}
 func (a *ArrayExpr) exprNode()      {}
 func (s *SliceExpr) exprNode()      {}
 
-// func (n *NumberExpr) MarshalJSON() ([]byte, error)     { return toJSON(*n, "numberExpression") }
-// func (b *BooleanExpr) MarshalJSON() ([]byte, error)    { return toJSON(*b, "booleanExpression") }
-// func (s *StringExpr) MarshalJSON() ([]byte, error)     { return toJSON(*s, "stringExpression") }
-// func (i *IdentifierExpr) MarshalJSON() ([]byte, error) { return toJSON(*i, "identifierExpression") }
-// func (b *BinaryExpr) MarshalJSON() ([]byte, error)     { return toJSON(*b, "binaryExpression") }
-// func (c *CallExpr) MarshalJSON() ([]byte, error)       { return toJSON(*c, "callExpression ") }
-// func (a *ArrayExpr) MarshalJSON() ([]byte, error)      { return toJSON(*a, "arrayExpression") }
-// func (s *SliceExpr) MarshalJSON() ([]byte, error)      { return toJSON(*s, "sliceExpression") }
+func (n *NumberExpr) MarshalJSON() ([]byte, error)     { return toJSON(*n, "numberExpression") }
+func (b *BooleanExpr) MarshalJSON() ([]byte, error)    { return toJSON(*b, "booleanExpression") }
+func (s *StringExpr) MarshalJSON() ([]byte, error)     { return toJSON(*s, "stringExpression") }
+func (i *IdentifierExpr) MarshalJSON() ([]byte, error) { return toJSON(*i, "identifierExpression") }
+func (b *BinaryExpr) MarshalJSON() ([]byte, error)     { return toJSON(*b, "binaryExpression") }
+func (c *CallExpr) MarshalJSON() ([]byte, error)       { return toJSON(*c, "callExpression ") }
+func (a *ArrayExpr) MarshalJSON() ([]byte, error)      { return toJSON(*a, "arrayExpression") }
+func (s *SliceExpr) MarshalJSON() ([]byte, error)      { return toJSON(*s, "sliceExpression") }
 
 // Statements
 type Stmt interface {
 	stmtNode()
-	// json.Marshaler
+	json.Marshaler
 }
 
 type ExprStmt struct{ Expr Expr }
@@ -129,18 +129,18 @@ func (d *DeferStmt) stmtNode()     {}
 func (r *RangeStmt) stmtNode()     {}
 func (i *IncrDecrStmt) stmtNode()  {}
 
-// func (e *ExprStmt) MarshalJSON() ([]byte, error)     { return toJSON(e, "expressionStatement") }
-// func (v *VarDecStmt) MarshalJSON() ([]byte, error)   { return toJSON(*v, "variableDeclarationStatement") }
-// func (b *BlockStmt) MarshalJSON() ([]byte, error)    { return toJSON(*b, "blockStatement") }
-// func (w *WhileStmt) MarshalJSON() ([]byte, error)    { return toJSON(*w, "whileStatement") }
-// func (f *FuncDecStmt) MarshalJSON() ([]byte, error)  { return toJSON(*f, "funcDeclarationStatement") }
-// func (i *IfStmt) MarshalJSON() ([]byte, error)       { return toJSON(*i, "ifStatement") }
-// func (d *DeferStmt) MarshalJSON() ([]byte, error)    { return toJSON(*d, "deferStatement") }
-// func (r *RangeStmt) MarshalJSON() ([]byte, error)    { return toJSON(*r, "rangeStatement") }
-// func (i *IncrDecrStmt) MarshalJSON() ([]byte, error) { return toJSON(*i, "incrDecrStatement") }
-// func (v *VarAssignStmt) MarshalJSON() ([]byte, error) {
-// 	return toJSON(*v, "variableAssignmentStatement")
-// }
+func (e *ExprStmt) MarshalJSON() ([]byte, error)     { return toJSON(e, "expressionStatement") }
+func (v *VarDecStmt) MarshalJSON() ([]byte, error)   { return toJSON(*v, "variableDeclarationStatement") }
+func (b *BlockStmt) MarshalJSON() ([]byte, error)    { return toJSON(*b, "blockStatement") }
+func (w *WhileStmt) MarshalJSON() ([]byte, error)    { return toJSON(*w, "whileStatement") }
+func (f *FuncDecStmt) MarshalJSON() ([]byte, error)  { return toJSON(*f, "funcDeclarationStatement") }
+func (i *IfStmt) MarshalJSON() ([]byte, error)       { return toJSON(*i, "ifStatement") }
+func (d *DeferStmt) MarshalJSON() ([]byte, error)    { return toJSON(*d, "deferStatement") }
+func (r *RangeStmt) MarshalJSON() ([]byte, error)    { return toJSON(*r, "rangeStatement") }
+func (i *IncrDecrStmt) MarshalJSON() ([]byte, error) { return toJSON(*i, "incrDecrStatement") }
+func (v *VarAssignStmt) MarshalJSON() ([]byte, error) {
+	return toJSON(*v, "variableAssignmentStatement")
+}
 
 type Program struct{ Stmts []Stmt }
 
