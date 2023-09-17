@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"language/codegen"
 	"language/lexer"
@@ -10,13 +11,20 @@ import (
 
 func main() {
 	l := lexer.NewLexer(`
+		func main() {
+			defer print("lol")
+			a := 1
+			b := 2
+		}
 	`)
 	tokens, _ := l.GetTokens()
 	fmt.Println(tokens)
 	p := parser.NewParser(tokens)
 
 	prog := p.ParseProgram()
-	fmt.Println(prog)
+	jsonStr, _ := json.MarshalIndent(prog, "", "  ")
+
+	fmt.Println(string(jsonStr))
 
 	cg := codegen.NewJavascriptCodeGenerator()
 	code := cg.Generate(prog)
