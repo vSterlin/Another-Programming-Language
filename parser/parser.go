@@ -244,8 +244,7 @@ func (p *Parser) parseEqualityExpr() (ast.Expr, error) {
 	}
 
 	for !p.isEnd() {
-		switch p.current().Type {
-		case EQ, NEQ:
+		if p.tokenTypeEqual(p.current().Type, EQ, NEQ) {
 			curr := p.current()
 			p.next()
 
@@ -259,9 +258,8 @@ func (p *Parser) parseEqualityExpr() (ast.Expr, error) {
 			case NEQ:
 				lhs = &ast.BinaryExpr{Op: "!=", Lhs: lhs, Rhs: rhs}
 			}
-		default:
+		} else {
 			return lhs, nil
-
 		}
 	}
 	return lhs, nil
@@ -276,8 +274,9 @@ func (p *Parser) parseRelationalExpr() (ast.Expr, error) {
 	}
 
 	for !p.isEnd() {
-		switch p.current().Type {
-		case LT, GT, LTE, GTE:
+
+		if p.tokenTypeEqual(p.current().Type, LT, GT, LTE, GTE) {
+
 			curr := p.current()
 			p.next()
 			rhs, err := p.parseAdditiveExpr()
@@ -294,9 +293,8 @@ func (p *Parser) parseRelationalExpr() (ast.Expr, error) {
 			case GTE:
 				lhs = &ast.BinaryExpr{Op: ">=", Lhs: lhs, Rhs: rhs}
 			}
-		default:
+		} else {
 			return lhs, nil
-
 		}
 	}
 	return lhs, nil
@@ -341,8 +339,8 @@ func (p *Parser) parseMultiplicativeExpr() (ast.Expr, error) {
 	for p.pos < p.len {
 
 		curr := p.current()
-		switch curr.Type {
-		case MUL, DIV, POW, MOD:
+		if p.tokenTypeEqual(curr.Type, MUL, DIV, POW, MOD) {
+
 			p.next()
 			rhs, err := p.parsePrimaryExpr()
 			if err != nil {
@@ -360,8 +358,7 @@ func (p *Parser) parseMultiplicativeExpr() (ast.Expr, error) {
 			default:
 				return lhs, nil
 			}
-
-		default:
+		} else {
 			return lhs, nil
 		}
 	}
@@ -443,7 +440,7 @@ func (p *Parser) parseBlockStmt() (ast.Stmt, error) {
 		}
 		stmts = append(stmts, stmt)
 	}
-	if err := p.consume(LBRACE); err != nil {
+	if err := p.consume(RBRACE); err != nil {
 		return nil, err
 	}
 	return &ast.BlockStmt{Stmts: stmts}, nil
@@ -566,6 +563,15 @@ func (p *Parser) next() {
 
 func (p *Parser) isEnd() bool {
 	return p.pos >= p.len
+}
+
+func (p *Parser) tokenTypeEqual(actual TokenType, expectedType ...TokenType) bool {
+	for _, expected := range expectedType {
+		if actual == expected {
+			return true
+		}
+	}
+	return false
 }
 
 func (p *Parser) consume(tokType TokenType) error {

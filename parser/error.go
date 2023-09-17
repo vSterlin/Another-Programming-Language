@@ -8,7 +8,7 @@ type ParserError struct {
 }
 
 func (e *ParserError) Error() string {
-	return fmt.Sprintf("%s, line: %d", e.Msg, e.Pos)
+	return fmt.Sprintf("%s, pos: %d", e.Msg, e.Pos)
 }
 
 func NewParserError(pos int, msg string) *ParserError {
