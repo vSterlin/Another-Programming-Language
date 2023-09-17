@@ -13,7 +13,11 @@ func TestParseArrayExpr(t *testing.T) {
 
 	p := NewParser(tokens)
 
-	expr := p.parseArrayExpr()
+	expr, err := p.parseArrayExpr()
+
+	if err != nil {
+		t.Errorf("Expected no error, got: %s", err)
+	}
 
 	arrExpr, ok := expr.(*ast.ArrayExpr)
 
@@ -37,7 +41,10 @@ func TestParseArrayExprEmpty(t *testing.T) {
 
 	p := NewParser(tokens)
 
-	expr := p.parseArrayExpr()
+	expr, err := p.parseArrayExpr()
+	if err != nil {
+		t.Errorf("Expected no error, got: %s", err)
+	}
 
 	arrExpr, ok := expr.(*ast.ArrayExpr)
 

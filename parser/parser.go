@@ -21,51 +21,54 @@ func NewParser(tokens []*Token) *Parser {
 	}
 }
 
-func (p *Parser) parseNumberExpr() ast.Expr {
+func (p *Parser) parseNumberExpr() (ast.Expr, error) {
 	val, err := strconv.Atoi(p.current().Value)
 	if err != nil {
-		return nil
+		return nil, NewParserError(p.pos, fmt.Sprintf("expected number, got %s", p.current().Value))
 	}
 	p.next()
 
-	return &ast.NumberExpr{Val: val}
+	return &ast.NumberExpr{Val: val}, nil
 }
 
-func (p *Parser) parseBooleanExpr() ast.Expr {
+func (p *Parser) parseBooleanExpr() (ast.Expr, error) {
 	val, err := strconv.ParseBool(p.current().Value)
 	if err != nil {
-		return nil
+		return nil, NewParserError(p.pos, fmt.Sprintf("expected boolean, got %s", p.current().Value))
 	}
 	p.next()
 
-	return &ast.BooleanExpr{Val: val}
+	return &ast.BooleanExpr{Val: val}, nil
 }
 
-func (p *Parser) parseStringExpr() ast.Expr {
+// TODO: review if some error handling is needed
+func (p *Parser) parseStringExpr() (ast.Expr, error) {
 	val := p.current().Value
 	p.next()
 
-	return &ast.StringExpr{Val: val}
+	return &ast.StringExpr{Val: val}, nil
 }
 
+// TODO: review if some error handling is needed
 func (p *Parser) parseIdentifierExpr() (ast.Expr, error) {
 	name := p.current().Value
 	p.next()
 	return &ast.IdentifierExpr{Name: name}, nil
 }
 
-func (p *Parser) parseParenExpr() ast.Expr {
+func (p *Parser) parseParenExpr() (ast.Expr, error) {
 	p.next()
 	val, _ := p.parseExpr()
-	p.consume(RPAREN)
-	return val
+	if err := p.consume(RPAREN); err != nil {
+		return nil, err
+	}
+	return val, nil
 }
 
 // arrayExpression ::= '[' (expression (',' expression)*)? ']';
-func (p *Parser) parseArrayExpr() ast.Expr {
-	err := p.consume(LBRACK)
-	if err != nil {
-		return nil
+func (p *Parser) parseArrayExpr() (ast.Expr, error) {
+	if err := p.consume(LBRACK); err != nil {
+		return nil, err
 	}
 	exprs := []ast.Expr{}
 	for p.pos < p.len && p.current().Type != RBRACK {
@@ -76,11 +79,11 @@ func (p *Parser) parseArrayExpr() ast.Expr {
 		}
 
 	}
-	err = p.consume(RBRACK)
-	if err != nil {
-		return nil
+	if err := p.consume(RBRACK); err != nil {
+		return nil, err
 	}
-	return &ast.ArrayExpr{Elements: exprs}
+
+	return &ast.ArrayExpr{Elements: exprs}, nil
 
 }
 
@@ -99,15 +102,15 @@ func (p *Parser) parsePrimaryExpr() (ast.Expr, error) {
 			return p.parseIdentifierExpr()
 		}
 	case NUMBER:
-		return p.parseNumberExpr(), nil
+		return p.parseNumberExpr()
 	case BOOLEAN:
-		return p.parseBooleanExpr(), nil
+		return p.parseBooleanExpr()
 	case STRING:
-		return p.parseStringExpr(), nil
+		return p.parseStringExpr()
 	case LPAREN:
-		return p.parseParenExpr(), nil
+		return p.parseParenExpr()
 	case LBRACK:
-		return p.parseArrayExpr(), nil
+		return p.parseArrayExpr()
 
 	}
 
