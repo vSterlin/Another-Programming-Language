@@ -168,15 +168,20 @@ func (p *Parser) parseDeferStmt() (ast.Stmt, error) {
 	return &ast.DeferStmt{Call: ex.(*ast.CallExpr)}, nil
 }
 
-// rangeStatement ::= 'for' variableAssignmentStatement 'range' expression blockStatement;
+// rangeStatement ::= 'for' identifierExpression ':=' 'range' expression blockStatement;
 func (p *Parser) parseRangeStmt() (ast.Stmt, error) {
 
 	if err := p.consume(FOR); err != nil {
 		return nil, err
 	}
-	id, err := p.parseVarAssignStmt()
+
+	id, err := p.parseIdentifierExpr()
 
 	if err != nil {
+		return nil, err
+	}
+
+	if err := p.consume(DECLARE); err != nil {
 		return nil, err
 	}
 
@@ -194,7 +199,7 @@ func (p *Parser) parseRangeStmt() (ast.Stmt, error) {
 		return nil, err
 	}
 
-	return &ast.RangeStmt{Id: id.(*ast.VarAssignStmt).Id, Expr: ex, Body: body.(*ast.BlockStmt)}, nil
+	return &ast.RangeStmt{Id: id.(*ast.IdentifierExpr), Expr: ex, Body: body.(*ast.BlockStmt)}, nil
 }
 
 // sliceExpression ::= identifier '[' expression ':' expression ' (':' expression)?]';
@@ -384,7 +389,7 @@ func (p *Parser) parseVarAssignStmt() (ast.Stmt, error) {
 	}
 	assignOp := p.current().Value
 	p.next()
-	// TODO: Fix this for range stmt
+
 	ex, _ := p.parseExpr()
 
 	// if err != nil {
