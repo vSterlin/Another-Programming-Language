@@ -171,6 +171,9 @@ func (p *Parser) parseDeferStmt() (ast.Stmt, error) {
 // rangeStatement ::= 'for' variableAssignmentStatement 'range' expression blockStatement;
 func (p *Parser) parseRangeStmt() (ast.Stmt, error) {
 
+	if err := p.consume(FOR); err != nil {
+		return nil, err
+	}
 	id, err := p.parseVarAssignStmt()
 
 	if err != nil {
@@ -381,10 +384,12 @@ func (p *Parser) parseVarAssignStmt() (ast.Stmt, error) {
 	}
 	assignOp := p.current().Value
 	p.next()
-	ex, err := p.parseExpr()
-	if err != nil {
-		return nil, err
-	}
+	// TODO: Fix this for range stmt
+	ex, _ := p.parseExpr()
+
+	// if err != nil {
+	// 	return nil, err
+	// }
 	return &ast.VarAssignStmt{Id: id.(*ast.IdentifierExpr), Init: ex, Op: assignOp}, nil
 }
 
