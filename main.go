@@ -1,44 +1,79 @@
 package main
 
 import (
-	"encoding/json"
+	"bufio"
 	"fmt"
+
+	"language/ast"
 	"language/codegen"
+	"language/interpreter"
 	"language/lexer"
 	"language/parser"
 	"os"
 )
 
 func main() {
-	l := lexer.NewLexer(`
-		func main() {
-			defer print("lol")
-			a := 1
-			b := 2
-			c := a + b
-			x := [1, 2, 3]
-			y := x[0:2]
-		}
+
+	interpret(`
+	x := 10
+	{
+		y :=1 
+		print(x)
+		print(y)
+	}
+	print(x)
+	print(y)
 	`)
+
+}
+
+func buildAST(code string) *ast.Program {
+	l := lexer.NewLexer(code)
 	tokens, _ := l.GetTokens()
-	fmt.Println(tokens)
+	// fmt.Println(tokens)
 	p := parser.NewParser(tokens)
-
 	prog, err := p.ParseProgram()
-
 	if err != nil {
 		fmt.Println(err)
-		return
+		return nil
 	}
-	jsonStr, _ := json.MarshalIndent(prog, "", "  ")
+	// json, _ := json.MarshalIndent(prog, "", "  ")
+	// fmt.Println(string(json))
+	return prog
+}
 
-	fmt.Println(string(jsonStr))
-
+func compileToJS(code string) {
+	prog := buildAST(code)
+	fmt.Println(prog)
 	cg := codegen.NewJavascriptCodeGenerator()
-	code := cg.Generate(prog)
+	output := cg.Generate(prog)
+	writeToFile(output)
+}
 
-	writeToFile(code)
+func interpret(code string) {
 
+	prog := buildAST(code)
+	i := interpreter.NewInterpreter(prog)
+	// evaluatedProgram :=
+	i.Interpret()
+
+	// for _, evaluatedStmt := range evaluatedProgram {
+	// 	fmt.Println(evaluatedStmt)
+	// }
+
+}
+
+func repl() {
+	for {
+		fmt.Print(">> ")
+		bufioReader := bufio.NewReader(os.Stdin)
+		code, err := bufioReader.ReadString('\n')
+		if err != nil {
+			return
+		}
+
+		interpret(code)
+	}
 }
 
 func writeToFile(code string) {
