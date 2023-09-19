@@ -37,6 +37,9 @@ const (
 	INCR
 	DECR
 
+	AND
+	OR
+
 	GT
 	LT
 	GTE
@@ -107,6 +110,9 @@ var operators map[string]TokenType = map[string]TokenType{
 
 	"++": INCR,
 	"--": DECR,
+
+	"&&": AND,
+	"||": OR,
 
 	">":  GT,
 	"<":  LT,
@@ -214,6 +220,16 @@ func (l *Lexer) tryTokenizeString() *Token {
 }
 
 func (l *Lexer) tryTokenizeOperator() *Token {
+
+	if l.current() == '&' && l.peek() == '&' {
+		l.next()
+		l.next()
+		return &Token{Type: AND, Value: "&&"}
+	} else if l.current() == '|' && l.peek() == '|' {
+		l.next()
+		l.next()
+		return &Token{Type: OR, Value: "||"}
+	}
 
 	if tokType, ok := operators[string(l.current())]; ok {
 		val := string(l.current())

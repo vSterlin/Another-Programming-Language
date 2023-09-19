@@ -373,9 +373,49 @@ func (p *Parser) parseMultiplicativeExpr() (ast.Expr, error) {
 	return lhs, nil
 }
 
-// expression ::= equalityExpression;
+// logicAndExpression ::= equalityExpression (logicAndOperator equalityExpression)*;
+func (p *Parser) parseAndExpr() (ast.Expr, error) {
+	lhs, err := p.parseEqualityExpr()
+
+	if err != nil {
+		return nil, err
+	}
+	for p.pos < p.len && (p.current().Type == AND) {
+		p.next()
+		rhs, err := p.parseEqualityExpr()
+		if err != nil {
+			return nil, err
+		}
+		lhs = &ast.BinaryExpr{Op: "&&", Lhs: lhs, Rhs: rhs}
+
+	}
+	return lhs, nil
+}
+
+// logicOrExpression ::= logicAndExpression (logicOrOperator logicAndExpression)*;
+func (p *Parser) parseOrExpr() (ast.Expr, error) {
+	lhs, err := p.parseAndExpr()
+
+	if err != nil {
+		return nil, err
+	}
+	for p.pos < p.len && (p.current().Type == OR) {
+
+		p.next()
+		rhs, err := p.parseAndExpr()
+		if err != nil {
+			return nil, err
+		}
+		lhs = &ast.BinaryExpr{Op: "||", Lhs: lhs, Rhs: rhs}
+
+	}
+
+	return lhs, nil
+}
+
+// expression ::= logicOrExpression;
 func (p *Parser) parseExpr() (ast.Expr, error) {
-	return p.parseEqualityExpr()
+	return p.parseOrExpr()
 }
 
 // variableAssignmentStatement ::= identifier ('=' | ':=') expression;

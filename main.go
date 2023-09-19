@@ -6,25 +6,13 @@ import (
 
 	"language/ast"
 	"language/codegen"
-	"language/interpreter"
 	"language/lexer"
 	"language/parser"
 	"os"
 )
 
 func main() {
-
-	interpret(`
-	x := 10
-	{
-		y :=1 
-		print(x)
-		print(y)
-	}
-	print(x)
-	print(y)
-	`)
-
+	interpret(`x && y || z`)
 }
 
 func buildAST(code string) *ast.Program {
@@ -37,8 +25,8 @@ func buildAST(code string) *ast.Program {
 		fmt.Println(err)
 		return nil
 	}
-	// json, _ := json.MarshalIndent(prog, "", "  ")
-	// fmt.Println(string(json))
+	// jsonStr, _ := json.MarshalIndent(prog, "", "  ")
+	// fmt.Println(string(jsonStr))
 	return prog
 }
 
@@ -52,10 +40,11 @@ func compileToJS(code string) {
 
 func interpret(code string) {
 
-	prog := buildAST(code)
-	i := interpreter.NewInterpreter(prog)
+	// prog :=
+	buildAST(code)
+	// i := interpreter.NewInterpreter(prog)
 	// evaluatedProgram :=
-	i.Interpret()
+	// i.Interpret()
 
 	// for _, evaluatedStmt := range evaluatedProgram {
 	// 	fmt.Println(evaluatedStmt)

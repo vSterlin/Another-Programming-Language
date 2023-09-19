@@ -8,6 +8,7 @@ callExpression ::= identifier '(' (identifier (',' identifier)*)? ')';
 (* I will want to change identifier to expression *)
 sliceExpression ::= identifier '[' expression ':' expression (':' expression)? ']'; 
 
+(* Higher precedence *)
 multiplicativeOperator ::= '*' | '/' | '**' | '%';
 multiplicativeExpression ::= primaryExpression (multiplicativeOperator primaryExpression)*;
 
@@ -20,7 +21,14 @@ relationalExpression ::= additiveExpression (relationalOperator additiveExpressi
 equalityOperator ::= '==' | '!=';
 equalityExpression ::= relationalExpression (equalityOperator relationalExpression)*;
 
-expression ::= equalityExpression;
+logicAndOperator ::= '&&';
+logicAndExpression ::= equalityExpression (logicAndOperator equalityExpression)*;
+
+logicOrOperator ::= '||';
+logicOrExpression ::= logicAndExpression (logicOrOperator logicAndExpression)*;
+
+(* Lower precedence *)
+expression ::= logicOrExpression;
 
 expressionStatement ::= expression;
 blockStatement ::= '{' statement* '}';
