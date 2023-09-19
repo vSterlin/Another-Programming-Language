@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"language/ast"
 	"math"
-	"strings"
 )
 
 type Interpreter struct {
@@ -13,7 +12,15 @@ type Interpreter struct {
 }
 
 func NewInterpreter(program *ast.Program) *Interpreter {
-	return &Interpreter{program: program, env: NewEnvironment(nil)}
+
+	globalEnv := NewEnvironment(nil)
+	globalFuncs := NewGlobalFunctions()
+	for name, fn := range globalFuncs {
+		globalEnv.Define(name, fn)
+	}
+
+	globalEnv.Define("VERSION", "0.0.1")
+	return &Interpreter{program: program, env: globalEnv}
 }
 
 func (i *Interpreter) Interpret() []any {
@@ -59,18 +66,15 @@ func (i *Interpreter) evalIdentifierExpr(expr *ast.IdentifierExpr) any {
 // maybe print should be a statement
 func (i *Interpreter) evalCallExpr(expr *ast.CallExpr) any {
 
-	switch expr.Callee.Name {
-	case "print":
-		argStrings := []string{}
-		for _, arg := range expr.Args {
-			argStrings = append(argStrings, fmt.Sprintf("%v", i.evalExpr(arg)))
-		}
-		printRes := strings.Join(argStrings, ", ")
-		fmt.Println(printRes)
-		return nil
-	default:
-		return nil
+	callee := i.evalIdentifierExpr(expr.Callee).(Function)
+
+	args := []any{}
+	for _, arg := range expr.Args {
+		args = append(args, i.evalExpr(arg))
 	}
+
+	return callee.Call(i, args)
+
 }
 
 func (i *Interpreter) evalBinaryExpr(expr *ast.BinaryExpr) any {
@@ -197,46 +201,4 @@ func (i *Interpreter) evaluateProgram(p *ast.Program) []any {
 		stmts = append(stmts, evaluatedStmt)
 	}
 	return stmts
-}
-
-// Environment
-type Environment struct {
-	values map[string]any
-	parent *Environment
-}
-
-func NewEnvironment(parent *Environment) *Environment {
-	globalValues := map[string]any{"VERSION": "0.0.1"}
-	return &Environment{values: globalValues, parent: parent}
-}
-
-func (e *Environment) Define(name string, value any) {
-	e.values[name] = value
-}
-
-func (e *Environment) Assign(name string, value any) error {
-	_, ok := e.values[name]
-	if !ok && e.parent == nil {
-		return NewRuntimeError("undefined variable: " + name)
-	}
-
-	if ok {
-		e.values[name] = value
-		return nil
-	} else {
-		return e.parent.Assign(name, value)
-	}
-}
-
-func (e *Environment) Get(name string) (any, error) {
-	_, ok := e.values[name]
-	if ok {
-		return e.values[name], nil
-	} else {
-		if e.parent != nil {
-			return e.parent.Get(name)
-		} else {
-			return nil, NewRuntimeError("undefined variable: " + name)
-		}
-	}
 }
