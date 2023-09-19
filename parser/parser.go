@@ -356,13 +356,13 @@ func (p *Parser) parseMultiplicativeExpr() (ast.Expr, error) {
 			}
 			switch curr.Type {
 			case MUL:
-				lhs = &ast.BinaryExpr{Op: "*", Lhs: lhs, Rhs: rhs}
+				lhs = &ast.BinaryExpr{Op: ast.MUL, Lhs: lhs, Rhs: rhs}
 			case DIV:
-				lhs = &ast.BinaryExpr{Op: "/", Lhs: lhs, Rhs: rhs}
+				lhs = &ast.BinaryExpr{Op: ast.DIV, Lhs: lhs, Rhs: rhs}
 			case POW:
-				lhs = &ast.BinaryExpr{Op: "**", Lhs: lhs, Rhs: rhs}
+				lhs = &ast.BinaryExpr{Op: ast.POW, Lhs: lhs, Rhs: rhs}
 			case MOD:
-				lhs = &ast.BinaryExpr{Op: "%", Lhs: lhs, Rhs: rhs}
+				lhs = &ast.BinaryExpr{Op: ast.MOD, Lhs: lhs, Rhs: rhs}
 			default:
 				return lhs, nil
 			}
@@ -386,7 +386,7 @@ func (p *Parser) parseAndExpr() (ast.Expr, error) {
 		if err != nil {
 			return nil, err
 		}
-		lhs = &ast.LogicalExpr{Op: "&&", Lhs: lhs, Rhs: rhs}
+		lhs = &ast.LogicalExpr{Op: ast.AND, Lhs: lhs, Rhs: rhs}
 
 	}
 	return lhs, nil
@@ -406,7 +406,7 @@ func (p *Parser) parseOrExpr() (ast.Expr, error) {
 		if err != nil {
 			return nil, err
 		}
-		lhs = &ast.LogicalExpr{Op: "||", Lhs: lhs, Rhs: rhs}
+		lhs = &ast.LogicalExpr{Op: ast.OR, Lhs: lhs, Rhs: rhs}
 
 	}
 

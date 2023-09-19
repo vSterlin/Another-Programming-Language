@@ -23,16 +23,34 @@ type IdentifierExpr struct {
 	Name string `json:"name"`
 }
 
+type BinOp string
+
+const (
+	ADD BinOp = "+"
+	SUB BinOp = "-"
+	MUL BinOp = "*"
+	DIV BinOp = "/"
+	MOD BinOp = "%"
+	POW BinOp = "**"
+)
+
 type BinaryExpr struct {
-	Op  string `json:"operator"`
-	Lhs Expr   `json:"left"`
-	Rhs Expr   `json:"right"`
+	Op  BinOp `json:"operator"`
+	Lhs Expr  `json:"left"`
+	Rhs Expr  `json:"right"`
 }
 
+type LogicalOp string
+
+const (
+	AND LogicalOp = "&&"
+	OR  LogicalOp = "||"
+)
+
 type LogicalExpr struct {
-	Op  string `json:"operator"`
-	Lhs Expr   `json:"left"`
-	Rhs Expr   `json:"right"`
+	Op  LogicalOp `json:"operator"`
+	Lhs Expr      `json:"left"`
+	Rhs Expr      `json:"right"`
 }
 
 type CallExpr struct {
