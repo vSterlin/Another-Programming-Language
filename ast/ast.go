@@ -29,6 +29,12 @@ type BinaryExpr struct {
 	Rhs Expr   `json:"right"`
 }
 
+type LogicalExpr struct {
+	Op  string `json:"operator"`
+	Lhs Expr   `json:"left"`
+	Rhs Expr   `json:"right"`
+}
+
 type CallExpr struct {
 	Callee *IdentifierExpr `json:"callee"`
 	Args   []Expr          `json:"arguments"`
@@ -50,6 +56,7 @@ func (v *IdentifierExpr) exprNode() {}
 func (b *BooleanExpr) exprNode()    {}
 func (s *StringExpr) exprNode()     {}
 func (b *BinaryExpr) exprNode()     {}
+func (b *LogicalExpr) exprNode()    {}
 func (c *CallExpr) exprNode()       {}
 func (a *ArrayExpr) exprNode()      {}
 func (s *SliceExpr) exprNode()      {}

@@ -6,13 +6,19 @@ import (
 
 	"language/ast"
 	"language/codegen"
+	"language/interpreter"
 	"language/lexer"
 	"language/parser"
 	"os"
 )
 
 func main() {
-	interpret(`x && y || z`)
+	interpret(`
+		x := true
+		y := false
+		z := x && y || x
+		print(z)
+	`)
 }
 
 func buildAST(code string) *ast.Program {
@@ -40,11 +46,10 @@ func compileToJS(code string) {
 
 func interpret(code string) {
 
-	// prog :=
-	buildAST(code)
-	// i := interpreter.NewInterpreter(prog)
+	prog := buildAST(code)
+	i := interpreter.NewInterpreter(prog)
 	// evaluatedProgram :=
-	// i.Interpret()
+	i.Interpret()
 
 	// for _, evaluatedStmt := range evaluatedProgram {
 	// 	fmt.Println(evaluatedStmt)

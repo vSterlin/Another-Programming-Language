@@ -386,7 +386,7 @@ func (p *Parser) parseAndExpr() (ast.Expr, error) {
 		if err != nil {
 			return nil, err
 		}
-		lhs = &ast.BinaryExpr{Op: "&&", Lhs: lhs, Rhs: rhs}
+		lhs = &ast.LogicalExpr{Op: "&&", Lhs: lhs, Rhs: rhs}
 
 	}
 	return lhs, nil
@@ -406,7 +406,7 @@ func (p *Parser) parseOrExpr() (ast.Expr, error) {
 		if err != nil {
 			return nil, err
 		}
-		lhs = &ast.BinaryExpr{Op: "||", Lhs: lhs, Rhs: rhs}
+		lhs = &ast.LogicalExpr{Op: "||", Lhs: lhs, Rhs: rhs}
 
 	}
 

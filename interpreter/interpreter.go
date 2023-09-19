@@ -26,6 +26,8 @@ func (i *Interpreter) evalExpr(expr ast.Expr) any {
 		return i.evalNumberExpr(expr)
 	case *ast.BinaryExpr:
 		return i.evalBinaryExpr(expr)
+	case *ast.LogicalExpr:
+		return i.evalLogicalExpr(expr)
 	case *ast.BooleanExpr:
 		return i.evalBooleanExpr(expr)
 	case *ast.StringExpr:
@@ -92,6 +94,20 @@ func (i *Interpreter) evalBinaryExpr(expr *ast.BinaryExpr) any {
 		return lhs == rhs
 	case "!=":
 		return lhs != rhs
+	default:
+		return nil
+	}
+}
+
+func (i *Interpreter) evalLogicalExpr(expr *ast.LogicalExpr) any {
+	lhs := i.evalExpr(expr.Lhs)
+	rhs := i.evalExpr(expr.Rhs)
+
+	switch expr.Op {
+	case "&&":
+		return lhs.(bool) && rhs.(bool)
+	case "||":
+		return lhs.(bool) || rhs.(bool)
 	default:
 		return nil
 	}
