@@ -101,16 +101,22 @@ func (i *Interpreter) evalBinaryExpr(expr *ast.BinaryExpr) any {
 
 func (i *Interpreter) evalLogicalExpr(expr *ast.LogicalExpr) any {
 	lhs := i.evalExpr(expr.Lhs)
-	rhs := i.evalExpr(expr.Rhs)
 
-	switch expr.Op {
-	case "&&":
-		return lhs.(bool) && rhs.(bool)
-	case "||":
-		return lhs.(bool) || rhs.(bool)
-	default:
-		return nil
+	lhsBool := lhs.(bool)
+
+	if expr.Op == ast.OR {
+		if lhsBool {
+			return true
+		}
 	}
+	if expr.Op == ast.AND {
+		if !lhsBool {
+			return false
+		}
+	}
+
+	rhs := i.evalExpr(expr.Rhs)
+	return rhs
 }
 
 // Statements
@@ -123,9 +129,17 @@ func (i *Interpreter) evalStmt(stmt ast.Stmt) any {
 	case *ast.BlockStmt:
 		// NewEnvironment(i.env) creates a new environment with the current environment as its parent
 		return i.evalBlockStmt(stmt, NewEnvironment(i.env))
+	case *ast.WhileStmt:
+		return i.evalWhileStmt(stmt)
 	default:
 		return nil
 	}
+}
+func (i *Interpreter) evalWhileStmt(stmt *ast.WhileStmt) any {
+	for i.evalExpr(stmt.Test).(bool) {
+		i.evalBlockStmt(stmt.Body.(*ast.BlockStmt), NewEnvironment(i.env))
+	}
+	return nil
 }
 
 func (i *Interpreter) evalBlockStmt(stmt *ast.BlockStmt, env *Environment) any {
@@ -133,14 +147,12 @@ func (i *Interpreter) evalBlockStmt(stmt *ast.BlockStmt, env *Environment) any {
 	i.env = env
 	defer (func() { i.env = currEnv })()
 
-	stmts := []any{}
+	// stmts := []any{}
 	for _, stmt := range stmt.Stmts {
-
-		evaluatedStmt := i.evalStmt(stmt)
-		stmts = append(stmts, evaluatedStmt)
+		i.evalStmt(stmt)
 	}
 
-	return stmts
+	return nil
 }
 
 func (i *Interpreter) evalVarAssignStmt(stmt *ast.VarAssignStmt) any {
@@ -184,11 +196,15 @@ func (e *Environment) Define(name string, value any) {
 
 func (e *Environment) Assign(name string, value any) error {
 	_, ok := e.values[name]
+	if !ok && e.parent == nil {
+		return NewRuntimeError("undefined variable: " + name)
+	}
+
 	if ok {
 		e.values[name] = value
 		return nil
 	} else {
-		return NewRuntimeError("undefined variable: " + name)
+		return e.parent.Assign(name, value)
 	}
 }
 

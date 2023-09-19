@@ -2,6 +2,7 @@ package main
 
 import (
 	"bufio"
+	"encoding/json"
 	"fmt"
 
 	"language/ast"
@@ -14,12 +15,15 @@ import (
 
 func main() {
 	interpret(`
-		x := true
-		y := false
-		z := x && y || x
-		print(z)
+		i := 0
+		while i < 10 {
+			print(i)
+			i = i + 1
+		}
 	`)
 }
+
+var toPrint = false
 
 func buildAST(code string) *ast.Program {
 	l := lexer.NewLexer(code)
@@ -31,8 +35,10 @@ func buildAST(code string) *ast.Program {
 		fmt.Println(err)
 		return nil
 	}
-	// jsonStr, _ := json.MarshalIndent(prog, "", "  ")
-	// fmt.Println(string(jsonStr))
+	if toPrint {
+		jsonStr, _ := json.MarshalIndent(prog, "", "  ")
+		fmt.Println(string(jsonStr))
+	}
 	return prog
 }
 
