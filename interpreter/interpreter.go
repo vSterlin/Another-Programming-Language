@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"language/ast"
 	"math"
+	"strings"
 )
 
 type Interpreter struct {
@@ -60,7 +61,12 @@ func (i *Interpreter) evalCallExpr(expr *ast.CallExpr) any {
 
 	switch expr.Callee.Name {
 	case "print":
-		fmt.Println(i.evalExpr(expr.Args[0]))
+		argStrings := []string{}
+		for _, arg := range expr.Args {
+			argStrings = append(argStrings, fmt.Sprintf("%v", i.evalExpr(arg)))
+		}
+		printRes := strings.Join(argStrings, ", ")
+		fmt.Println(printRes)
 		return nil
 	default:
 		return nil
@@ -80,6 +86,8 @@ func (i *Interpreter) evalBinaryExpr(expr *ast.BinaryExpr) any {
 		return lhs.(int) * rhs.(int)
 	case "/":
 		return lhs.(int) / rhs.(int)
+	case "%":
+		return lhs.(int) % rhs.(int)
 	case "**":
 		return int(math.Pow(float64(lhs.(int)), float64(rhs.(int))))
 	case "<":
@@ -129,15 +137,27 @@ func (i *Interpreter) evalStmt(stmt ast.Stmt) any {
 	case *ast.BlockStmt:
 		// NewEnvironment(i.env) creates a new environment with the current environment as its parent
 		return i.evalBlockStmt(stmt, NewEnvironment(i.env))
+	case *ast.IfStmt:
+		return i.evalIfStmt(stmt)
 	case *ast.WhileStmt:
 		return i.evalWhileStmt(stmt)
 	default:
 		return nil
 	}
 }
+
+func (i *Interpreter) evalIfStmt(stmt *ast.IfStmt) any {
+	if i.evalExpr(stmt.Test).(bool) {
+		i.evalStmt(stmt.Consequent.(*ast.BlockStmt))
+	} else {
+		i.evalStmt(stmt.Alternate)
+	}
+	return nil
+}
+
 func (i *Interpreter) evalWhileStmt(stmt *ast.WhileStmt) any {
 	for i.evalExpr(stmt.Test).(bool) {
-		i.evalBlockStmt(stmt.Body.(*ast.BlockStmt), NewEnvironment(i.env))
+		i.evalStmt(stmt.Body.(*ast.BlockStmt))
 	}
 	return nil
 }

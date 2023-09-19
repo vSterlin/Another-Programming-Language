@@ -16,8 +16,16 @@ import (
 func main() {
 	interpret(`
 		i := 0
-		while i < 10 {
-			print(i)
+		while i <= 15 {
+			if i % 3 == 0 && i % 5 == 0 {
+				print(i, "divisible by 3 and 5")
+			} else if i % 3 == 0 {
+				print(i, "divisible by 3")
+			} else if i % 5 == 0 {
+				print(i, "divisible by 5")
+			}  else {
+				print(i, "neither")
+			}
 			i = i + 1
 		}
 	`)
