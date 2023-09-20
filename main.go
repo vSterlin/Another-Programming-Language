@@ -15,11 +15,17 @@ import (
 
 func main() {
 	interpret(`
-		print("hello world", 1)
+		func count(n){
+			if n > 1 {
+				count(n - 1)
+			}
+			print(n)
+		}
+		count(10)
 	`)
 }
 
-var toPrint = false
+var PRINT_AST = false
 
 func buildAST(code string) *ast.Program {
 	l := lexer.NewLexer(code)
@@ -31,7 +37,7 @@ func buildAST(code string) *ast.Program {
 		fmt.Println(err)
 		return nil
 	}
-	if toPrint {
+	if PRINT_AST {
 		jsonStr, _ := json.MarshalIndent(prog, "", "  ")
 		fmt.Println(string(jsonStr))
 	}

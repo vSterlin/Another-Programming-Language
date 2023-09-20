@@ -138,6 +138,8 @@ func (i *Interpreter) evalStmt(stmt ast.Stmt) any {
 		return i.evalExpr(stmt.Expr)
 	case *ast.VarAssignStmt:
 		return i.evalVarAssignStmt(stmt)
+	case *ast.FuncDecStmt:
+		return i.evalFuncDecStmt(stmt)
 	case *ast.BlockStmt:
 		// NewEnvironment(i.env) creates a new environment with the current environment as its parent
 		return i.evalBlockStmt(stmt, NewEnvironment(i.env))
@@ -192,6 +194,12 @@ func (i *Interpreter) evalVarAssignStmt(stmt *ast.VarAssignStmt) any {
 	}
 
 	return varValue
+}
+
+func (i *Interpreter) evalFuncDecStmt(stmt *ast.FuncDecStmt) any {
+	fn := NewFunction(stmt)
+	i.env.Define(stmt.Id.Name, fn)
+	return fn
 }
 
 func (i *Interpreter) evaluateProgram(p *ast.Program) []any {
