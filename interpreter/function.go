@@ -23,8 +23,12 @@ func (f *function) Call(i *Interpreter, args []any) any {
 		env.Define(arg.Name, args[i])
 	}
 
-	i.evalBlockStmt(f.FuncDef.Body, env)
-	return nil
+	retVal := i.evalBlockStmt(f.FuncDef.Body, env)
+	if retVal != nil {
+		return retVal
+	} else {
+		return nil
+	}
 
 }
 

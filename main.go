@@ -15,13 +15,20 @@ import (
 
 func main() {
 	interpret(`
-		func count(n){
-			if n > 1 {
-				count(n - 1)
+		func fib(n){
+			if n <= 1 {
+				return n
+			} else {
+				return fib(n-1) + fib(n-2)
 			}
-			print(n)
 		}
-		count(10)
+
+		i := 1
+		while i <= 10 {
+			print(fib(i))
+			i = i + 1
+		}
+
 	`)
 }
 

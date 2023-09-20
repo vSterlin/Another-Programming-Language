@@ -62,8 +62,6 @@ func (i *Interpreter) evalIdentifierExpr(expr *ast.IdentifierExpr) any {
 
 }
 
-// for now only handle print expressions
-// maybe print should be a statement
 func (i *Interpreter) evalCallExpr(expr *ast.CallExpr) any {
 
 	callee := i.evalIdentifierExpr(expr.Callee).(Function)
@@ -74,7 +72,6 @@ func (i *Interpreter) evalCallExpr(expr *ast.CallExpr) any {
 	}
 
 	return callee.Call(i, args)
-
 }
 
 func (i *Interpreter) evalBinaryExpr(expr *ast.BinaryExpr) any {
@@ -143,6 +140,8 @@ func (i *Interpreter) evalStmt(stmt ast.Stmt) any {
 	case *ast.BlockStmt:
 		// NewEnvironment(i.env) creates a new environment with the current environment as its parent
 		return i.evalBlockStmt(stmt, NewEnvironment(i.env))
+	case *ast.ReturnStmt:
+		return i.evalReturnStmt(stmt)
 	case *ast.IfStmt:
 		return i.evalIfStmt(stmt)
 	case *ast.WhileStmt:
@@ -153,17 +152,25 @@ func (i *Interpreter) evalStmt(stmt ast.Stmt) any {
 }
 
 func (i *Interpreter) evalIfStmt(stmt *ast.IfStmt) any {
+	var retVal any
 	if i.evalExpr(stmt.Test).(bool) {
-		i.evalStmt(stmt.Consequent.(*ast.BlockStmt))
+		retVal = i.evalStmt(stmt.Consequent.(*ast.BlockStmt))
 	} else {
-		i.evalStmt(stmt.Alternate)
+		retVal = i.evalStmt(stmt.Alternate)
 	}
-	return nil
+	if retVal != nil {
+		return retVal
+	} else {
+		return nil
+	}
 }
 
 func (i *Interpreter) evalWhileStmt(stmt *ast.WhileStmt) any {
 	for i.evalExpr(stmt.Test).(bool) {
-		i.evalStmt(stmt.Body.(*ast.BlockStmt))
+		retVal := i.evalStmt(stmt.Body.(*ast.BlockStmt))
+		if retVal != nil {
+			return retVal
+		}
 	}
 	return nil
 }
@@ -175,9 +182,11 @@ func (i *Interpreter) evalBlockStmt(stmt *ast.BlockStmt, env *Environment) any {
 
 	// stmts := []any{}
 	for _, stmt := range stmt.Stmts {
-		i.evalStmt(stmt)
+		retVal := i.evalStmt(stmt)
+		if retVal != nil {
+			return retVal
+		}
 	}
-
 	return nil
 }
 
@@ -193,13 +202,17 @@ func (i *Interpreter) evalVarAssignStmt(stmt *ast.VarAssignStmt) any {
 		}
 	}
 
-	return varValue
+	return nil
 }
 
 func (i *Interpreter) evalFuncDecStmt(stmt *ast.FuncDecStmt) any {
 	fn := NewFunction(stmt)
 	i.env.Define(stmt.Id.Name, fn)
-	return fn
+	return nil
+}
+
+func (i *Interpreter) evalReturnStmt(stmt *ast.ReturnStmt) any {
+	return i.evalExpr(stmt.Arg)
 }
 
 func (i *Interpreter) evaluateProgram(p *ast.Program) []any {
