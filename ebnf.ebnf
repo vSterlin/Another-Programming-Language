@@ -38,7 +38,7 @@ deferStatement ::= 'defer' callExpression;
 variableDeclarationStatement ::= 'let' identifier '=' expression; 
 variableAssignmentStatement ::= identifier ('=' | ':=' ) expression;
 
-returnStatement ::= 'return' expression;
+returnStatement ::= 'return' [expression];
 
 incrementDecrementStatement ::= expression ('++' | '--');
 whileStatement ::= 'while' [expression]  blockStatement;

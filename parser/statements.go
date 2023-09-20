@@ -192,14 +192,16 @@ func (p *Parser) parseIfStmt() (ast.Stmt, error) {
 	return &ast.IfStmt{Test: test, Consequent: consequent, Alternate: alternate}, nil
 }
 
-// returnStatement ::= 'return' expression;
+// returnStatement ::= 'return' [expression];
 func (p *Parser) parseReturnStmt() (ast.Stmt, error) {
 	if err := p.consume(RETURN); err != nil {
 		return nil, err
 	}
 	arg, err := p.parseExpr()
+	// TODO: review this
 	if err != nil {
-		return nil, err
+		return &ast.ReturnStmt{}, nil
+		// return nil, err
 	}
 	return &ast.ReturnStmt{Arg: arg}, nil
 }

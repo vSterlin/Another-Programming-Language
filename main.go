@@ -23,7 +23,7 @@ func main() {
 			}
 		}
 
-		i := 1
+		i := 0
 		while i <= 10 {
 			print(fib(i))
 			i = i + 1
