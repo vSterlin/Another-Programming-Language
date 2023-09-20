@@ -143,6 +143,10 @@ type IncrDecrStmt struct {
 	Op   string `json:"operator"`
 }
 
+type ReturnStmt struct {
+	Arg Expr `json:"argument"`
+}
+
 func (e *ExprStmt) stmtNode()      {}
 func (v *VarDecStmt) stmtNode()    {}
 func (v *VarAssignStmt) stmtNode() {}
@@ -153,6 +157,7 @@ func (i *IfStmt) stmtNode()        {}
 func (d *DeferStmt) stmtNode()     {}
 func (r *RangeStmt) stmtNode()     {}
 func (i *IncrDecrStmt) stmtNode()  {}
+func (r *ReturnStmt) stmtNode()    {}
 
 // func (e *ExprStmt) MarshalJSON() ([]byte, error)     { return toJSON(e, "expressionStatement") }
 // func (v *VarDecStmt) MarshalJSON() ([]byte, error)   { return toJSON(*v, "variableDeclarationStatement") }

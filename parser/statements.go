@@ -192,9 +192,22 @@ func (p *Parser) parseIfStmt() (ast.Stmt, error) {
 	return &ast.IfStmt{Test: test, Consequent: consequent, Alternate: alternate}, nil
 }
 
+// returnStatement ::= 'return' expression;
+func (p *Parser) parseReturnStmt() (ast.Stmt, error) {
+	if err := p.consume(RETURN); err != nil {
+		return nil, err
+	}
+	arg, err := p.parseExpr()
+	if err != nil {
+		return nil, err
+	}
+	return &ast.ReturnStmt{Arg: arg}, nil
+}
+
 // statement ::= expression | variableDeclarationStatement
 // | variableAssignmentStatement | blockStatement
-// | whileStatement | functionDeclaration | ifStatement | deferStatement | rangeStatement;
+// | whileStatement | functionDeclaration
+// | ifStatement | deferStatement | rangeStatement | returnStatement;
 func (p *Parser) parseStmt() (ast.Stmt, error) {
 
 	switch p.current().Type {
@@ -213,6 +226,8 @@ func (p *Parser) parseStmt() (ast.Stmt, error) {
 		return p.parseRangeStmt()
 	case IDENTIFIER:
 		return p.parseVarAssignStmt()
+	case RETURN:
+		return p.parseReturnStmt()
 	default:
 		ex, err := p.parseExpr()
 		if err != nil {
