@@ -11,21 +11,22 @@ type Function interface {
 	Call(i *Interpreter, args []any) any
 }
 type function struct {
-	FuncDef *ast.FuncDecStmt
+	funcDef *ast.FuncDecStmt
+	closure *Environment
 }
 
-func NewFunction(funcDef *ast.FuncDecStmt) *function {
-	return &function{FuncDef: funcDef}
+func NewFunction(funcDef *ast.FuncDecStmt, closure *Environment) *function {
+	return &function{funcDef: funcDef, closure: closure}
 }
 
 func (f *function) Call(i *Interpreter, args []any) any {
-	env := NewEnvironment(i.env)
+	env := NewEnvironment(f.closure)
 
-	for i, arg := range f.FuncDef.Args {
+	for i, arg := range f.funcDef.Args {
 		env.Define(arg.Name, args[i])
 	}
 
-	retVal := i.evalBlockStmt(f.FuncDef.Body, env)
+	retVal := i.evalBlockStmt(f.funcDef.Body, env)
 
 	// unwrap return value
 	if retObj, ok := retVal.(*ReturnValue); ok {
@@ -37,7 +38,7 @@ func (f *function) Call(i *Interpreter, args []any) any {
 }
 
 func (f *function) String() string {
-	return color.BlueString(fmt.Sprintf("<function %s>", f.FuncDef.Id.Name))
+	return color.BlueString(fmt.Sprintf("<function %s>", f.funcDef.Id.Name))
 }
 
 type PrintFunction struct{ function }
