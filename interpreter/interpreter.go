@@ -212,7 +212,7 @@ func (i *Interpreter) evalFuncDecStmt(stmt *ast.FuncDecStmt) any {
 }
 
 func (i *Interpreter) evalReturnStmt(stmt *ast.ReturnStmt) any {
-	return i.evalExpr(stmt.Arg)
+	return NewReturnValue(i.evalExpr(stmt.Arg))
 }
 
 func (i *Interpreter) evaluateProgram(p *ast.Program) []any {

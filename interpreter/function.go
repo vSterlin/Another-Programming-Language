@@ -24,8 +24,9 @@ func (f *function) Call(i *Interpreter, args []any) any {
 	}
 
 	retVal := i.evalBlockStmt(f.FuncDef.Body, env)
-	if retVal != nil {
-		return retVal
+
+	if retObj, ok := retVal.(*ReturnValue); ok {
+		return retObj.Value()
 	} else {
 		return nil
 	}
