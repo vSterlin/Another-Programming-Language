@@ -49,9 +49,9 @@ func (i *Interpreter) evalExpr(expr ast.Expr) any {
 	}
 }
 
-func (i *Interpreter) evalNumberExpr(expr *ast.NumberExpr) any   { return expr.Val }
-func (i *Interpreter) evalBooleanExpr(expr *ast.BooleanExpr) any { return expr.Val }
-func (i *Interpreter) evalStringExpr(expr *ast.StringExpr) any   { return expr.Val }
+func (i *Interpreter) evalNumberExpr(expr *ast.NumberExpr) any   { return RuntimeNumber(expr.Val) }
+func (i *Interpreter) evalBooleanExpr(expr *ast.BooleanExpr) any { return RuntimeBoolean(expr.Val) }
+func (i *Interpreter) evalStringExpr(expr *ast.StringExpr) any   { return RuntimeString(expr.Val) }
 func (i *Interpreter) evalIdentifierExpr(expr *ast.IdentifierExpr) any {
 	val, err := i.env.Get(expr.Name)
 	if err != nil {
@@ -80,29 +80,29 @@ func (i *Interpreter) evalBinaryExpr(expr *ast.BinaryExpr) any {
 
 	switch expr.Op {
 	case "+":
-		return lhs.(int) + rhs.(int)
+		return RuntimeNumber(lhs.(int) + rhs.(int))
 	case "-":
-		return lhs.(int) - rhs.(int)
+		return RuntimeNumber(lhs.(int) - rhs.(int))
 	case "*":
-		return lhs.(int) * rhs.(int)
+		return RuntimeNumber((lhs.(int) * rhs.(int)))
 	case "/":
-		return lhs.(int) / rhs.(int)
+		return RuntimeNumber(lhs.(int) / rhs.(int))
 	case "%":
-		return lhs.(int) % rhs.(int)
+		return RuntimeNumber(lhs.(int) % rhs.(int))
 	case "**":
-		return int(math.Pow(float64(lhs.(int)), float64(rhs.(int))))
+		return RuntimeNumber(int(math.Pow(float64(lhs.(int)), float64(rhs.(int)))))
 	case "<":
-		return lhs.(int) < rhs.(int)
+		return RuntimeBoolean(lhs.(int) < rhs.(int))
 	case ">":
-		return lhs.(int) > rhs.(int)
+		return RuntimeBoolean(lhs.(int) > rhs.(int))
 	case "<=":
-		return lhs.(int) <= rhs.(int)
+		return RuntimeBoolean(lhs.(int) <= rhs.(int))
 	case ">=":
-		return lhs.(int) >= rhs.(int)
+		return RuntimeBoolean(lhs.(int) >= rhs.(int))
 	case "==":
-		return lhs == rhs
+		return RuntimeBoolean(lhs == rhs)
 	case "!=":
-		return lhs != rhs
+		return RuntimeBoolean(lhs != rhs)
 	default:
 		return nil
 	}
