@@ -15,7 +15,8 @@ import (
 
 func main() {
 	interpret(`
-	print("1 == 1")
+	func a(){}
+	print(a)
 
 	`)
 }

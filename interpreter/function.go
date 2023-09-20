@@ -3,6 +3,8 @@ package interpreter
 import (
 	"fmt"
 	"language/ast"
+
+	"github.com/fatih/color"
 )
 
 type Function interface {
@@ -25,6 +27,7 @@ func (f *function) Call(i *Interpreter, args []any) any {
 
 	retVal := i.evalBlockStmt(f.FuncDef.Body, env)
 
+	// unwrap return value
 	if retObj, ok := retVal.(*ReturnValue); ok {
 		return retObj.Value()
 	} else {
@@ -33,11 +36,19 @@ func (f *function) Call(i *Interpreter, args []any) any {
 
 }
 
-type PrintFunction struct{}
+func (f *function) String() string {
+	return color.BlueString(fmt.Sprintf("<function %s>", f.FuncDef.Id.Name))
+}
+
+type PrintFunction struct{ function }
 
 func (p *PrintFunction) Call(i *Interpreter, args []any) any {
 	fmt.Println(args...)
 	return nil
+}
+
+func (p *PrintFunction) String() string {
+	return color.BlueString("<function print>")
 }
 
 func NewGlobalFunctions() map[string]Function {
