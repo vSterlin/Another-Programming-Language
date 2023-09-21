@@ -49,9 +49,9 @@ func (i *Interpreter) evalExpr(expr ast.Expr) any {
 	}
 }
 
-func (i *Interpreter) evalNumberExpr(expr *ast.NumberExpr) any   { return RuntimeNumber(expr.Val) }
-func (i *Interpreter) evalBooleanExpr(expr *ast.BooleanExpr) any { return RuntimeBoolean(expr.Val) }
-func (i *Interpreter) evalStringExpr(expr *ast.StringExpr) any   { return RuntimeString(expr.Val) }
+func (i *Interpreter) evalNumberExpr(expr *ast.NumberExpr) any   { return Number(expr.Val) }
+func (i *Interpreter) evalBooleanExpr(expr *ast.BooleanExpr) any { return Boolean(expr.Val) }
+func (i *Interpreter) evalStringExpr(expr *ast.StringExpr) any   { return String(expr.Val) }
 func (i *Interpreter) evalIdentifierExpr(expr *ast.IdentifierExpr) any {
 	val, err := i.env.Get(expr.Name)
 	if err != nil {
@@ -80,29 +80,29 @@ func (i *Interpreter) evalBinaryExpr(expr *ast.BinaryExpr) any {
 
 	switch expr.Op {
 	case "+":
-		return (lhs).(RuntimeNumber) + rhs.(RuntimeNumber)
+		return (lhs).(Number) + rhs.(Number)
 	case "-":
-		return (lhs).(RuntimeNumber) - rhs.(RuntimeNumber)
+		return (lhs).(Number) - rhs.(Number)
 	case "*":
-		return (lhs).(RuntimeNumber) * rhs.(RuntimeNumber)
+		return (lhs).(Number) * rhs.(Number)
 	case "/":
-		return (lhs).(RuntimeNumber) / rhs.(RuntimeNumber)
+		return (lhs).(Number) / rhs.(Number)
 	case "%":
-		return (lhs).(RuntimeNumber) % rhs.(RuntimeNumber)
+		return (lhs).(Number) % rhs.(Number)
 	case "**":
-		return RuntimeNumber(math.Pow(float64(lhs.(RuntimeNumber)), float64(rhs.(RuntimeNumber))))
+		return Number(math.Pow(float64(lhs.(Number)), float64(rhs.(Number))))
 	case "<":
-		return (lhs).(RuntimeNumber) < rhs.(RuntimeNumber)
+		return Boolean((lhs).(Number) < rhs.(Number))
 	case ">":
-		return (lhs).(RuntimeNumber) > rhs.(RuntimeNumber)
+		return Boolean((lhs).(Number) > rhs.(Number))
 	case "<=":
-		return (lhs).(RuntimeNumber) <= rhs.(RuntimeNumber)
+		return Boolean((lhs).(Number) <= rhs.(Number))
 	case ">=":
-		return (lhs).(RuntimeNumber) >= rhs.(RuntimeNumber)
+		return Boolean((lhs).(Number) >= rhs.(Number))
 	case "==":
-		return (lhs == rhs)
+		return Boolean((lhs == rhs))
 	case "!=":
-		return (lhs != rhs)
+		return Boolean((lhs != rhs))
 	default:
 		return nil
 	}
@@ -111,21 +111,22 @@ func (i *Interpreter) evalBinaryExpr(expr *ast.BinaryExpr) any {
 func (i *Interpreter) evalLogicalExpr(expr *ast.LogicalExpr) any {
 	lhs := i.evalExpr(expr.Lhs)
 
-	lhsBool := lhs.(RuntimeBoolean)
+	lhsBool := lhs.(Boolean)
 
 	if expr.Op == ast.OR {
 		if lhsBool {
-			return RuntimeBoolean(true)
+			return Boolean(true)
 		}
 	}
 	if expr.Op == ast.AND {
 		if !lhsBool {
-			return RuntimeBoolean(false)
+			return Boolean(false)
 		}
 	}
 
 	rhs := i.evalExpr(expr.Rhs)
-	rhsBool := rhs.(RuntimeBoolean)
+	rhsBool := rhs.(Boolean)
+
 	return rhsBool
 }
 
@@ -154,7 +155,7 @@ func (i *Interpreter) evalStmt(stmt ast.Stmt) any {
 
 func (i *Interpreter) evalIfStmt(stmt *ast.IfStmt) any {
 	var retVal any
-	if i.evalExpr(stmt.Test).(RuntimeBoolean) {
+	if i.evalExpr(stmt.Test).(Boolean) {
 		retVal = i.evalStmt(stmt.Consequent.(*ast.BlockStmt))
 	} else {
 		retVal = i.evalStmt(stmt.Alternate)
@@ -167,7 +168,7 @@ func (i *Interpreter) evalIfStmt(stmt *ast.IfStmt) any {
 }
 
 func (i *Interpreter) evalWhileStmt(stmt *ast.WhileStmt) any {
-	for i.evalExpr(stmt.Test).(RuntimeBoolean) {
+	for i.evalExpr(stmt.Test).(Boolean) {
 		retVal := i.evalStmt(stmt.Body.(*ast.BlockStmt))
 		if retVal != nil {
 			return retVal

@@ -14,10 +14,23 @@ import (
 )
 
 func main() {
-	interpret(`
-	func a(){}
-	print(a)
 
+	interpret(`
+
+		func fib(n) {
+			if n <= 1 {
+				return n
+			} else {
+				return fib(n-1) + fib(n-2)
+			}
+		}
+
+		i := 1
+		while i <= 10 {
+			res := fib(i)
+			print(res)
+			i = i + 1
+		}
 	`)
 }
 
