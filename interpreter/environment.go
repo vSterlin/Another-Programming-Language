@@ -28,6 +28,14 @@ func (e *Environment) Assign(name string, value any) error {
 	}
 }
 
+func (e *Environment) AssignAt(distance int, name string, value any) error {
+	env, err := e.getAncestor(distance)
+	if err != nil {
+		return err
+	}
+	return env.Assign(name, value)
+}
+
 func (e *Environment) Get(name string) (any, error) {
 	_, ok := e.values[name]
 	if ok {
@@ -39,4 +47,20 @@ func (e *Environment) Get(name string) (any, error) {
 			return nil, NewRuntimeError("undefined variable: " + name)
 		}
 	}
+}
+
+func (e *Environment) GetAt(distance int, name string) (any, error) {
+	env, err := e.getAncestor(distance)
+	if err != nil {
+		return nil, err
+	}
+	return env.Get(name)
+}
+
+func (e *Environment) getAncestor(distance int) (*Environment, error) {
+	env := e
+	for i := 0; i < distance; i++ {
+		env = env.parent
+	}
+	return env, nil
 }

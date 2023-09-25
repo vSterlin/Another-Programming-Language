@@ -9,6 +9,7 @@ import (
 type Interpreter struct {
 	program *ast.Program
 	env     *Environment
+	locals  map[ast.Expr]int
 }
 
 func NewInterpreter(program *ast.Program) *Interpreter {
@@ -20,11 +21,21 @@ func NewInterpreter(program *ast.Program) *Interpreter {
 	}
 
 	globalEnv.Define("VERSION", "0.0.1")
-	return &Interpreter{program: program, env: globalEnv}
+
+	locals := map[ast.Expr]int{}
+	return &Interpreter{
+		program: program,
+		env:     globalEnv,
+		locals:  locals,
+	}
 }
 
 func (i *Interpreter) Interpret() []any {
-	return i.evaluateProgram(i.program)
+	return i.evalProgram(i.program)
+}
+
+func (i *Interpreter) Resolve(expr ast.Expr, depth int) {
+	i.locals[expr] = depth
 }
 
 // Expressions
@@ -53,13 +64,11 @@ func (i *Interpreter) evalNumberExpr(expr *ast.NumberExpr) any   { return Number
 func (i *Interpreter) evalBooleanExpr(expr *ast.BooleanExpr) any { return Boolean(expr.Val) }
 func (i *Interpreter) evalStringExpr(expr *ast.StringExpr) any   { return String(expr.Val) }
 func (i *Interpreter) evalIdentifierExpr(expr *ast.IdentifierExpr) any {
-	val, err := i.env.Get(expr.Name)
+	val, err := i.lookUpVariable(expr.Name, expr)
 	if err != nil {
 		fmt.Println(err)
-		return nil
 	}
 	return val
-
 }
 
 func (i *Interpreter) evalCallExpr(expr *ast.CallExpr) any {
@@ -198,9 +207,17 @@ func (i *Interpreter) evalVarAssignStmt(stmt *ast.VarAssignStmt) any {
 	if stmt.Op == ":=" {
 		i.env.Define(varName, varValue)
 	} else { // "="
-		err := i.env.Assign(varName, varValue)
-		if err != nil {
-			fmt.Println(err)
+		distance, ok := i.locals[stmt.Id]
+		if ok {
+			err := i.env.AssignAt(distance, varName, varValue)
+			if err != nil {
+				fmt.Println(err)
+			}
+		} else {
+			err := i.env.Assign(varName, varValue)
+			if err != nil {
+				fmt.Println(err)
+			}
 		}
 	}
 
@@ -217,11 +234,21 @@ func (i *Interpreter) evalReturnStmt(stmt *ast.ReturnStmt) any {
 	return NewReturnValue(i.evalExpr(stmt.Arg))
 }
 
-func (i *Interpreter) evaluateProgram(p *ast.Program) []any {
+func (i *Interpreter) evalProgram(p *ast.Program) []any {
 	stmts := []any{}
 	for _, stmt := range p.Stmts {
 		evaluatedStmt := i.evalStmt(stmt)
 		stmts = append(stmts, evaluatedStmt)
 	}
 	return stmts
+}
+
+func (i *Interpreter) lookUpVariable(name string, expr ast.Expr) (any, error) {
+	distance, ok := i.locals[expr]
+	if ok {
+		return i.env.GetAt(distance, name)
+	} else {
+		// get from global env
+		return i.env.Get(name)
+	}
 }
