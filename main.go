@@ -2,7 +2,6 @@ package main
 
 import (
 	"bufio"
-	"encoding/json"
 	"fmt"
 
 	"language/ast"
@@ -16,9 +15,8 @@ import (
 func main() {
 
 	interpret(`
-	class Cat {}
-	c := Cat()
-	print(c)
+	1 + 1
+
 	`)
 }
 
@@ -35,8 +33,9 @@ func buildAST(code string) *ast.Program {
 		return nil
 	}
 	if PRINT_AST {
-		jsonStr, _ := json.MarshalIndent(prog, "", "  ")
-		fmt.Println(string(jsonStr))
+		fmt.Println(prog)
+		// jsonStr, _ := json.MarshalIndent(prog, "", "  ")
+		// fmt.Println(string(jsonStr))
 	}
 	return prog
 }

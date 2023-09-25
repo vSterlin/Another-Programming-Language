@@ -96,8 +96,8 @@ func (tc *Typechecker) typeofStmt(stmt ast.Stmt, typeEnv *TypeEnv) Type {
 
 	switch stmt := stmt.(type) {
 
-	case *ast.VarDecStmt:
-		return tc.typeofVarDec(stmt, typeEnv)
+	// case *ast.VarDecStmt:
+	// 	return tc.typeofVarDec(stmt, typeEnv)
 	case *ast.ExprStmt:
 		return tc.typeofExpr(stmt.Expr, typeEnv)
 	default:

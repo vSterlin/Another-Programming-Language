@@ -38,8 +38,6 @@ func (j *JavascriptCodeGenerator) Generate(program *ast.Program) string {
 
 func (j *JavascriptCodeGenerator) generateStmt(stmt ast.Stmt) string {
 	switch stmt := stmt.(type) {
-	case *ast.VarDecStmt:
-		return j.generateVarDecStmt(stmt)
 	case *ast.VarAssignStmt:
 		return j.generateVarAssignStmt(stmt)
 	case *ast.ExprStmt:

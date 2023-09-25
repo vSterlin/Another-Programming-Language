@@ -1,9 +1,11 @@
 package ast
 
+import "fmt"
+
 // Expressions
 type Expr interface {
 	exprNode()
-	// fmt.Stringer
+	fmt.Stringer
 }
 
 type NumberExpr struct {
@@ -75,10 +77,20 @@ func (c *CallExpr) exprNode()       {}
 func (a *ArrayExpr) exprNode()      {}
 func (s *SliceExpr) exprNode()      {}
 
+func (n *NumberExpr) String() string     { return fmt.Sprintf("number(%d)", n.Val) }
+func (v *IdentifierExpr) String() string { return fmt.Sprintf("identifier(%s)", v.Name) }
+func (b *BooleanExpr) String() string    { return fmt.Sprintf("boolean(%t)", b.Val) }
+func (s *StringExpr) String() string     { return fmt.Sprintf("string(%s)", s.Val) }
+func (b *BinaryExpr) String() string     { return fmt.Sprintf("binary(%s, %s, %s)", b.Lhs, b.Op, b.Rhs) }
+func (b *LogicalExpr) String() string    { return fmt.Sprintf("logical(%s, %s, %s)", b.Lhs, b.Op, b.Rhs) }
+func (c *CallExpr) String() string       { return fmt.Sprintf("call(%s)", c.Callee) }
+func (a *ArrayExpr) String() string      { return fmt.Sprintf("array(%s)", a.Elements) }
+func (s *SliceExpr) String() string      { return fmt.Sprintf("slice(%s)", s.Id) }
+
 // Statements
 type Stmt interface {
 	stmtNode()
-	// fmt.Stringer
+	fmt.Stringer
 }
 
 type ExprStmt struct{ Expr Expr }
@@ -140,7 +152,6 @@ type ClassDecStmt struct {
 }
 
 func (e *ExprStmt) stmtNode()      {}
-func (v *VarDecStmt) stmtNode()    {}
 func (v *VarAssignStmt) stmtNode() {}
 func (b *BlockStmt) stmtNode()     {}
 func (w *WhileStmt) stmtNode()     {}
@@ -151,5 +162,19 @@ func (r *RangeStmt) stmtNode()     {}
 func (i *IncrDecrStmt) stmtNode()  {}
 func (r *ReturnStmt) stmtNode()    {}
 func (c *ClassDecStmt) stmtNode()  {}
+func (p *Program) stmtNode()       {}
+
+func (e *ExprStmt) String() string      { return fmt.Sprintf("expr(%s)", e.Expr) }
+func (v *VarAssignStmt) String() string { return fmt.Sprintf("var(%s)", v.Id) }
+func (b *BlockStmt) String() string     { return fmt.Sprintf("block(%s)", b.Stmts) }
+func (w *WhileStmt) String() string     { return fmt.Sprintf("while(%s)", w.Test) }
+func (f *FuncDecStmt) String() string   { return fmt.Sprintf("func(%s)", f.Id) }
+func (i *IfStmt) String() string        { return fmt.Sprintf("if(%s)", i.Test) }
+func (d *DeferStmt) String() string     { return fmt.Sprintf("defer(%s)", d.Call) }
+func (r *RangeStmt) String() string     { return fmt.Sprintf("range(%s)", r.Id) }
+func (i *IncrDecrStmt) String() string  { return fmt.Sprintf("update(%s, %s)", i.Expr, i.Op) }
+func (r *ReturnStmt) String() string    { return fmt.Sprintf("return(%s)", r.Arg) }
+func (c *ClassDecStmt) String() string  { return fmt.Sprintf("class(%s)", c.Id) }
+func (p *Program) String() string       { return fmt.Sprintf("program(%s)", p.Stmts) }
 
 type Program struct{ Stmts []Stmt }
