@@ -79,18 +79,13 @@ func (p *Parser) parseArrayExpr() (ast.Expr, error) {
 
 }
 
-// primaryExpression ::= identifier | number | boolean | string | '(' expression ')' | callExpression | arrayExpression;
+// primaryExpression ::= identifier | number | boolean | string | '(' expression ')' | arrayExpression;
 func (p *Parser) parsePrimaryExpr() (ast.Expr, error) {
 
 	switch p.current().Type {
 
 	case IDENTIFIER:
-		// if followed by LPAREN, then it's a call expression
-		if p.pos+1 < p.len && p.tokens[p.pos+1].Type == LPAREN {
-			return p.parseCallExpr()
-		} else if p.pos+1 < p.len && p.tokens[p.pos+1].Type == DOT {
-			return p.parseMemberExpr()
-		} else if p.pos+1 < p.len && p.tokens[p.pos+1].Type == LBRACK {
+		if p.pos+1 < p.len && p.tokens[p.pos+1].Type == LBRACK {
 			return p.parseSliceExpr()
 		} else {
 			return p.parseIdentifierExpr()
@@ -111,9 +106,10 @@ func (p *Parser) parsePrimaryExpr() (ast.Expr, error) {
 	return nil, NewParserError(p.pos, fmt.Sprintf("expected primary expression, got %d", p.current().Type))
 }
 
+// memberExpression ::= primaryExpression ('.' identifier)*;
 func (p *Parser) parseMemberExpr() (ast.Expr, error) {
 
-	obj, err := p.parseIdentifierExpr()
+	obj, err := p.parsePrimaryExpr()
 	if err != nil {
 		return nil, err
 	}
@@ -131,18 +127,23 @@ func (p *Parser) parseMemberExpr() (ast.Expr, error) {
 	return obj, nil
 }
 
-// callExpression ::= identifier '(' (identifier (',' identifier)*)? ')';
+// callExpression ::= memberExpression ('(' arguments? ')')?;
 func (p *Parser) parseCallExpr() (ast.Expr, error) {
 
-	calleeId, err := p.parseIdentifierExpr()
+	calleeId, err := p.parseMemberExpr()
 	if err != nil {
 		return nil, err
 	}
-	if err := p.consume(LPAREN); err != nil {
-		return nil, err
+
+	if p.isEnd() || p.current().Type != LPAREN {
+		return calleeId, nil
 	}
 
 	args := []ast.Expr{}
+	err = p.consume(LPAREN)
+	if err != nil {
+		return nil, err
+	}
 	for !p.isEnd() && p.current().Type != RPAREN {
 		arg, err := p.parseExpr()
 		if err != nil {
@@ -158,7 +159,7 @@ func (p *Parser) parseCallExpr() (ast.Expr, error) {
 	}
 
 	return &ast.CallExpr{
-		Callee: calleeId.(*ast.IdentifierExpr),
+		Callee: calleeId,
 		Args:   args,
 	}, nil
 
@@ -301,7 +302,7 @@ func (p *Parser) parseAdditiveExpr() (ast.Expr, error) {
 // multiplicativeOperator ::= '*' | '/' | '**' | '%';
 // multiplicativeExpression ::= primaryExpression (multiplicativeOperator primaryExpression)*;
 func (p *Parser) parseMultiplicativeExpr() (ast.Expr, error) {
-	lhs, err := p.parsePrimaryExpr()
+	lhs, err := p.parseCallExpr()
 
 	if err != nil {
 		return nil, err
@@ -312,7 +313,7 @@ func (p *Parser) parseMultiplicativeExpr() (ast.Expr, error) {
 		if p.tokenTypeEqual(curr.Type, MUL, DIV, POW, MOD) {
 
 			p.next()
-			rhs, err := p.parsePrimaryExpr()
+			rhs, err := p.parseCallExpr()
 			if err != nil {
 				return nil, err
 			}

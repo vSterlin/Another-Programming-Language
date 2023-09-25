@@ -15,8 +15,7 @@ import (
 func main() {
 
 	interpret(`
-	a.b.c.d
-
+	a.b
 	`)
 }
 

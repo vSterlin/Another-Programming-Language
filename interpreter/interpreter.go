@@ -73,7 +73,7 @@ func (i *Interpreter) evalIdentifierExpr(expr *ast.IdentifierExpr) any {
 
 func (i *Interpreter) evalCallExpr(expr *ast.CallExpr) any {
 
-	callee := i.evalIdentifierExpr(expr.Callee).(Caller)
+	callee := i.evalExpr(expr.Callee).(Caller)
 
 	args := []any{}
 	for _, arg := range expr.Args {

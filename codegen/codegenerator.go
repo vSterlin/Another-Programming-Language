@@ -148,7 +148,8 @@ func (j *JavascriptCodeGenerator) generateExpr(expr ast.Expr) string {
 	case *ast.BinaryExpr:
 		return j.generateBinaryExpr(expr)
 	case *ast.CallExpr:
-		return j.generateCallExpr(expr)
+		return ""
+		// return j.generateCallExpr(expr)
 	case *ast.SliceExpr:
 		return j.generateSliceExpr(expr)
 	case *ast.ArrayExpr:
@@ -171,21 +172,21 @@ var globalFuncs map[string]string = map[string]string{
 	"print": "console.log",
 }
 
-func (j *JavascriptCodeGenerator) generateCallExpr(expr *ast.CallExpr) string {
+// func (j *JavascriptCodeGenerator) generateCallExpr(expr *ast.CallExpr) string {
 
-	args := []string{}
-	for _, arg := range expr.Args {
-		arg := j.generateExpr(arg)
-		args = append(args, arg)
-	}
-	funcName := expr.Callee.Name
+// 	args := []string{}
+// 	for _, arg := range expr.Args {
+// 		arg := j.generateExpr(arg)
+// 		args = append(args, arg)
+// 	}
+// 	funcName := expr.Callee.Name
 
-	if val, ok := globalFuncs[funcName]; ok {
-		funcName = val
-	}
+// 	if val, ok := globalFuncs[funcName]; ok {
+// 		funcName = val
+// 	}
 
-	return fmt.Sprintf("%s(%s)", funcName, strings.Join(args, ", "))
-}
+// 	return fmt.Sprintf("%s(%s)", funcName, strings.Join(args, ", "))
+// }
 
 func (j *JavascriptCodeGenerator) generateSliceExpr(expr *ast.SliceExpr) string {
 	id := expr.Id.Name
