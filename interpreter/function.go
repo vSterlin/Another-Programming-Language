@@ -7,7 +7,7 @@ import (
 	"github.com/fatih/color"
 )
 
-type Function interface {
+type Caller interface {
 	Call(i *Interpreter, args []any) any
 }
 type function struct {
@@ -52,8 +52,8 @@ func (p *PrintFunction) String() string {
 	return color.BlueString("<function print>")
 }
 
-func NewGlobalFunctions() map[string]Function {
-	return map[string]Function{
+func NewGlobalFunctions() map[string]Caller {
+	return map[string]Caller{
 		"print": &PrintFunction{},
 	}
 }

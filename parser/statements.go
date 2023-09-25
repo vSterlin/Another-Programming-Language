@@ -72,10 +72,13 @@ func (p *Parser) parseVarAssignStmt() (ast.Stmt, error) {
 }
 
 // functionDeclaration ::= 'func' identifier '(' (identifier (',' identifier)*)? ')' blockStatement;
-func (p *Parser) parseFuncDecStmt() (ast.Stmt, error) {
+func (p *Parser) parseFuncDecStmt(funcType string) (ast.Stmt, error) {
 
-	if err := p.consume(FUNC); err != nil {
-		return nil, err
+	// to handle methods
+	if funcType == "func" {
+		if err := p.consume(FUNC); err != nil {
+			return nil, err
+		}
 	}
 
 	id, err := p.parseIdentifierExpr()
@@ -206,6 +209,33 @@ func (p *Parser) parseReturnStmt() (ast.Stmt, error) {
 	return &ast.ReturnStmt{Arg: arg}, nil
 }
 
+// classDeclaration ::= 'class' identifier '{' (functionDeclaration)* '}';
+func (p *Parser) parseClassDecStmt() (ast.Stmt, error) {
+	if err := p.consume(CLASS); err != nil {
+		return nil, err
+	}
+	id, err := p.parseIdentifierExpr()
+	if err != nil {
+		return nil, err
+	}
+	if err := p.consume(LBRACE); err != nil {
+		return nil, err
+	}
+	var methods []*ast.FuncDecStmt = []*ast.FuncDecStmt{}
+	for !p.isEnd() && p.current().Type != RBRACE {
+		method, err := p.parseFuncDecStmt("method")
+		if err != nil {
+			return nil, err
+		}
+		methods = append(methods, method.(*ast.FuncDecStmt))
+	}
+	if err := p.consume(RBRACE); err != nil {
+		return nil, err
+	}
+	return &ast.ClassDecStmt{Id: id.(*ast.IdentifierExpr), Methods: methods}, nil
+
+}
+
 // statement ::= expression | variableDeclarationStatement
 // | variableAssignmentStatement | blockStatement
 // | whileStatement | functionDeclaration
@@ -219,7 +249,7 @@ func (p *Parser) parseStmt() (ast.Stmt, error) {
 	case WHILE:
 		return p.parseWhileStmt()
 	case FUNC:
-		return p.parseFuncDecStmt()
+		return p.parseFuncDecStmt("func")
 	case IF:
 		return p.parseIfStmt()
 	case DEFER:
@@ -230,6 +260,8 @@ func (p *Parser) parseStmt() (ast.Stmt, error) {
 		return p.parseVarAssignStmt()
 	case RETURN:
 		return p.parseReturnStmt()
+	case CLASS:
+		return p.parseClassDecStmt()
 	default:
 		ex, err := p.parseExpr()
 		if err != nil {

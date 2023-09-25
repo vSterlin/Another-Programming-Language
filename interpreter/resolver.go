@@ -87,6 +87,8 @@ func (r *resolver) resolveStmt(stmt ast.Stmt) error {
 		return r.resolveIfStmt(stmt)
 	case *ast.WhileStmt:
 		return r.resolveWhileStmt(stmt)
+	case *ast.ClassDecStmt:
+		return r.resolveClassDecStmt(stmt)
 		// case *ast.ForStmt:
 		// 	r.resolveForStmt(stmt)
 	}
@@ -188,6 +190,15 @@ func (r *resolver) resolveWhileStmt(stmt *ast.WhileStmt) error {
 	if err != nil {
 		return err
 	}
+	return nil
+}
+
+func (r *resolver) resolveClassDecStmt(stmt *ast.ClassDecStmt) error {
+	err := r.declare(stmt.Id.Name)
+	if err != nil {
+		return err
+	}
+	r.define(stmt.Id.Name)
 	return nil
 }
 

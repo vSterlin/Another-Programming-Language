@@ -16,16 +16,13 @@ import (
 func main() {
 
 	interpret(`
-	{	
-		func add(a){
-			a := 1
-			a := 1
-		}
-	}
+	class Cat {}
+	c := Cat()
+	print(c)
 	`)
 }
 
-var PRINT_AST = false
+var PRINT_AST = true
 
 func buildAST(code string) *ast.Program {
 	l := lexer.NewLexer(code)

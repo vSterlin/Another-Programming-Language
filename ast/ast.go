@@ -1,13 +1,9 @@
 package ast
 
-import (
-	"encoding/json"
-)
-
 // Expressions
 type Expr interface {
 	exprNode()
-	// json.Marshaler
+	// fmt.Stringer
 }
 
 type NumberExpr struct {
@@ -79,19 +75,10 @@ func (c *CallExpr) exprNode()       {}
 func (a *ArrayExpr) exprNode()      {}
 func (s *SliceExpr) exprNode()      {}
 
-// func (n *NumberExpr) MarshalJSON() ([]byte, error)     { return toJSON(*n, "numberExpression") }
-// func (b *BooleanExpr) MarshalJSON() ([]byte, error)    { return toJSON(*b, "booleanExpression") }
-// func (s *StringExpr) MarshalJSON() ([]byte, error)     { return toJSON(*s, "stringExpression") }
-// func (i *IdentifierExpr) MarshalJSON() ([]byte, error) { return toJSON(*i, "identifierExpression") }
-// func (b *BinaryExpr) MarshalJSON() ([]byte, error)     { return toJSON(*b, "binaryExpression") }
-// func (c *CallExpr) MarshalJSON() ([]byte, error)       { return toJSON(*c, "callExpression ") }
-// func (a *ArrayExpr) MarshalJSON() ([]byte, error)      { return toJSON(*a, "arrayExpression") }
-// func (s *SliceExpr) MarshalJSON() ([]byte, error)      { return toJSON(*s, "sliceExpression") }
-
 // Statements
 type Stmt interface {
 	stmtNode()
-	// json.Marshaler
+	// fmt.Stringer
 }
 
 type ExprStmt struct{ Expr Expr }
@@ -147,6 +134,11 @@ type ReturnStmt struct {
 	Arg Expr `json:"argument"`
 }
 
+type ClassDecStmt struct {
+	Id      *IdentifierExpr `json:"identifier"`
+	Methods []*FuncDecStmt  `json:"methods"`
+}
+
 func (e *ExprStmt) stmtNode()      {}
 func (v *VarDecStmt) stmtNode()    {}
 func (v *VarAssignStmt) stmtNode() {}
@@ -158,37 +150,6 @@ func (d *DeferStmt) stmtNode()     {}
 func (r *RangeStmt) stmtNode()     {}
 func (i *IncrDecrStmt) stmtNode()  {}
 func (r *ReturnStmt) stmtNode()    {}
-
-// func (e *ExprStmt) MarshalJSON() ([]byte, error)     { return toJSON(e, "expressionStatement") }
-// func (v *VarDecStmt) MarshalJSON() ([]byte, error)   { return toJSON(*v, "variableDeclarationStatement") }
-// func (b *BlockStmt) MarshalJSON() ([]byte, error)    { return toJSON(*b, "blockStatement") }
-// func (w *WhileStmt) MarshalJSON() ([]byte, error)    { return toJSON(*w, "whileStatement") }
-// func (f *FuncDecStmt) MarshalJSON() ([]byte, error)  { return toJSON(*f, "funcDeclarationStatement") }
-// func (i *IfStmt) MarshalJSON() ([]byte, error)       { return toJSON(*i, "ifStatement") }
-// func (d *DeferStmt) MarshalJSON() ([]byte, error)    { return toJSON(*d, "deferStatement") }
-// func (r *RangeStmt) MarshalJSON() ([]byte, error)    { return toJSON(*r, "rangeStatement") }
-// func (i *IncrDecrStmt) MarshalJSON() ([]byte, error) { return toJSON(*i, "incrDecrStatement") }
-// func (v *VarAssignStmt) MarshalJSON() ([]byte, error) {
-// 	return toJSON(*v, "variableAssignmentStatement")
-// }
+func (c *ClassDecStmt) stmtNode()  {}
 
 type Program struct{ Stmts []Stmt }
-
-// util
-func toJSON(node any, typeName string) ([]byte, error) {
-
-	m := make(map[string]any)
-
-	m["type"] = typeName
-	jsonStr, err := json.Marshal((node))
-	if err != nil {
-		return nil, err
-	}
-	err = json.Unmarshal(jsonStr, &m)
-	if err != nil {
-		return nil, err
-	}
-
-	jsonStr, err = json.Marshal(m)
-	return (jsonStr), err
-}

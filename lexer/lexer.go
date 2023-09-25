@@ -19,6 +19,7 @@ const (
 	RETURN
 	DEFER
 	RANGE
+	CLASS
 
 	keyword_end
 
@@ -59,6 +60,8 @@ const (
 	COMMA
 	COLON
 
+	DOT
+
 	operator_end
 
 	NUMBER
@@ -94,6 +97,7 @@ var keywords map[string]TokenType = map[string]TokenType{
 
 	"true":  BOOLEAN,
 	"false": BOOLEAN,
+	"class": CLASS,
 }
 
 var operators map[string]TokenType = map[string]TokenType{
@@ -132,6 +136,8 @@ var operators map[string]TokenType = map[string]TokenType{
 
 	",": COMMA,
 	":": COLON,
+
+	".": DOT,
 }
 
 func NewLexer(input string) *Lexer {

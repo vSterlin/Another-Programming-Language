@@ -73,7 +73,7 @@ func (i *Interpreter) evalIdentifierExpr(expr *ast.IdentifierExpr) any {
 
 func (i *Interpreter) evalCallExpr(expr *ast.CallExpr) any {
 
-	callee := i.evalIdentifierExpr(expr.Callee).(Function)
+	callee := i.evalIdentifierExpr(expr.Callee).(Caller)
 
 	args := []any{}
 	for _, arg := range expr.Args {
@@ -157,6 +157,8 @@ func (i *Interpreter) evalStmt(stmt ast.Stmt) any {
 		return i.evalIfStmt(stmt)
 	case *ast.WhileStmt:
 		return i.evalWhileStmt(stmt)
+	case *ast.ClassDecStmt:
+		return i.evalClassDecStmt(stmt)
 	default:
 		return nil
 	}
@@ -183,6 +185,12 @@ func (i *Interpreter) evalWhileStmt(stmt *ast.WhileStmt) any {
 			return retVal
 		}
 	}
+	return nil
+}
+
+func (i *Interpreter) evalClassDecStmt(stmt *ast.ClassDecStmt) any {
+	class := NewClass(stmt.Id.Name)
+	i.env.Define(stmt.Id.Name, class)
 	return nil
 }
 

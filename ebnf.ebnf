@@ -1,9 +1,9 @@
 
 arrayExpression ::= '[' (expression (',' expression)*)? ']';
 
-primaryExpression ::= identifier | number | boolean | '(' expression ')' | arrayExpression;
+primaryExpression ::= identifier | number | boolean | '(' expression ')' | arrayExpression | sliceExpression;
 
-callExpression ::= identifier '(' (identifier (',' identifier)*)? ')';
+callExpression ::= identifier ('(' (identifier (',' identifier)*)? ')') | '.' identifier;
 
 (* I will want to change identifier to expression *)
 sliceExpression ::= identifier '[' expression ':' expression (':' expression)? ']'; 
@@ -34,12 +34,13 @@ expressionStatement ::= expression;
 blockStatement ::= '{' statement* '}';
 deferStatement ::= 'defer' callExpression;
 
-(* I will get rid of this one*)
-variableDeclarationStatement ::= 'let' identifier '=' expression; 
+
+
+classDeclaration ::= 'class' identifier '{' (functionDeclaration)* '}';
+
+
 variableAssignmentStatement ::= identifier ('=' | ':=' ) expression;
-
 returnStatement ::= 'return' [expression];
-
 incrementDecrementStatement ::= expression ('++' | '--');
 whileStatement ::= 'while' [expression]  blockStatement;
 ifStatement ::= 'if' expression blockStatement ('else if' expression blockStatement)* ('else' blockStatement)?;
