@@ -19,6 +19,7 @@ func main() {
 	{	
 		func add(a){
 			a := 1
+			a := 1
 		}
 	}
 	`)
@@ -56,7 +57,11 @@ func interpret(code string) {
 	prog := buildAST(code)
 	i := interpreter.NewInterpreter(prog)
 	resolver := interpreter.NewResolver(i)
-	resolver.ResolveProgram(prog)
+	err := resolver.ResolveProgram(prog)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
 	// evaluatedProgram :=
 	i.Interpret()
 

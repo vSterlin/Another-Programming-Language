@@ -32,7 +32,6 @@ func (r *resolver) declare(name string) error {
 	scope := r.scopes.peek()
 
 	if _, ok := (*scope)[name]; ok {
-		fmt.Println("RUNTIME ERROR: variable already declared in this scope")
 		return NewRuntimeError(fmt.Sprintf("variable %s already declared in this scope", name))
 	}
 
@@ -42,7 +41,6 @@ func (r *resolver) declare(name string) error {
 
 func (r *resolver) define(name string) {
 	if r.scopes.isEmpty() {
-		fmt.Printf("\"lol\": %v\n", "lol")
 		return
 	}
 	scope := r.scopes.peek()
@@ -62,62 +60,77 @@ func (r *resolver) resolveLocal(expr ast.Expr, name string) {
 }
 
 // Statements
-func (r *resolver) ResolveProgram(p *ast.Program) {
+func (r *resolver) ResolveProgram(p *ast.Program) error {
 	for _, stmt := range p.Stmts {
-		r.resolveStmt(stmt)
+		err := r.resolveStmt(stmt)
+		if err != nil {
+			return err
+		}
 	}
+	return nil
 }
 
 // TODO: Might consider using a visitor pattern here
-func (r *resolver) resolveStmt(stmt ast.Stmt) {
+func (r *resolver) resolveStmt(stmt ast.Stmt) error {
 	switch stmt := stmt.(type) {
 	case *ast.ExprStmt:
-		r.resolveExpr(stmt.Expr)
+		return r.resolveExpr(stmt.Expr)
 	case *ast.BlockStmt:
-		r.resolveBlockStmt(stmt)
+		return r.resolveBlockStmt(stmt)
 	case *ast.VarAssignStmt:
-		r.resolveVarAssignStmt(stmt)
+		return r.resolveVarAssignStmt(stmt)
 	case *ast.FuncDecStmt:
-		r.resolveFuncDecStmt(stmt)
+		return r.resolveFuncDecStmt(stmt)
 	case *ast.ReturnStmt:
-		r.resolveReturnStmt(stmt)
+		return r.resolveReturnStmt(stmt)
 	case *ast.IfStmt:
-		r.resolveIfStmt(stmt)
+		return r.resolveIfStmt(stmt)
 	case *ast.WhileStmt:
-		r.resolveWhileStmt(stmt)
+		return r.resolveWhileStmt(stmt)
 		// case *ast.ForStmt:
 		// 	r.resolveForStmt(stmt)
-
 	}
+	return nil
 }
 
-func (r *resolver) resolveBlockStmt(stmt *ast.BlockStmt) {
+func (r *resolver) resolveBlockStmt(stmt *ast.BlockStmt) error {
 	r.beginScope()
 	defer r.endScope()
 	for _, stmt := range stmt.Stmts {
-		r.resolveStmt(stmt)
+		err := r.resolveStmt(stmt)
+		if err != nil {
+			return err
+		}
 	}
+	return nil
 }
 
-func (r *resolver) resolveVarAssignStmt(stmt *ast.VarAssignStmt) {
+func (r *resolver) resolveVarAssignStmt(stmt *ast.VarAssignStmt) error {
 	if stmt.Op == ":=" {
-		r.declare(stmt.Id.Name)
+		err := r.declare(stmt.Id.Name)
+		if err != nil {
+			return err
+		}
 		r.resolveExpr(stmt.Init)
 		r.define(stmt.Id.Name)
+
 	} else {
 		r.resolveExpr(stmt.Init)
 		r.resolveLocal(stmt.Id, stmt.Id.Name)
 	}
+	return nil
 }
 
-func (r *resolver) resolveFuncDecStmt(stmt *ast.FuncDecStmt) {
-	r.declare(stmt.Id.Name)
+func (r *resolver) resolveFuncDecStmt(stmt *ast.FuncDecStmt) error {
+	err := r.declare(stmt.Id.Name)
+	if err != nil {
+		return err
+	}
 	r.define(stmt.Id.Name)
-
-	r.resolveFunction(stmt, functionFuncType)
+	return r.resolveFunction(stmt, functionFuncType)
 }
 
-func (r *resolver) resolveFunction(funcDec *ast.FuncDecStmt, funcType functionType) {
+func (r *resolver) resolveFunction(funcDec *ast.FuncDecStmt, funcType functionType) error {
 
 	enclosingFunc := r.currentFunc
 	r.currentFunc = funcType
@@ -130,15 +143,18 @@ func (r *resolver) resolveFunction(funcDec *ast.FuncDecStmt, funcType functionTy
 	}()
 
 	for _, arg := range funcDec.Args {
-		r.declare(arg.Name)
+		err := r.declare(arg.Name)
+		if err != nil {
+			return err
+		}
+
 		r.define(arg.Name)
 	}
-	r.resolveStmt(funcDec.Body)
+	return r.resolveStmt(funcDec.Body)
 }
 
 func (r *resolver) resolveReturnStmt(stmt *ast.ReturnStmt) error {
 	if r.currentFunc == noneFuncType {
-		fmt.Println("RUNTIME ERROR: can't return from top-level code")
 		return NewRuntimeError("can't return from top-level code")
 	}
 	if stmt.Arg != nil {
@@ -147,17 +163,32 @@ func (r *resolver) resolveReturnStmt(stmt *ast.ReturnStmt) error {
 	return nil
 }
 
-func (r *resolver) resolveIfStmt(stmt *ast.IfStmt) {
-	r.resolveExpr(stmt.Test)
-	r.resolveStmt(stmt.Consequent)
-	if stmt.Alternate != nil {
-		r.resolveStmt(stmt.Alternate)
+func (r *resolver) resolveIfStmt(stmt *ast.IfStmt) error {
+	err := r.resolveExpr(stmt.Test)
+	if err != nil {
+		return err
 	}
+	err = r.resolveStmt(stmt.Consequent)
+	if err != nil {
+		return err
+	}
+
+	if stmt.Alternate != nil {
+		err = r.resolveStmt(stmt.Alternate)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
-func (r *resolver) resolveWhileStmt(stmt *ast.WhileStmt) {
+func (r *resolver) resolveWhileStmt(stmt *ast.WhileStmt) error {
 	r.resolveExpr(stmt.Test)
-	r.resolveStmt(stmt.Body)
+	err := r.resolveStmt(stmt.Body)
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 // Expressions
@@ -166,18 +197,17 @@ func (r *resolver) resolveExpr(expr ast.Expr) error {
 	case *ast.IdentifierExpr:
 		return r.resolveIdentifierExpr(expr)
 	case *ast.BinaryExpr:
-		r.resolveBinaryExpr(expr)
+		return r.resolveBinaryExpr(expr)
 	case *ast.LogicalExpr:
-		r.resolveLogicalExpr(expr)
+		return r.resolveLogicalExpr(expr)
 	case *ast.CallExpr:
-		r.resolveCallExpr(expr)
+		return r.resolveCallExpr(expr)
 	}
 	return nil
 }
 
 func (r *resolver) resolveIdentifierExpr(expr *ast.IdentifierExpr) error {
 	if !r.scopes.isEmpty() && r.scopes.peek().isDefined(expr.Name) && !r.scopes.peek().isInitialized(expr.Name) {
-		fmt.Println("RUNTIME ERROR: can't resolve local variable in own initializer")
 		return NewRuntimeError(fmt.Sprintf("can't resolve local variable %s in own initializer", expr.Name))
 	}
 
@@ -185,18 +215,31 @@ func (r *resolver) resolveIdentifierExpr(expr *ast.IdentifierExpr) error {
 	return nil
 }
 
-func (r *resolver) resolveBinaryExpr(expr *ast.BinaryExpr) {
-	r.resolveExpr(expr.Lhs)
-	r.resolveExpr(expr.Rhs)
+func (r *resolver) resolveBinaryExpr(expr *ast.BinaryExpr) error {
+	err := r.resolveExpr(expr.Lhs)
+	if err != nil {
+		return err
+	}
+	return r.resolveExpr(expr.Rhs)
 }
-func (r *resolver) resolveLogicalExpr(expr *ast.LogicalExpr) {
-	r.resolveExpr(expr.Lhs)
-	r.resolveExpr(expr.Rhs)
+func (r *resolver) resolveLogicalExpr(expr *ast.LogicalExpr) error {
+	err := r.resolveExpr(expr.Lhs)
+	if err != nil {
+		return err
+	}
+	return r.resolveExpr(expr.Rhs)
 }
-func (r *resolver) resolveCallExpr(expr *ast.CallExpr) {
-	r.resolveExpr(expr.Callee)
+func (r *resolver) resolveCallExpr(expr *ast.CallExpr) error {
+	err := r.resolveExpr(expr.Callee)
+	if err != nil {
+		return err
+	}
 
 	for _, arg := range expr.Args {
-		r.resolveExpr(arg)
+		err = r.resolveExpr(arg)
+		if err != nil {
+			return err
+		}
 	}
+	return nil
 }
