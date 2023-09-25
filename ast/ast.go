@@ -21,6 +21,11 @@ type IdentifierExpr struct {
 	Name string `json:"name"`
 }
 
+type MemberExpr struct {
+	Obj  Expr
+	Prop Expr
+}
+
 type BinOp string
 
 const (
@@ -60,6 +65,7 @@ type ArrayExpr struct {
 	Elements []Expr `json:"elements"`
 }
 
+// TODO: maybe this should be a member expr
 type SliceExpr struct {
 	Id   *IdentifierExpr `json:"identifier"`
 	Low  Expr            `json:"low"`
@@ -76,6 +82,7 @@ func (b *LogicalExpr) exprNode()    {}
 func (c *CallExpr) exprNode()       {}
 func (a *ArrayExpr) exprNode()      {}
 func (s *SliceExpr) exprNode()      {}
+func (m *MemberExpr) exprNode()     {}
 
 func (n *NumberExpr) String() string     { return fmt.Sprintf("number(%d)", n.Val) }
 func (v *IdentifierExpr) String() string { return fmt.Sprintf("identifier(%s)", v.Name) }
@@ -86,6 +93,7 @@ func (b *LogicalExpr) String() string    { return fmt.Sprintf("logical(%s, %s, %
 func (c *CallExpr) String() string       { return fmt.Sprintf("call(%s)", c.Callee) }
 func (a *ArrayExpr) String() string      { return fmt.Sprintf("array(%s)", a.Elements) }
 func (s *SliceExpr) String() string      { return fmt.Sprintf("slice(%s)", s.Id) }
+func (m *MemberExpr) String() string     { return fmt.Sprintf("member(%s, %s)", m.Obj, m.Prop) }
 
 // Statements
 type Stmt interface {

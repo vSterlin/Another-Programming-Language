@@ -88,6 +88,8 @@ func (p *Parser) parsePrimaryExpr() (ast.Expr, error) {
 		// if followed by LPAREN, then it's a call expression
 		if p.pos+1 < p.len && p.tokens[p.pos+1].Type == LPAREN {
 			return p.parseCallExpr()
+		} else if p.pos+1 < p.len && p.tokens[p.pos+1].Type == DOT {
+			return p.parseMemberExpr()
 		} else if p.pos+1 < p.len && p.tokens[p.pos+1].Type == LBRACK {
 			return p.parseSliceExpr()
 		} else {
@@ -107,6 +109,26 @@ func (p *Parser) parsePrimaryExpr() (ast.Expr, error) {
 	}
 
 	return nil, NewParserError(p.pos, fmt.Sprintf("expected primary expression, got %d", p.current().Type))
+}
+
+func (p *Parser) parseMemberExpr() (ast.Expr, error) {
+
+	obj, err := p.parseIdentifierExpr()
+	if err != nil {
+		return nil, err
+	}
+
+	for !p.isEnd() && p.current().Type == DOT {
+		p.next()
+		prop, err := p.parseIdentifierExpr()
+		if err != nil {
+			return nil, err
+		}
+		obj = &ast.MemberExpr{Obj: obj, Prop: prop}
+
+	}
+
+	return obj, nil
 }
 
 // callExpression ::= identifier '(' (identifier (',' identifier)*)? ')';

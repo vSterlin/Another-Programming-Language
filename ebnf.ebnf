@@ -3,7 +3,8 @@ arrayExpression ::= '[' (expression (',' expression)*)? ']';
 
 primaryExpression ::= identifier | number | boolean | '(' expression ')' | arrayExpression | sliceExpression;
 
-callExpression ::= identifier ('(' (identifier (',' identifier)*)? ')') | '.' identifier;
+callExpression ::= identifier ('(' (identifier (',' identifier)*)? ')');
+memberExpression ::= identifier '.' identifier;
 
 (* I will want to change identifier to expression *)
 sliceExpression ::= identifier '[' expression ':' expression (':' expression)? ']'; 
