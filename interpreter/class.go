@@ -22,11 +22,23 @@ func (c *Class) Call(i *Interpreter, args []any) any {
 }
 
 type Instance struct {
-	class *Class
+	class  *Class
+	fields map[string]any
 }
 
 func NewInstance(class *Class) *Instance {
-	return &Instance{class: class}
+	return &Instance{class: class, fields: map[string]any{}}
+}
+
+func (i *Instance) Get(name string) (any, error) {
+	if val, ok := i.fields[name]; ok {
+		return val, nil
+	}
+	return nil, NewRuntimeError(fmt.Sprintf("undefined property '%s'", name))
+}
+
+func (i *Instance) Set(name string, val any) {
+	i.fields[name] = val
 }
 
 func (i *Instance) String() string {

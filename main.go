@@ -15,7 +15,10 @@ import (
 func main() {
 
 	interpret(`
-	a.b
+		class Cat {}
+		gary := Cat()
+		gary.name = "Gary"
+		print(gary.name)
 	`)
 }
 

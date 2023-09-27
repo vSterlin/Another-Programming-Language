@@ -38,8 +38,8 @@ func (j *JavascriptCodeGenerator) Generate(program *ast.Program) string {
 
 func (j *JavascriptCodeGenerator) generateStmt(stmt ast.Stmt) string {
 	switch stmt := stmt.(type) {
-	case *ast.VarAssignStmt:
-		return j.generateVarAssignStmt(stmt)
+	// case *ast.VarAssignStmt:
+	// 	return j.generateVarAssignStmt(stmt)
 	case *ast.ExprStmt:
 		return j.generateExpr(stmt.Expr)
 	case *ast.BlockStmt:
@@ -125,14 +125,14 @@ func (j *JavascriptCodeGenerator) generateVarDecStmt(stmt *ast.VarDecStmt) strin
 	return fmt.Sprintf("var %s = %s", stmt.Id.Name, j.generateExpr(stmt.Init))
 }
 
-func (j *JavascriptCodeGenerator) generateVarAssignStmt(stmt *ast.VarAssignStmt) string {
-	init := j.generateExpr(stmt.Init)
-	if stmt.Op == "=" {
-		return fmt.Sprintf("%s = %s", stmt.Id.Name, init)
-	} else { // ":="
-		return fmt.Sprintf("var %s = %s", stmt.Id.Name, init)
-	}
-}
+// func (j *JavascriptCodeGenerator) generateVarAssignStmt(stmt *ast.VarAssignStmt) string {
+// 	init := j.generateExpr(stmt.Init)
+// 	if stmt.Op == "=" {
+// 		return fmt.Sprintf("%s = %s", stmt.Id.Name, init)
+// 	} else { // ":="
+// 		return fmt.Sprintf("var %s = %s", stmt.Id.Name, init)
+// 	}
+// }
 
 func (j *JavascriptCodeGenerator) generateExpr(expr ast.Expr) string {
 

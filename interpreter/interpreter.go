@@ -55,6 +55,8 @@ func (i *Interpreter) evalExpr(expr ast.Expr) any {
 		return i.evalIdentifierExpr(expr)
 	case *ast.CallExpr:
 		return i.evalCallExpr(expr)
+	case *ast.MemberExpr:
+		return i.evalMemberExpr(expr)
 	default:
 		return nil
 	}
@@ -73,7 +75,11 @@ func (i *Interpreter) evalIdentifierExpr(expr *ast.IdentifierExpr) any {
 
 func (i *Interpreter) evalCallExpr(expr *ast.CallExpr) any {
 
-	callee := i.evalExpr(expr.Callee).(Caller)
+	callee, ok := i.evalExpr(expr.Callee).(Caller)
+
+	if !ok {
+		fmt.Println("the expressions is not callable")
+	}
 
 	args := []any{}
 	for _, arg := range expr.Args {
@@ -139,6 +145,24 @@ func (i *Interpreter) evalLogicalExpr(expr *ast.LogicalExpr) any {
 	return rhsBool
 }
 
+func (i *Interpreter) evalMemberExpr(expr *ast.MemberExpr) any {
+
+	obj := i.evalExpr(expr.Obj)
+	instance, ok := obj.(*Instance)
+	if !ok {
+		fmt.Println("the object is not an instance")
+		return nil
+	}
+
+	// for now handle identifier exp only
+	field, err := instance.Get(expr.Prop.(*ast.IdentifierExpr).Name)
+	if err != nil {
+		fmt.Println(err)
+		return nil
+	}
+	return field
+}
+
 // Statements
 func (i *Interpreter) evalStmt(stmt ast.Stmt) any {
 	switch stmt := stmt.(type) {
@@ -159,6 +183,8 @@ func (i *Interpreter) evalStmt(stmt ast.Stmt) any {
 		return i.evalWhileStmt(stmt)
 	case *ast.ClassDecStmt:
 		return i.evalClassDecStmt(stmt)
+	case *ast.SetStmt:
+		return i.evalSetStmt(stmt)
 	default:
 		return nil
 	}
@@ -240,6 +266,16 @@ func (i *Interpreter) evalFuncDecStmt(stmt *ast.FuncDecStmt) any {
 
 func (i *Interpreter) evalReturnStmt(stmt *ast.ReturnStmt) any {
 	return NewReturnValue(i.evalExpr(stmt.Arg))
+}
+
+func (i *Interpreter) evalSetStmt(stmt *ast.SetStmt) any {
+	lhs := i.evalExpr(stmt.Lhs)
+	instance, ok := lhs.(*Instance)
+	if !ok {
+		fmt.Println("the object is not an instance")
+	}
+	instance.Set(stmt.Name, i.evalExpr(stmt.Val))
+	return nil
 }
 
 func (i *Interpreter) evalProgram(p *ast.Program) []any {

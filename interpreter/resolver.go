@@ -89,6 +89,8 @@ func (r *resolver) resolveStmt(stmt ast.Stmt) error {
 		return r.resolveWhileStmt(stmt)
 	case *ast.ClassDecStmt:
 		return r.resolveClassDecStmt(stmt)
+	case *ast.SetStmt:
+		return r.resolveSetStmt(stmt)
 		// case *ast.ForStmt:
 		// 	r.resolveForStmt(stmt)
 	}
@@ -202,6 +204,14 @@ func (r *resolver) resolveClassDecStmt(stmt *ast.ClassDecStmt) error {
 	return nil
 }
 
+func (r *resolver) resolveSetStmt(stmt *ast.SetStmt) error {
+	err := r.resolveExpr(stmt.Lhs)
+	if err != nil {
+		return err
+	}
+	return r.resolveExpr(stmt.Val)
+}
+
 // Expressions
 func (r *resolver) resolveExpr(expr ast.Expr) error {
 	switch expr := expr.(type) {
@@ -213,6 +223,8 @@ func (r *resolver) resolveExpr(expr ast.Expr) error {
 		return r.resolveLogicalExpr(expr)
 	case *ast.CallExpr:
 		return r.resolveCallExpr(expr)
+	case *ast.MemberExpr:
+		return r.resolveMemberExpr(expr)
 	}
 	return nil
 }
@@ -253,4 +265,8 @@ func (r *resolver) resolveCallExpr(expr *ast.CallExpr) error {
 		}
 	}
 	return nil
+}
+
+func (r *resolver) resolveMemberExpr(expr *ast.MemberExpr) error {
+	return r.resolveExpr(expr.Obj)
 }

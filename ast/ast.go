@@ -114,6 +114,12 @@ type VarAssignStmt struct {
 	Init Expr            `json:"init"`
 }
 
+type SetStmt struct {
+	Lhs  Expr   `json:"object"`
+	Name string `json:"name"`
+	Val  Expr   `json:"value"`
+}
+
 type BlockStmt struct {
 	Stmts []Stmt `json:"statements"`
 }
@@ -170,6 +176,7 @@ func (r *RangeStmt) stmtNode()     {}
 func (i *IncrDecrStmt) stmtNode()  {}
 func (r *ReturnStmt) stmtNode()    {}
 func (c *ClassDecStmt) stmtNode()  {}
+func (v *SetStmt) stmtNode()       {}
 func (p *Program) stmtNode()       {}
 
 func (e *ExprStmt) String() string      { return fmt.Sprintf("expr(%s)", e.Expr) }
@@ -183,6 +190,7 @@ func (r *RangeStmt) String() string     { return fmt.Sprintf("range(%s)", r.Id) 
 func (i *IncrDecrStmt) String() string  { return fmt.Sprintf("update(%s, %s)", i.Expr, i.Op) }
 func (r *ReturnStmt) String() string    { return fmt.Sprintf("return(%s)", r.Arg) }
 func (c *ClassDecStmt) String() string  { return fmt.Sprintf("class(%s)", c.Id) }
+func (v *SetStmt) String() string       { return fmt.Sprintf("set(%s, %s, %s)", v.Lhs, v.Name, v.Val) }
 func (p *Program) String() string       { return fmt.Sprintf("program(%s)", p.Stmts) }
 
 type Program struct{ Stmts []Stmt }
