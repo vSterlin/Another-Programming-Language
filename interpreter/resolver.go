@@ -10,6 +10,7 @@ type functionType string
 const (
 	noneFuncType     functionType = "NONE"
 	functionFuncType functionType = "FUNCTION"
+	methodFuncType   functionType = "METHOD"
 )
 
 type resolver struct {
@@ -145,7 +146,6 @@ func (r *resolver) resolveFunction(funcDec *ast.FuncDecStmt, funcType functionTy
 		r.endScope()
 		r.currentFunc = enclosingFunc
 	}()
-
 	for _, arg := range funcDec.Args {
 		err := r.declare(arg.Name)
 		if err != nil {
@@ -154,7 +154,18 @@ func (r *resolver) resolveFunction(funcDec *ast.FuncDecStmt, funcType functionTy
 
 		r.define(arg.Name)
 	}
-	return r.resolveStmt(funcDec.Body)
+
+	// TODO review if body should be a block stmatement cause
+	// that creates own scope!!!!!!
+	// r.resolveStmt(funcDec.Body)
+	for _, stmt := range funcDec.Body.Stmts {
+		err := r.resolveStmt(stmt)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
 
 func (r *resolver) resolveReturnStmt(stmt *ast.ReturnStmt) error {
@@ -201,6 +212,19 @@ func (r *resolver) resolveClassDecStmt(stmt *ast.ClassDecStmt) error {
 		return err
 	}
 	r.define(stmt.Id.Name)
+
+	r.beginScope()
+	defer r.endScope()
+	scope := r.scopes.peek()
+	(*scope)["this"] = true
+
+	for _, method := range stmt.Methods {
+		err = r.resolveFunction(method, methodFuncType)
+		if err != nil {
+			return err
+		}
+	}
+
 	return nil
 }
 
@@ -225,6 +249,8 @@ func (r *resolver) resolveExpr(expr ast.Expr) error {
 		return r.resolveCallExpr(expr)
 	case *ast.MemberExpr:
 		return r.resolveMemberExpr(expr)
+	case *ast.ThisExpr:
+		return r.resolveThisExpr(expr)
 	}
 	return nil
 }
@@ -269,4 +295,9 @@ func (r *resolver) resolveCallExpr(expr *ast.CallExpr) error {
 
 func (r *resolver) resolveMemberExpr(expr *ast.MemberExpr) error {
 	return r.resolveExpr(expr.Obj)
+}
+
+func (r *resolver) resolveThisExpr(expr *ast.ThisExpr) error {
+	r.resolveLocal(expr, "this")
+	return nil
 }

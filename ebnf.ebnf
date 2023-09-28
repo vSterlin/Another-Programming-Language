@@ -50,6 +50,7 @@ ifStatement ::= 'if' expression blockStatement ('else if' expression blockStatem
 rangeStatement ::= 'for' identifierExpression ':=' 'range' expression blockStatement;
 
 functionDeclaration ::= 'func' identifier '(' (identifier (',' identifier)*)? ')' blockStatement;
+methodDeclaration ::=  identifier '(' (identifier (',' identifier)*)? ')' blockStatement;
 
 statement ::= expressionStatement | variableDeclarationStatement 
     | blockStatement | whileStatement | ifStatement 

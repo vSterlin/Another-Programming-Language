@@ -57,6 +57,8 @@ func (i *Interpreter) evalExpr(expr ast.Expr) any {
 		return i.evalCallExpr(expr)
 	case *ast.MemberExpr:
 		return i.evalMemberExpr(expr)
+	case *ast.ThisExpr:
+		return i.evalThisExpr(expr)
 	default:
 		return nil
 	}
@@ -95,7 +97,17 @@ func (i *Interpreter) evalBinaryExpr(expr *ast.BinaryExpr) any {
 
 	switch expr.Op {
 	case "+":
-		return (lhs).(Number) + rhs.(Number)
+		switch lhs := lhs.(type) {
+
+		case String:
+			return (lhs) + rhs.(String)
+		case Number:
+			return (lhs) + rhs.(Number)
+			// TODO: handle errors
+		default:
+			return nil
+		}
+
 	case "-":
 		return (lhs).(Number) - rhs.(Number)
 	case "*":
@@ -163,6 +175,14 @@ func (i *Interpreter) evalMemberExpr(expr *ast.MemberExpr) any {
 	return field
 }
 
+func (i *Interpreter) evalThisExpr(expr *ast.ThisExpr) any {
+	this, err := i.lookUpVariable("this", expr)
+	if err != nil {
+		fmt.Println("error with this expression")
+	}
+	return this
+}
+
 // Statements
 func (i *Interpreter) evalStmt(stmt ast.Stmt) any {
 	switch stmt := stmt.(type) {
@@ -215,8 +235,16 @@ func (i *Interpreter) evalWhileStmt(stmt *ast.WhileStmt) any {
 }
 
 func (i *Interpreter) evalClassDecStmt(stmt *ast.ClassDecStmt) any {
-	class := NewClass(stmt.Id.Name)
-	i.env.Define(stmt.Id.Name, class)
+	i.env.Define(stmt.Id.Name, nil)
+
+	methods := map[string]*function{}
+	for _, method := range stmt.Methods {
+		fn := NewFunction(method, i.env)
+		methods[method.Id.Name] = fn
+	}
+
+	class := NewClass(stmt.Id.Name, methods)
+	i.env.Assign(stmt.Id.Name, class)
 	return nil
 }
 

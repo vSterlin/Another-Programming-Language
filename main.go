@@ -15,14 +15,20 @@ import (
 func main() {
 
 	interpret(`
-		class Cat {}
-		gary := Cat()
-		gary.name = "Gary"
-		print(gary.name)
+
+	class Cat {
+		meow(){
+				print(this.name + " says meow")
+			}
+	}
+
+		c := Cat()
+		c.name = "Gary"
+		c.meow()
 	`)
 }
 
-var PRINT_AST = true
+var PRINT_AST = false
 
 func buildAST(code string) *ast.Program {
 	l := lexer.NewLexer(code)

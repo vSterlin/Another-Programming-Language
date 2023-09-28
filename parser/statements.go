@@ -238,7 +238,6 @@ func (p *Parser) parseClassDecStmt() (ast.Stmt, error) {
 		return nil, err
 	}
 	return &ast.ClassDecStmt{Id: id.(*ast.IdentifierExpr), Methods: methods}, nil
-
 }
 
 // statement ::= expression | variableDeclarationStatement
@@ -261,7 +260,7 @@ func (p *Parser) parseStmt() (ast.Stmt, error) {
 		return p.parseDeferStmt()
 	case FOR:
 		return p.parseRangeStmt()
-	case IDENTIFIER:
+	case IDENTIFIER, THIS:
 		return p.parseVarAssignStmt()
 	case RETURN:
 		return p.parseReturnStmt()

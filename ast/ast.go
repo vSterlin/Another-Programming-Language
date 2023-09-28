@@ -73,6 +73,8 @@ type SliceExpr struct {
 	Step Expr            `json:"step"`
 }
 
+type ThisExpr struct{}
+
 func (n *NumberExpr) exprNode()     {}
 func (v *IdentifierExpr) exprNode() {}
 func (b *BooleanExpr) exprNode()    {}
@@ -83,6 +85,7 @@ func (c *CallExpr) exprNode()       {}
 func (a *ArrayExpr) exprNode()      {}
 func (s *SliceExpr) exprNode()      {}
 func (m *MemberExpr) exprNode()     {}
+func (t *ThisExpr) exprNode()       {}
 
 func (n *NumberExpr) String() string     { return fmt.Sprintf("number(%d)", n.Val) }
 func (v *IdentifierExpr) String() string { return fmt.Sprintf("identifier(%s)", v.Name) }
@@ -94,6 +97,7 @@ func (c *CallExpr) String() string       { return fmt.Sprintf("call(%s)", c.Call
 func (a *ArrayExpr) String() string      { return fmt.Sprintf("array(%s)", a.Elements) }
 func (s *SliceExpr) String() string      { return fmt.Sprintf("slice(%s)", s.Id) }
 func (m *MemberExpr) String() string     { return fmt.Sprintf("member(%s, %s)", m.Obj, m.Prop) }
+func (t *ThisExpr) String() string       { return ("this") }
 
 // Statements
 type Stmt interface {
@@ -189,7 +193,7 @@ func (d *DeferStmt) String() string     { return fmt.Sprintf("defer(%s)", d.Call
 func (r *RangeStmt) String() string     { return fmt.Sprintf("range(%s)", r.Id) }
 func (i *IncrDecrStmt) String() string  { return fmt.Sprintf("update(%s, %s)", i.Expr, i.Op) }
 func (r *ReturnStmt) String() string    { return fmt.Sprintf("return(%s)", r.Arg) }
-func (c *ClassDecStmt) String() string  { return fmt.Sprintf("class(%s)", c.Id) }
+func (c *ClassDecStmt) String() string  { return fmt.Sprintf("class(%s, methods(%s))", c.Id, c.Methods) }
 func (v *SetStmt) String() string       { return fmt.Sprintf("set(%s, %s, %s)", v.Lhs, v.Name, v.Val) }
 func (p *Program) String() string       { return fmt.Sprintf("program(%s)", p.Stmts) }
 

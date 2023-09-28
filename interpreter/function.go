@@ -34,7 +34,12 @@ func (f *function) Call(i *Interpreter, args []any) any {
 	} else {
 		return nil
 	}
+}
 
+func (f *function) Bind(instance *Instance) *function {
+	env := NewEnvironment(f.closure)
+	env.Define("this", instance)
+	return NewFunction(f.funcDef, env)
 }
 
 func (f *function) String() string {

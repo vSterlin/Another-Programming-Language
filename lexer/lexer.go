@@ -20,6 +20,7 @@ const (
 	DEFER
 	RANGE
 	CLASS
+	THIS
 
 	keyword_end
 
@@ -98,6 +99,7 @@ var keywords map[string]TokenType = map[string]TokenType{
 	"true":  BOOLEAN,
 	"false": BOOLEAN,
 	"class": CLASS,
+	"this":  THIS,
 }
 
 var operators map[string]TokenType = map[string]TokenType{

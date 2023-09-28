@@ -7,11 +7,12 @@ import (
 )
 
 type Class struct {
-	name string
+	name    string
+	methods map[string]*function
 }
 
-func NewClass(name string) *Class {
-	return &Class{name: name}
+func NewClass(name string, methods map[string]*function) *Class {
+	return &Class{name: name, methods: methods}
 }
 
 func (c *Class) String() string { return color.BlueString(fmt.Sprintf("<class %s>", c.name)) }
@@ -34,6 +35,11 @@ func (i *Instance) Get(name string) (any, error) {
 	if val, ok := i.fields[name]; ok {
 		return val, nil
 	}
+
+	if method, ok := i.class.methods[name]; ok {
+		return method.Bind(i), nil
+	}
+
 	return nil, NewRuntimeError(fmt.Sprintf("undefined property '%s'", name))
 }
 

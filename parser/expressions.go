@@ -90,6 +90,9 @@ func (p *Parser) parsePrimaryExpr() (ast.Expr, error) {
 		} else {
 			return p.parseIdentifierExpr()
 		}
+	case THIS:
+		p.next()
+		return &ast.ThisExpr{}, nil
 	case NUMBER:
 		return p.parseNumberExpr()
 	case BOOLEAN:
@@ -103,7 +106,7 @@ func (p *Parser) parsePrimaryExpr() (ast.Expr, error) {
 
 	}
 
-	return nil, NewParserError(p.pos, fmt.Sprintf("expected primary expression, got %d", p.current().Type))
+	return nil, NewParserError(p.pos, fmt.Sprintf("expected primary expression, got %s", p.current().Type))
 }
 
 // memberExpression ::= primaryExpression ('.' identifier)*;
