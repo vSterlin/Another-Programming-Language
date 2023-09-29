@@ -17,13 +17,15 @@ func main() {
 	interpret(`
 
 	class Cat {
+		init(name){
+			this.name = name
+		}
 		meow(){
-				print(this.name + " says meow")
-			}
+			print(this.name + " says meow")
+		}
 	}
 
-		c := Cat()
-		c.name = "Gary"
+		c := Cat("Gary")
 		c.meow()
 	`)
 }

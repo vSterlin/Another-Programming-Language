@@ -13,14 +13,26 @@ const (
 	methodFuncType   functionType = "METHOD"
 )
 
+type classType string
+
+const (
+	noneClassType  classType = "NONE"
+	classClassType classType = "CLASS"
+)
+
 type resolver struct {
-	interpreter *Interpreter
-	scopes      scopeStack
-	currentFunc functionType
+	interpreter  *Interpreter
+	scopes       scopeStack
+	currentFunc  functionType
+	currentClass classType
 }
 
 func NewResolver(interpreter *Interpreter) *resolver {
-	return &resolver{interpreter: interpreter, scopes: []*scope{}, currentFunc: noneFuncType}
+	return &resolver{interpreter: interpreter,
+		scopes:       []*scope{},
+		currentFunc:  noneFuncType,
+		currentClass: noneClassType,
+	}
 }
 
 func (r *resolver) beginScope() { r.scopes.push(&scope{}) }
@@ -207,6 +219,8 @@ func (r *resolver) resolveWhileStmt(stmt *ast.WhileStmt) error {
 }
 
 func (r *resolver) resolveClassDecStmt(stmt *ast.ClassDecStmt) error {
+	enclosingClass := r.currentClass
+	r.currentClass = classClassType
 	err := r.declare(stmt.Id.Name)
 	if err != nil {
 		return err
@@ -214,7 +228,10 @@ func (r *resolver) resolveClassDecStmt(stmt *ast.ClassDecStmt) error {
 	r.define(stmt.Id.Name)
 
 	r.beginScope()
-	defer r.endScope()
+	defer func() {
+		r.endScope()
+		r.currentClass = enclosingClass
+	}()
 	scope := r.scopes.peek()
 	(*scope)["this"] = true
 
@@ -298,6 +315,9 @@ func (r *resolver) resolveMemberExpr(expr *ast.MemberExpr) error {
 }
 
 func (r *resolver) resolveThisExpr(expr *ast.ThisExpr) error {
+	if r.currentClass == noneClassType {
+		return NewRuntimeError("can't use 'this' outside of a class")
+	}
 	r.resolveLocal(expr, "this")
 	return nil
 }
