@@ -1,7 +1,6 @@
 package interpreter
 
 import (
-	"fmt"
 	"language/ast"
 	"math"
 )
@@ -58,7 +57,7 @@ func (i *Interpreter) evalExpr(expr ast.Expr) (any, error) {
 	case *ast.MemberExpr:
 		return i.evalMemberExpr(expr)
 	case *ast.ThisExpr:
-		return i.evalThisExpr(expr), nil
+		return i.evalThisExpr(expr)
 	default:
 		return nil, nil
 	}
@@ -175,12 +174,9 @@ func (i *Interpreter) evalMemberExpr(expr *ast.MemberExpr) (any, error) {
 	return field, err
 }
 
-func (i *Interpreter) evalThisExpr(expr *ast.ThisExpr) any {
+func (i *Interpreter) evalThisExpr(expr *ast.ThisExpr) (any, error) {
 	this, err := i.lookUpVariable("this", expr)
-	if err != nil {
-		fmt.Println("error with this expression")
-	}
-	return this
+	return this, err
 }
 
 // Statements
