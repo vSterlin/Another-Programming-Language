@@ -153,7 +153,7 @@ func (r *resolver) resolveFunction(funcDec *ast.FuncDecStmt, funcType functionTy
 	r.currentFunc = funcType
 
 	r.beginScope()
-	// TODO: review this
+
 	defer func() {
 		r.endScope()
 		r.currentFunc = enclosingFunc

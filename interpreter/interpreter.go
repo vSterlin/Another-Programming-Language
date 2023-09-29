@@ -30,7 +30,7 @@ func NewInterpreter(program *ast.Program) *Interpreter {
 	}
 }
 
-func (i *Interpreter) Interpret() []any {
+func (i *Interpreter) Interpret() ([]any, error) {
 	return i.evalProgram(i.program)
 }
 
@@ -39,18 +39,18 @@ func (i *Interpreter) Resolve(expr ast.Expr, depth int) {
 }
 
 // Expressions
-func (i *Interpreter) evalExpr(expr ast.Expr) any {
+func (i *Interpreter) evalExpr(expr ast.Expr) (any, error) {
 	switch expr := expr.(type) {
 	case *ast.NumberExpr:
-		return i.evalNumberExpr(expr)
+		return i.evalNumberExpr(expr), nil
 	case *ast.BinaryExpr:
-		return i.evalBinaryExpr(expr)
+		return i.evalBinaryExpr(expr), nil
 	case *ast.LogicalExpr:
-		return i.evalLogicalExpr(expr)
+		return i.evalLogicalExpr(expr), nil
 	case *ast.BooleanExpr:
-		return i.evalBooleanExpr(expr)
+		return i.evalBooleanExpr(expr), nil
 	case *ast.StringExpr:
-		return i.evalStringExpr(expr)
+		return i.evalStringExpr(expr), nil
 	case *ast.IdentifierExpr:
 		return i.evalIdentifierExpr(expr)
 	case *ast.CallExpr:
@@ -58,74 +58,78 @@ func (i *Interpreter) evalExpr(expr ast.Expr) any {
 	case *ast.MemberExpr:
 		return i.evalMemberExpr(expr)
 	case *ast.ThisExpr:
-		return i.evalThisExpr(expr)
+		return i.evalThisExpr(expr), nil
 	default:
-		return nil
+		return nil, nil
 	}
 }
 
 func (i *Interpreter) evalNumberExpr(expr *ast.NumberExpr) any   { return Number(expr.Val) }
 func (i *Interpreter) evalBooleanExpr(expr *ast.BooleanExpr) any { return Boolean(expr.Val) }
 func (i *Interpreter) evalStringExpr(expr *ast.StringExpr) any   { return String(expr.Val) }
-func (i *Interpreter) evalIdentifierExpr(expr *ast.IdentifierExpr) any {
+func (i *Interpreter) evalIdentifierExpr(expr *ast.IdentifierExpr) (any, error) {
 	val, err := i.lookUpVariable(expr.Name, expr)
 	if err != nil {
-		fmt.Println(err)
+		return nil, err
 	}
-	return val
+	return val, nil
 }
 
-func (i *Interpreter) evalCallExpr(expr *ast.CallExpr) any {
+func (i *Interpreter) evalCallExpr(expr *ast.CallExpr) (any, error) {
 
-	callee, ok := i.evalExpr(expr.Callee).(Caller)
+	callExpr, _ := i.evalExpr(expr.Callee)
+	callee, ok := callExpr.(Caller)
 
 	if !ok {
-		fmt.Println("the expressions is not callable")
+		return nil, NewRuntimeError("the expression is not callable")
 	}
 
 	args := []any{}
 	for _, arg := range expr.Args {
-		args = append(args, i.evalExpr(arg))
+		evaluatedExpr, _ := i.evalExpr(arg)
+		args = append(args, evaluatedExpr)
 	}
 
-	return callee.Call(i, args)
+	return callee.Call(i, args), nil
 }
 
 func (i *Interpreter) evalBinaryExpr(expr *ast.BinaryExpr) any {
-	lhs := i.evalExpr(expr.Lhs)
-	rhs := i.evalExpr(expr.Rhs)
+	lhs, _ := i.evalExpr(expr.Lhs)
+	rhs, _ := i.evalExpr(expr.Rhs)
+
+	lhsNum, isLhsNum := lhs.(Number)
+	rhsNum, isRhsNum := rhs.(Number)
+
+	lhsStr, isLhsStr := lhs.(String)
+	rhsStr, isRhsStr := rhs.(String)
 
 	switch expr.Op {
 	case "+":
-		switch lhs := lhs.(type) {
-
-		case String:
-			return (lhs) + rhs.(String)
-		case Number:
-			return (lhs) + rhs.(Number)
-			// TODO: handle errors
-		default:
+		if isLhsNum && isRhsNum {
+			return lhsNum + rhsNum
+		} else if isLhsStr && isRhsStr {
+			return lhsStr + rhsStr
+		} else {
 			return nil
 		}
-
 	case "-":
-		return (lhs).(Number) - rhs.(Number)
+		return lhsNum - rhsNum
 	case "*":
-		return (lhs).(Number) * rhs.(Number)
+		return lhsNum * rhsNum
 	case "/":
-		return (lhs).(Number) / rhs.(Number)
+		return lhsNum / rhsNum
 	case "%":
-		return (lhs).(Number) % rhs.(Number)
+		return lhsNum % rhsNum
 	case "**":
-		return Number(math.Pow(float64(lhs.(Number)), float64(rhs.(Number))))
+		return Number(math.Pow(float64(lhs.(Number)), float64(rhsNum)))
 	case "<":
-		return Boolean((lhs).(Number) < rhs.(Number))
+		return Boolean(lhsNum < rhsNum)
 	case ">":
-		return Boolean((lhs).(Number) > rhs.(Number))
+		return Boolean(lhsNum > rhsNum)
 	case "<=":
-		return Boolean((lhs).(Number) <= rhs.(Number))
+		return Boolean(lhsNum <= rhsNum)
 	case ">=":
-		return Boolean((lhs).(Number) >= rhs.(Number))
+		return Boolean(lhsNum >= rhsNum)
 	case "==":
 		return Boolean((lhs == rhs))
 	case "!=":
@@ -136,7 +140,7 @@ func (i *Interpreter) evalBinaryExpr(expr *ast.BinaryExpr) any {
 }
 
 func (i *Interpreter) evalLogicalExpr(expr *ast.LogicalExpr) any {
-	lhs := i.evalExpr(expr.Lhs)
+	lhs, _ := i.evalExpr(expr.Lhs)
 
 	lhsBool := lhs.(Boolean)
 
@@ -151,28 +155,24 @@ func (i *Interpreter) evalLogicalExpr(expr *ast.LogicalExpr) any {
 		}
 	}
 
-	rhs := i.evalExpr(expr.Rhs)
+	rhs, _ := i.evalExpr(expr.Rhs)
 	rhsBool := rhs.(Boolean)
 
 	return rhsBool
 }
 
-func (i *Interpreter) evalMemberExpr(expr *ast.MemberExpr) any {
+func (i *Interpreter) evalMemberExpr(expr *ast.MemberExpr) (any, error) {
 
-	obj := i.evalExpr(expr.Obj)
+	obj, _ := i.evalExpr(expr.Obj)
 	instance, ok := obj.(*Instance)
 	if !ok {
-		fmt.Println("the object is not an instance")
-		return nil
+		return nil, NewRuntimeError("the object is not an instance")
 	}
 
 	// for now handle identifier exp only
 	field, err := instance.Get(expr.Prop.(*ast.IdentifierExpr).Name)
-	if err != nil {
-		fmt.Println(err)
-		return nil
-	}
-	return field
+
+	return field, err
 }
 
 func (i *Interpreter) evalThisExpr(expr *ast.ThisExpr) any {
@@ -184,38 +184,39 @@ func (i *Interpreter) evalThisExpr(expr *ast.ThisExpr) any {
 }
 
 // Statements
-func (i *Interpreter) evalStmt(stmt ast.Stmt) any {
+func (i *Interpreter) evalStmt(stmt ast.Stmt) (any, error) {
 	switch stmt := stmt.(type) {
 	case *ast.ExprStmt:
 		return i.evalExpr(stmt.Expr)
 	case *ast.VarAssignStmt:
-		return i.evalVarAssignStmt(stmt)
+		return i.evalVarAssignStmt(stmt), nil
 	case *ast.FuncDecStmt:
-		return i.evalFuncDecStmt(stmt)
+		return i.evalFuncDecStmt(stmt), nil
 	case *ast.BlockStmt:
 		// NewEnvironment(i.env) creates a new environment with the current environment as its parent
-		return i.evalBlockStmt(stmt, NewEnvironment(i.env))
+		return i.evalBlockStmt(stmt, NewEnvironment(i.env)), nil
 	case *ast.ReturnStmt:
-		return i.evalReturnStmt(stmt)
+		return i.evalReturnStmt(stmt), nil
 	case *ast.IfStmt:
-		return i.evalIfStmt(stmt)
+		return i.evalIfStmt(stmt), nil
 	case *ast.WhileStmt:
-		return i.evalWhileStmt(stmt)
+		return i.evalWhileStmt(stmt), nil
 	case *ast.ClassDecStmt:
-		return i.evalClassDecStmt(stmt)
+		return i.evalClassDecStmt(stmt), nil
 	case *ast.SetStmt:
 		return i.evalSetStmt(stmt)
 	default:
-		return nil
+		return nil, NewRuntimeError("unknown statement")
 	}
 }
 
 func (i *Interpreter) evalIfStmt(stmt *ast.IfStmt) any {
 	var retVal any
-	if i.evalExpr(stmt.Test).(Boolean) {
-		retVal = i.evalStmt(stmt.Consequent.(*ast.BlockStmt))
+	test, _ := i.evalExpr(stmt.Test)
+	if test.(Boolean) {
+		retVal, _ = i.evalStmt(stmt.Consequent.(*ast.BlockStmt))
 	} else {
-		retVal = i.evalStmt(stmt.Alternate)
+		retVal, _ = i.evalStmt(stmt.Alternate)
 	}
 	if retVal != nil {
 		return retVal
@@ -225,8 +226,9 @@ func (i *Interpreter) evalIfStmt(stmt *ast.IfStmt) any {
 }
 
 func (i *Interpreter) evalWhileStmt(stmt *ast.WhileStmt) any {
-	for i.evalExpr(stmt.Test).(Boolean) {
-		retVal := i.evalStmt(stmt.Body.(*ast.BlockStmt))
+	test, _ := i.evalExpr(stmt.Test)
+	for test.(Boolean) {
+		retVal, _ := i.evalStmt(stmt.Body.(*ast.BlockStmt))
 		if retVal != nil {
 			return retVal
 		}
@@ -255,7 +257,7 @@ func (i *Interpreter) evalBlockStmt(stmt *ast.BlockStmt, env *Environment) any {
 
 	// stmts := []any{}
 	for _, stmt := range stmt.Stmts {
-		retVal := i.evalStmt(stmt)
+		retVal, _ := i.evalStmt(stmt)
 		if retVal != nil {
 			return retVal
 		}
@@ -263,27 +265,20 @@ func (i *Interpreter) evalBlockStmt(stmt *ast.BlockStmt, env *Environment) any {
 	return nil
 }
 
-func (i *Interpreter) evalVarAssignStmt(stmt *ast.VarAssignStmt) any {
+func (i *Interpreter) evalVarAssignStmt(stmt *ast.VarAssignStmt) error {
 	varName := stmt.Id.Name
-	varValue := i.evalExpr(stmt.Init)
+	varValue, _ := i.evalExpr(stmt.Init)
 	if stmt.Op == ":=" {
 		i.env.Define(varName, varValue)
+		return nil
 	} else { // "="
 		distance, ok := i.locals[stmt.Id]
 		if ok {
-			err := i.env.AssignAt(distance, varName, varValue)
-			if err != nil {
-				fmt.Println(err)
-			}
+			return i.env.AssignAt(distance, varName, varValue)
 		} else {
-			err := i.env.Assign(varName, varValue)
-			if err != nil {
-				fmt.Println(err)
-			}
+			return i.env.Assign(varName, varValue)
 		}
 	}
-
-	return nil
 }
 
 func (i *Interpreter) evalFuncDecStmt(stmt *ast.FuncDecStmt) any {
@@ -293,26 +288,31 @@ func (i *Interpreter) evalFuncDecStmt(stmt *ast.FuncDecStmt) any {
 }
 
 func (i *Interpreter) evalReturnStmt(stmt *ast.ReturnStmt) any {
-	return NewReturnValue(i.evalExpr(stmt.Arg))
+	evaluatedExpr, _ := i.evalExpr(stmt.Arg)
+	return NewReturnValue(evaluatedExpr)
 }
 
-func (i *Interpreter) evalSetStmt(stmt *ast.SetStmt) any {
-	lhs := i.evalExpr(stmt.Lhs)
+func (i *Interpreter) evalSetStmt(stmt *ast.SetStmt) (any, error) {
+	lhs, _ := i.evalExpr(stmt.Lhs)
 	instance, ok := lhs.(*Instance)
 	if !ok {
-		fmt.Println("the object is not an instance")
+		return nil, NewRuntimeError("the object is not an instance")
 	}
-	instance.Set(stmt.Name, i.evalExpr(stmt.Val))
-	return nil
+	evaluatedExpr, _ := i.evalExpr(stmt.Val)
+	instance.Set(stmt.Name, evaluatedExpr)
+	return nil, nil
 }
 
-func (i *Interpreter) evalProgram(p *ast.Program) []any {
+func (i *Interpreter) evalProgram(p *ast.Program) ([]any, error) {
 	stmts := []any{}
 	for _, stmt := range p.Stmts {
-		evaluatedStmt := i.evalStmt(stmt)
+		evaluatedStmt, err := i.evalStmt(stmt)
+		if err != nil {
+			return nil, err
+		}
 		stmts = append(stmts, evaluatedStmt)
 	}
-	return stmts
+	return stmts, nil
 }
 
 func (i *Interpreter) lookUpVariable(name string, expr ast.Expr) (any, error) {

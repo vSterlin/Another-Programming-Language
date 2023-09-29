@@ -68,8 +68,11 @@ func interpret(code string) {
 		fmt.Println(err)
 		return
 	}
-	// evaluatedProgram :=
-	i.Interpret()
+	_, err = i.Interpret()
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
 
 	// for _, evaluatedStmt := range evaluatedProgram {
 	// 	fmt.Println(evaluatedStmt)
