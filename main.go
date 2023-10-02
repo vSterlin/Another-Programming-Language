@@ -14,19 +14,8 @@ import (
 
 func main() {
 
-	interpret(`
-
-	class Cat {
-		init(name){
-			this.name = name
-		}
-		meow(){
-			print(this.name + " says meow")
-		}
-	}
-
-		c := Cat("Gary")
-		c.meow()
+	compileToLLVM(`
+		10 + 11
 	`)
 }
 
@@ -48,14 +37,6 @@ func buildAST(code string) *ast.Program {
 		// fmt.Println(string(jsonStr))
 	}
 	return prog
-}
-
-func compileToJS(code string) {
-	prog := buildAST(code)
-	fmt.Println(prog)
-	cg := codegen.NewJavascriptCodeGenerator()
-	output := cg.Generate(prog)
-	writeToFile(output)
 }
 
 func interpret(code string) {
@@ -80,6 +61,13 @@ func interpret(code string) {
 
 }
 
+func compileToLLVM(code string) {
+	prog := buildAST(code)
+	cg := codegen.NewLLVMCodeGenerator()
+	output := cg.Generate(prog)
+	writeToFile(output)
+}
+
 func repl() {
 	for {
 		fmt.Print(">> ")
@@ -94,5 +82,5 @@ func repl() {
 }
 
 func writeToFile(code string) {
-	os.WriteFile("build/main.js", []byte(code), 0644)
+	os.WriteFile("build/out.ll", []byte(code), 0644)
 }
