@@ -15,7 +15,8 @@ import (
 func main() {
 
 	compileToLLVM(`
-		10 + 11
+	x := 1
+	text := "Hello World"
 	`)
 }
 
@@ -64,7 +65,7 @@ func interpret(code string) {
 func compileToLLVM(code string) {
 	prog := buildAST(code)
 	cg := codegen.NewLLVMCodeGenerator()
-	output := cg.Generate(prog)
+	output := cg.Gen(prog)
 	writeToFile(output)
 }
 
