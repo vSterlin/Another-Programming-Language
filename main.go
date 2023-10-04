@@ -15,7 +15,7 @@ import (
 func main() {
 
 	compileToLLVM(`
-		print("Hello world!\n")
+		print("Hello World")
 	`)
 }
 

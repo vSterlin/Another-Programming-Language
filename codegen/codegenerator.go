@@ -233,7 +233,8 @@ func (cg *LLVMCodeGenerator) Gen(prog *ast.Program) string {
 
 // Helpers
 func setupExternal(m *ir.Module) {
-	m.NewFunc("printf", I32, ir.NewParam("", Str))
+	f := m.NewFunc("printf", I32)
+	f.Sig.Variadic = true
 }
 
 func (cg *LLVMCodeGenerator) getCurrentBlock() *ir.Block {
