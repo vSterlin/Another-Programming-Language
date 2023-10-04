@@ -143,7 +143,8 @@ func genNumberExpr(expr *ast.NumberExpr) *constant.Int {
 }
 
 func genStringExpr(expr *ast.StringExpr) *constant.CharArray {
-	text := strings.Replace(expr.Val, "\\n", "\n", -1)
+	// unescape
+	text := strings.Replace(expr.Val, "\\n", "\n", -1) + "\x00"
 	str := constant.NewCharArrayFromString(text)
 	return str
 }
@@ -179,10 +180,29 @@ func (cg *LLVMCodeGenerator) genCallExpr(expr *ast.CallExpr) value.Value {
 	}
 
 	arg := cg.genExpr(expr.Args[0])
-
 	block := cg.getCurrentBlock()
 
+	if fn.Name() == "printf" {
+		return cg.genPrintCall(fn, arg)
+	}
+
 	return block.NewCall(fn, arg)
+}
+
+func (cg *LLVMCodeGenerator) genPrintCall(fn *ir.Func, arg value.Value) *ir.InstCall {
+	block := cg.getCurrentBlock()
+
+	strArg := arg.(*constant.CharArray)
+	strLen := strArg.Typ.Len
+
+	strPtr := block.NewAlloca((types.NewArray(strLen, types.I8)))
+	block.NewStore(arg, strPtr)
+
+	zero := constant.NewInt(I32, 0)
+	gep := block.NewGetElementPtr(arg.(*constant.CharArray).Typ, strPtr, zero, zero)
+
+	return block.NewCall(fn, gep)
+
 }
 
 func (cg *LLVMCodeGenerator) genIdentifierExpr(expr *ast.IdentifierExpr) value.Value {

@@ -15,8 +15,7 @@ import (
 func main() {
 
 	compileToLLVM(`
-		x := 11
-		y := x
+		print("Hello world!\n")
 	`)
 }
 
