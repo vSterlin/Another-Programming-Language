@@ -45,6 +45,8 @@ func (cg *LLVMCodeGenerator) genStmt(stmt ast.Stmt) value.Value {
 		return cg.genBlockStmt(stmt)
 	case *ast.VarAssignStmt:
 		return cg.genVarAssignStmt(stmt)
+	case *ast.ReturnStmt:
+		return cg.genReturnStmt(stmt)
 	default:
 		return nil
 	}
@@ -56,7 +58,13 @@ func (cg *LLVMCodeGenerator) genExprStmt(stmt *ast.ExprStmt) value.Value {
 }
 
 func (cg *LLVMCodeGenerator) genFuncDecStmt(stmt *ast.FuncDecStmt) *ir.Func {
-	fn := cg.module.NewFunc(stmt.Id.Name, I32)
+	fnParams := make([]*ir.Param, len(stmt.Args))
+	// for now
+	for i, arg := range stmt.Args {
+		fnParams[i] = ir.NewParam(arg.Name, I32)
+	}
+
+	fn := cg.module.NewFunc(stmt.Id.Name, I32, fnParams...)
 	block := fn.NewBlock("entry")
 
 	// to keep track of the current block to add stuff to
@@ -64,8 +72,6 @@ func (cg *LLVMCodeGenerator) genFuncDecStmt(stmt *ast.FuncDecStmt) *ir.Func {
 	cg.currentBlock = block
 
 	cg.genBlockStmt(stmt.Body)
-
-	block.NewRet(constant.NewInt(I32, 0))
 
 	cg.currentBlock = prevBlock
 	return fn
@@ -89,6 +95,13 @@ func (cg *LLVMCodeGenerator) genVarAssignStmt(stmt *ast.VarAssignStmt) value.Val
 	block.NewStore(init, alloc)
 
 	return nil
+}
+
+func (cg *LLVMCodeGenerator) genReturnStmt(stmt *ast.ReturnStmt) value.Value {
+	val := cg.genExpr(stmt.Arg)
+	block := cg.getCurrentBlock()
+	block.NewRet(val)
+	return val
 }
 
 // Expressions
@@ -148,22 +161,11 @@ func (cg *LLVMCodeGenerator) genCallExpr(expr *ast.CallExpr) value.Value {
 		panic("Function not found")
 	}
 
-	arg := cg.genExpr(expr.Args[0]).(*constant.CharArray)
+	arg := cg.genExpr(expr.Args[0])
 
 	block := cg.getCurrentBlock()
 
-	m := cg.module
-	argPtr := m.NewGlobalDef("argPtr", arg)
-	gep := constant.NewGetElementPtr(arg.Typ, argPtr, constant.NewInt(I32, 0), constant.NewInt(I32, 0))
-
-	// argPtr := block.NewAlloca(arg.Type())
-	// block.NewStore(arg, argPtr)
-	// gep := block.NewGetElementPtr(arg.Type(), argPtr, constant.NewInt(I32, 0), constant.NewInt(I32, 0))
-
-	block.NewCall(fn, gep)
-
-	fmt.Println("arg", arg, arg.Type())
-	return nil
+	return block.NewCall(fn, arg)
 }
 
 func (cg *LLVMCodeGenerator) Gen(prog *ast.Program) string {
@@ -179,8 +181,9 @@ func (cg *LLVMCodeGenerator) Gen(prog *ast.Program) string {
 		cg.genStmt(stmt)
 	}
 
-	block.NewRet(constant.NewInt(I32, 0))
-
+	if block.Term == nil {
+		block.NewRet(constant.NewInt(I32, 0))
+	}
 	return m.String()
 }
 

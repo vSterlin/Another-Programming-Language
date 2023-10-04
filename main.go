@@ -15,7 +15,9 @@ import (
 func main() {
 
 	compileToLLVM(`
-		(1 + 1 ) * 2
+		func num(n) {
+			return 1 + 1
+		}
 	`)
 }
 
