@@ -15,9 +15,8 @@ import (
 func main() {
 
 	compileToLLVM(`
-		func num(n) {
-			return 1 + 1
-		}
+		x := 11
+		y := x
 	`)
 }
 

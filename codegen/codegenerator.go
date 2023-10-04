@@ -1,7 +1,6 @@
 package codegen
 
 import (
-	"fmt"
 	"language/ast"
 	"strings"
 
@@ -24,6 +23,19 @@ type LLVMCodeGenerator struct {
 	module       *ir.Module
 	currentBlock *ir.Block
 	mainFunc     *ir.Func
+	env          *Env
+}
+
+type Env struct {
+	vars   map[string]*ir.InstAlloca
+	parent *Env
+}
+
+func NewEnv(parent *Env) *Env {
+	return &Env{
+		vars:   make(map[string]*ir.InstAlloca),
+		parent: parent,
+	}
 }
 
 func NewLLVMCodeGenerator() *LLVMCodeGenerator {
@@ -31,6 +43,7 @@ func NewLLVMCodeGenerator() *LLVMCodeGenerator {
 	module := ir.NewModule()
 	return &LLVMCodeGenerator{
 		module: module,
+		env:    NewEnv(nil),
 	}
 }
 
@@ -87,12 +100,13 @@ func (cg *LLVMCodeGenerator) genBlockStmt(stmt *ast.BlockStmt) value.Value {
 func (cg *LLVMCodeGenerator) genVarAssignStmt(stmt *ast.VarAssignStmt) value.Value {
 	varName := stmt.Id.Name
 	init := cg.genExpr(stmt.Init)
-	fmt.Println(varName, init)
 
 	block := cg.getCurrentBlock()
 	initType := init.Type()
 	alloc := block.NewAlloca(initType)
 	block.NewStore(init, alloc)
+
+	cg.env.vars[varName] = alloc
 
 	return nil
 }
@@ -107,6 +121,7 @@ func (cg *LLVMCodeGenerator) genReturnStmt(stmt *ast.ReturnStmt) value.Value {
 // Expressions
 func (cg *LLVMCodeGenerator) genExpr(expr ast.Expr) value.Value {
 	switch expr := expr.(type) {
+
 	case *ast.BinaryExpr:
 		return cg.genBinaryExpr(expr)
 	case *ast.NumberExpr:
@@ -115,6 +130,8 @@ func (cg *LLVMCodeGenerator) genExpr(expr ast.Expr) value.Value {
 		return genStringExpr(expr)
 	case *ast.CallExpr:
 		return cg.genCallExpr(expr)
+	case *ast.IdentifierExpr:
+		return cg.genIdentifierExpr(expr)
 	default:
 		return nil
 	}
@@ -166,6 +183,13 @@ func (cg *LLVMCodeGenerator) genCallExpr(expr *ast.CallExpr) value.Value {
 	block := cg.getCurrentBlock()
 
 	return block.NewCall(fn, arg)
+}
+
+func (cg *LLVMCodeGenerator) genIdentifierExpr(expr *ast.IdentifierExpr) value.Value {
+	value := cg.env.vars[expr.Name]
+	block := cg.getCurrentBlock()
+	load := block.NewLoad((value.ElemType), value)
+	return load
 }
 
 func (cg *LLVMCodeGenerator) Gen(prog *ast.Program) string {
