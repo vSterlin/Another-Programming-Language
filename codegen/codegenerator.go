@@ -3,6 +3,7 @@ package codegen
 import (
 	"fmt"
 	"language/ast"
+	"strings"
 
 	"github.com/llir/llvm/ir"
 	"github.com/llir/llvm/ir/constant"
@@ -99,6 +100,8 @@ func (cg *LLVMCodeGenerator) genExpr(expr ast.Expr) value.Value {
 		return genNumberExpr(expr)
 	case *ast.StringExpr:
 		return genStringExpr(expr)
+	case *ast.CallExpr:
+		return cg.genCallExpr(expr)
 	default:
 		return nil
 	}
@@ -110,15 +113,17 @@ func genNumberExpr(expr *ast.NumberExpr) *constant.Int {
 }
 
 func genStringExpr(expr *ast.StringExpr) *constant.CharArray {
-	return constant.NewCharArrayFromString(expr.Val)
+	text := strings.Replace(expr.Val, "\\n", "\n", -1)
+	str := constant.NewCharArrayFromString(text)
+	return str
 }
 
 // Literals end
 
 func (cg *LLVMCodeGenerator) genBinaryExpr(expr *ast.BinaryExpr) value.Value {
 
-	lhs := genNumberExpr(expr.Lhs.(*ast.NumberExpr))
-	rhs := genNumberExpr(expr.Rhs.(*ast.NumberExpr))
+	lhs := cg.genExpr(expr.Lhs)
+	rhs := cg.genExpr(expr.Rhs)
 
 	block := cg.getCurrentBlock()
 
@@ -135,6 +140,30 @@ func (cg *LLVMCodeGenerator) genBinaryExpr(expr *ast.BinaryExpr) value.Value {
 		return nil
 	}
 
+}
+
+func (cg *LLVMCodeGenerator) genCallExpr(expr *ast.CallExpr) value.Value {
+	fn := cg.getFunction(expr.Callee.(*ast.IdentifierExpr).Name)
+	if fn == nil {
+		panic("Function not found")
+	}
+
+	arg := cg.genExpr(expr.Args[0]).(*constant.CharArray)
+
+	block := cg.getCurrentBlock()
+
+	m := cg.module
+	argPtr := m.NewGlobalDef("argPtr", arg)
+	gep := constant.NewGetElementPtr(arg.Typ, argPtr, constant.NewInt(I32, 0), constant.NewInt(I32, 0))
+
+	// argPtr := block.NewAlloca(arg.Type())
+	// block.NewStore(arg, argPtr)
+	// gep := block.NewGetElementPtr(arg.Type(), argPtr, constant.NewInt(I32, 0), constant.NewInt(I32, 0))
+
+	block.NewCall(fn, gep)
+
+	fmt.Println("arg", arg, arg.Type())
+	return nil
 }
 
 func (cg *LLVMCodeGenerator) Gen(prog *ast.Program) string {
@@ -166,4 +195,17 @@ func (cg *LLVMCodeGenerator) getCurrentBlock() *ir.Block {
 		currentBlock = cg.mainFunc.Blocks[0]
 	}
 	return currentBlock
+}
+
+func (cg *LLVMCodeGenerator) getFunction(name string) *ir.Func {
+
+	for _, f := range cg.module.Funcs {
+		if name == "print" && f.Name() == "printf" {
+			return f
+		}
+		if f.Name() == name {
+			return f
+		}
+	}
+	return nil
 }

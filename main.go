@@ -15,8 +15,7 @@ import (
 func main() {
 
 	compileToLLVM(`
-	x := 1
-	text := "Hello World"
+		(1 + 1 ) * 2
 	`)
 }
 
