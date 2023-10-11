@@ -23,6 +23,7 @@ type LLVMCodeGenerator struct {
 	module       *ir.Module
 	currentBlock *ir.Block
 	mainFunc     *ir.Func
+	currentFunc  *ir.Func
 	env          *Env
 }
 
@@ -83,10 +84,13 @@ func (cg *LLVMCodeGenerator) genFuncDecStmt(stmt *ast.FuncDecStmt) *ir.Func {
 	// to keep track of the current block to add stuff to
 	prevBlock := cg.currentBlock
 	cg.currentBlock = block
+	prevFunc := cg.currentFunc
+	cg.currentFunc = fn
 
 	cg.genBlockStmt(stmt.Body)
 
 	cg.currentBlock = prevBlock
+	cg.currentFunc = prevFunc
 	return fn
 }
 
@@ -206,6 +210,20 @@ func (cg *LLVMCodeGenerator) genPrintCall(fn *ir.Func, arg value.Value) *ir.Inst
 }
 
 func (cg *LLVMCodeGenerator) genIdentifierExpr(expr *ast.IdentifierExpr) value.Value {
+
+	if cg.currentFunc != nil {
+		var value *ir.Param
+		for _, param := range cg.currentFunc.Params {
+			if param.Name() == expr.Name {
+				value = param
+				break
+			}
+		}
+		if value != nil {
+			return value
+		}
+	}
+
 	value := cg.env.vars[expr.Name]
 	block := cg.getCurrentBlock()
 	load := block.NewLoad((value.ElemType), value)
