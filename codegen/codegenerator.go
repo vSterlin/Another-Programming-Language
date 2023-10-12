@@ -187,14 +187,18 @@ func (cg *LLVMCodeGenerator) genCallExpr(expr *ast.CallExpr) value.Value {
 		panic("Function not found")
 	}
 
-	arg := cg.genExpr(expr.Args[0])
+	args := []value.Value{}
+	for _, arg := range expr.Args {
+		val := cg.genExpr(arg)
+		args = append(args, val)
+	}
 	block := cg.getCurrentBlock()
 
 	if fn.Name() == "printf" {
-		return cg.genPrintCall(fn, arg)
+		return cg.genPrintCall(fn, args[0])
 	}
 
-	return block.NewCall(fn, arg)
+	return block.NewCall(fn, args...)
 }
 
 func (cg *LLVMCodeGenerator) genPrintCall(fn *ir.Func, arg value.Value) *ir.InstCall {
@@ -250,6 +254,12 @@ func (cg *LLVMCodeGenerator) Gen(prog *ast.Program) string {
 	if block.Term == nil {
 		block.NewRet(constant.NewInt(I32, 0))
 	}
+
+	// terrible hack but for now will sort main func to be placed at the bottom
+	// because stuff that I put in the main is stuff from global scope
+	m.Funcs = m.Funcs[1:]
+	m.Funcs = append(m.Funcs, fn)
+
 	return m.String()
 }
 
