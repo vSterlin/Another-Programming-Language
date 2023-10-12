@@ -11,6 +11,7 @@ import (
 )
 
 var (
+	Bool = types.I1
 	I32  = types.I32
 	Str  = types.I8Ptr
 	Void = types.Void
@@ -60,6 +61,8 @@ func (cg *LLVMCodeGenerator) genStmt(stmt ast.Stmt) value.Value {
 		return cg.genBlockStmt(stmt)
 	case *ast.VarAssignStmt:
 		return cg.genVarAssignStmt(stmt)
+	case *ast.IfStmt:
+		return cg.genIfStmt(stmt)
 	case *ast.ReturnStmt:
 		return cg.genReturnStmt(stmt)
 	default:
@@ -119,6 +122,10 @@ func (cg *LLVMCodeGenerator) genVarAssignStmt(stmt *ast.VarAssignStmt) value.Val
 	return nil
 }
 
+func (cg *LLVMCodeGenerator) genIfStmt(stmt *ast.IfStmt) value.Value {
+	return nil
+}
+
 func (cg *LLVMCodeGenerator) genReturnStmt(stmt *ast.ReturnStmt) value.Value {
 	val := cg.genExpr(stmt.Arg)
 	block := cg.getCurrentBlock()
@@ -136,6 +143,8 @@ func (cg *LLVMCodeGenerator) genExpr(expr ast.Expr) value.Value {
 		return genNumberExpr(expr)
 	case *ast.StringExpr:
 		return genStringExpr(expr)
+	case *ast.BooleanExpr:
+		return genBooleanExpr(expr)
 	case *ast.CallExpr:
 		return cg.genCallExpr(expr)
 	case *ast.IdentifierExpr:
@@ -155,6 +164,10 @@ func genStringExpr(expr *ast.StringExpr) *constant.CharArray {
 	text := strings.Replace(expr.Val, "\\n", "\n", -1) + "\x00"
 	str := constant.NewCharArrayFromString(text)
 	return str
+}
+
+func genBooleanExpr(expr *ast.BooleanExpr) *constant.Int {
+	return constant.NewBool(expr.Val)
 }
 
 // Literals end
@@ -297,6 +310,8 @@ func llvmType(t string) types.Type {
 		return I32
 	case "string":
 		return Str
+	case "bool":
+		return Bool
 	default:
 		return Void
 	}

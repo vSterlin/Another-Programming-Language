@@ -15,11 +15,8 @@ import (
 func main() {
 
 	compileToLLVM(`
-		func add(a int, b int) int {
-			sum := a + b
-			return sum
-		}
-		add(1, 2)
+		x := true
+		y := false
 	`)
 }
 
