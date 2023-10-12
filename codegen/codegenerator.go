@@ -11,8 +11,9 @@ import (
 )
 
 var (
-	I32 = types.I32
-	Str = types.I8Ptr
+	I32  = types.I32
+	Str  = types.I8Ptr
+	Void = types.Void
 )
 
 type CodeGenerator interface {
@@ -73,9 +74,7 @@ func (cg *LLVMCodeGenerator) genExprStmt(stmt *ast.ExprStmt) value.Value {
 
 func (cg *LLVMCodeGenerator) genFuncDecStmt(stmt *ast.FuncDecStmt) *ir.Func {
 	fnParams := make([]*ir.Param, len(stmt.Args))
-	// for now
 	for i, arg := range stmt.Args {
-
 		fnParams[i] = ir.NewParam(arg.Id.Name, llvmType(arg.Type.Name))
 	}
 
@@ -89,6 +88,10 @@ func (cg *LLVMCodeGenerator) genFuncDecStmt(stmt *ast.FuncDecStmt) *ir.Func {
 	cg.currentFunc = fn
 
 	cg.genBlockStmt(stmt.Body)
+
+	if block.Term == nil {
+		block.NewRet(nil)
+	}
 
 	cg.currentBlock = prevBlock
 	cg.currentFunc = prevFunc
@@ -285,6 +288,6 @@ func llvmType(t string) types.Type {
 	case "string":
 		return Str
 	default:
-		return nil
+		return Void
 	}
 }
