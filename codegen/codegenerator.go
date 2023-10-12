@@ -75,7 +75,8 @@ func (cg *LLVMCodeGenerator) genFuncDecStmt(stmt *ast.FuncDecStmt) *ir.Func {
 	fnParams := make([]*ir.Param, len(stmt.Args))
 	// for now
 	for i, arg := range stmt.Args {
-		fnParams[i] = ir.NewParam(arg.Name, I32)
+
+		fnParams[i] = ir.NewParam(arg.Id.Name, llvmType(arg.Type.Name))
 	}
 
 	fn := cg.module.NewFunc(stmt.Id.Name, I32, fnParams...)
@@ -275,4 +276,15 @@ func (cg *LLVMCodeGenerator) getFunction(name string) *ir.Func {
 		}
 	}
 	return nil
+}
+
+func llvmType(t string) types.Type {
+	switch t {
+	case "int":
+		return I32
+	case "string":
+		return Str
+	default:
+		return nil
+	}
 }

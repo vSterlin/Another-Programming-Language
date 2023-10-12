@@ -19,22 +19,22 @@ func NewFunction(funcDef *ast.FuncDecStmt, closure *Environment) *function {
 	return &function{funcDef: funcDef, closure: closure}
 }
 
-func (f *function) Call(i *Interpreter, args []any) any {
-	env := NewEnvironment(f.closure)
+// func (f *function) Call(i *Interpreter, args []any) any {
+// 	env := NewEnvironment(f.closure)
 
-	for i, arg := range f.funcDef.Args {
-		env.Define(arg.Name, args[i])
-	}
+// 	for i, arg := range f.funcDef.Args {
+// 		env.Define(arg.Name, args[i])
+// 	}
 
-	retVal := i.evalBlockStmt(f.funcDef.Body, env)
+// 	retVal := i.evalBlockStmt(f.funcDef.Body, env)
 
-	// unwrap return value
-	if retObj, ok := retVal.(*ReturnValue); ok {
-		return retObj.Value()
-	} else {
-		return nil
-	}
-}
+// 	// unwrap return value
+// 	if retObj, ok := retVal.(*ReturnValue); ok {
+// 		return retObj.Value()
+// 	} else {
+// 		return nil
+// 	}
+// }
 
 func (f *function) Bind(instance *Instance) *function {
 	env := NewEnvironment(f.closure)

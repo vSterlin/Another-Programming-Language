@@ -133,10 +133,15 @@ type WhileStmt struct {
 	Body Stmt `json:"body"`
 }
 
+type Param struct {
+	Id   *IdentifierExpr `json:"identifier"`
+	Type *IdentifierExpr `json:"type"`
+}
+
 type FuncDecStmt struct {
-	Id   *IdentifierExpr   `json:"identifier"`
-	Args []*IdentifierExpr `json:"arguments"`
-	Body *BlockStmt        `json:"body"`
+	Id   *IdentifierExpr `json:"identifier"`
+	Args []*Param        `json:"arguments"`
+	Body *BlockStmt      `json:"body"`
 }
 
 type IfStmt struct {
@@ -187,7 +192,8 @@ func (e *ExprStmt) String() string      { return fmt.Sprintf("expr(%s)", e.Expr)
 func (v *VarAssignStmt) String() string { return fmt.Sprintf("var(%s)", v.Id) }
 func (b *BlockStmt) String() string     { return fmt.Sprintf("block(%s)", b.Stmts) }
 func (w *WhileStmt) String() string     { return fmt.Sprintf("while(%s)", w.Test) }
-func (f *FuncDecStmt) String() string   { return fmt.Sprintf("func(%s)", f.Id) }
+func (f *FuncDecStmt) String() string   { return fmt.Sprintf("func(%s, %s)", f.Id, f.Args) }
+func (p *Param) String() string         { return fmt.Sprintf("param(%s %s)", p.Id, p.Type) }
 func (i *IfStmt) String() string        { return fmt.Sprintf("if(%s)", i.Test) }
 func (d *DeferStmt) String() string     { return fmt.Sprintf("defer(%s)", d.Call) }
 func (r *RangeStmt) String() string     { return fmt.Sprintf("range(%s)", r.Id) }

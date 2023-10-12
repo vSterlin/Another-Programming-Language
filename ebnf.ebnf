@@ -49,7 +49,9 @@ whileStatement ::= 'while' [expression]  blockStatement;
 ifStatement ::= 'if' expression blockStatement ('else if' expression blockStatement)* ('else' blockStatement)?;
 rangeStatement ::= 'for' identifierExpression ':=' 'range' expression blockStatement;
 
-functionDeclaration ::= 'func' identifier '(' (identifier (',' identifier)*)? ')' blockStatement;
+(* second identifier is type *)
+param ::= identifier identifier;
+functionDeclaration ::= 'func' identifier '(' (param (',' param)*)? ')' blockStatement;
 methodDeclaration ::=  identifier '(' (identifier (',' identifier)*)? ')' blockStatement;
 
 statement ::= expressionStatement | variableDeclarationStatement 

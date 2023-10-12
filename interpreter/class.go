@@ -19,10 +19,10 @@ func (c *Class) String() string { return color.BlueString(fmt.Sprintf("<class %s
 
 func (c *Class) Call(i *Interpreter, args []any) any {
 	instance := NewInstance(c)
-	init, ok := c.methods["init"]
-	if ok {
-		init.Bind(instance).Call(i, args)
-	}
+	// init, ok := c.methods["init"]
+	// if ok {
+	// 	init.Bind(instance).Call(i, args)
+	// }
 	return instance
 }
 

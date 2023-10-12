@@ -15,13 +15,13 @@ import (
 func main() {
 
 	compileToLLVM(`
-		func add(a, b) {
+		func add(a int, b int) {
 			return a + b
 		}
 	`)
 }
 
-var PRINT_AST = false
+var PRINT_AST = true
 
 func buildAST(code string) *ast.Program {
 	l := lexer.NewLexer(code)

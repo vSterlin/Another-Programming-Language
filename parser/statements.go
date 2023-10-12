@@ -95,13 +95,17 @@ func (p *Parser) parseFuncDecStmt(funcType string) (ast.Stmt, error) {
 		return nil, err
 	}
 
-	var args []*ast.IdentifierExpr
+	var params []*ast.Param
 	for !p.isEnd() && p.current().Type != RPAREN {
-		arg, err := p.parseIdentifierExpr()
+		paramName, err := p.parseIdentifierExpr()
 		if err != nil {
 			return nil, err
 		}
-		args = append(args, arg.(*ast.IdentifierExpr))
+		paramType, err := p.parseIdentifierExpr()
+
+		param := &ast.Param{Id: paramName.(*ast.IdentifierExpr), Type: paramType.(*ast.IdentifierExpr)}
+
+		params = append(params, param)
 		if p.current().Type == COMMA {
 			p.next()
 		}
@@ -115,7 +119,7 @@ func (p *Parser) parseFuncDecStmt(funcType string) (ast.Stmt, error) {
 	if err != nil {
 		return nil, err
 	}
-	return &ast.FuncDecStmt{Id: id.(*ast.IdentifierExpr), Args: args, Body: body.(*ast.BlockStmt)}, nil
+	return &ast.FuncDecStmt{Id: id.(*ast.IdentifierExpr), Args: params, Body: body.(*ast.BlockStmt)}, nil
 }
 
 // blockStatement ::= '{' statement* '}';

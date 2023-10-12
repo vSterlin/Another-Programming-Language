@@ -92,16 +92,16 @@ func (r *resolver) resolveStmt(stmt ast.Stmt) error {
 		return r.resolveBlockStmt(stmt)
 	case *ast.VarAssignStmt:
 		return r.resolveVarAssignStmt(stmt)
-	case *ast.FuncDecStmt:
-		return r.resolveFuncDecStmt(stmt)
+	// case *ast.FuncDecStmt:
+	// 	return r.resolveFuncDecStmt(stmt)
 	case *ast.ReturnStmt:
 		return r.resolveReturnStmt(stmt)
 	case *ast.IfStmt:
 		return r.resolveIfStmt(stmt)
 	case *ast.WhileStmt:
 		return r.resolveWhileStmt(stmt)
-	case *ast.ClassDecStmt:
-		return r.resolveClassDecStmt(stmt)
+	// case *ast.ClassDecStmt:
+	// 	return r.resolveClassDecStmt(stmt)
 	case *ast.SetStmt:
 		return r.resolveSetStmt(stmt)
 		// case *ast.ForStmt:
@@ -138,47 +138,47 @@ func (r *resolver) resolveVarAssignStmt(stmt *ast.VarAssignStmt) error {
 	return nil
 }
 
-func (r *resolver) resolveFuncDecStmt(stmt *ast.FuncDecStmt) error {
-	err := r.declare(stmt.Id.Name)
-	if err != nil {
-		return err
-	}
-	r.define(stmt.Id.Name)
-	return r.resolveFunction(stmt, functionFuncType)
-}
+// func (r *resolver) resolveFuncDecStmt(stmt *ast.FuncDecStmt) error {
+// 	err := r.declare(stmt.Id.Name)
+// 	if err != nil {
+// 		return err
+// 	}
+// 	r.define(stmt.Id.Name)
+// 	return r.resolveFunction(stmt, functionFuncType)
+// }
 
-func (r *resolver) resolveFunction(funcDec *ast.FuncDecStmt, funcType functionType) error {
+// func (r *resolver) resolveFunction(funcDec *ast.FuncDecStmt, funcType functionType) error {
 
-	enclosingFunc := r.currentFunc
-	r.currentFunc = funcType
+// 	enclosingFunc := r.currentFunc
+// 	r.currentFunc = funcType
 
-	r.beginScope()
+// 	r.beginScope()
 
-	defer func() {
-		r.endScope()
-		r.currentFunc = enclosingFunc
-	}()
-	for _, arg := range funcDec.Args {
-		err := r.declare(arg.Name)
-		if err != nil {
-			return err
-		}
+// 	defer func() {
+// 		r.endScope()
+// 		r.currentFunc = enclosingFunc
+// 	}()
+// 	for _, arg := range funcDec.Args {
+// 		err := r.declare(arg.Name)
+// 		if err != nil {
+// 			return err
+// 		}
 
-		r.define(arg.Name)
-	}
+// 		r.define(arg.Name)
+// 	}
 
-	// TODO review if body should be a block stmatement cause
-	// that creates own scope!!!!!!
-	// r.resolveStmt(funcDec.Body)
-	for _, stmt := range funcDec.Body.Stmts {
-		err := r.resolveStmt(stmt)
-		if err != nil {
-			return err
-		}
-	}
+// 	// TODO review if body should be a block stmatement cause
+// 	// that creates own scope!!!!!!
+// 	// r.resolveStmt(funcDec.Body)
+// 	for _, stmt := range funcDec.Body.Stmts {
+// 		err := r.resolveStmt(stmt)
+// 		if err != nil {
+// 			return err
+// 		}
+// 	}
 
-	return nil
-}
+// 	return nil
+// }
 
 func (r *resolver) resolveReturnStmt(stmt *ast.ReturnStmt) error {
 	if r.currentFunc == noneFuncType {
@@ -218,32 +218,32 @@ func (r *resolver) resolveWhileStmt(stmt *ast.WhileStmt) error {
 	return nil
 }
 
-func (r *resolver) resolveClassDecStmt(stmt *ast.ClassDecStmt) error {
-	enclosingClass := r.currentClass
-	r.currentClass = classClassType
-	err := r.declare(stmt.Id.Name)
-	if err != nil {
-		return err
-	}
-	r.define(stmt.Id.Name)
+// func (r *resolver) resolveClassDecStmt(stmt *ast.ClassDecStmt) error {
+// 	enclosingClass := r.currentClass
+// 	r.currentClass = classClassType
+// 	err := r.declare(stmt.Id.Name)
+// 	if err != nil {
+// 		return err
+// 	}
+// 	r.define(stmt.Id.Name)
 
-	r.beginScope()
-	defer func() {
-		r.endScope()
-		r.currentClass = enclosingClass
-	}()
-	scope := r.scopes.peek()
-	(*scope)["this"] = true
+// 	r.beginScope()
+// 	defer func() {
+// 		r.endScope()
+// 		r.currentClass = enclosingClass
+// 	}()
+// 	scope := r.scopes.peek()
+// 	(*scope)["this"] = true
 
-	for _, method := range stmt.Methods {
-		err = r.resolveFunction(method, methodFuncType)
-		if err != nil {
-			return err
-		}
-	}
+// 	for _, method := range stmt.Methods {
+// 		err = r.resolveFunction(method, methodFuncType)
+// 		if err != nil {
+// 			return err
+// 		}
+// 	}
 
-	return nil
-}
+// 	return nil
+// }
 
 func (r *resolver) resolveSetStmt(stmt *ast.SetStmt) error {
 	err := r.resolveExpr(stmt.Lhs)
