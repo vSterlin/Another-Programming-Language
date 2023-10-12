@@ -139,9 +139,10 @@ type Param struct {
 }
 
 type FuncDecStmt struct {
-	Id   *IdentifierExpr `json:"identifier"`
-	Args []*Param        `json:"arguments"`
-	Body *BlockStmt      `json:"body"`
+	Id         *IdentifierExpr `json:"identifier"`
+	Args       []*Param        `json:"arguments"`
+	Body       *BlockStmt      `json:"body"`
+	ReturnType *IdentifierExpr `json:"returnType"`
 }
 
 type IfStmt struct {
@@ -192,15 +193,23 @@ func (e *ExprStmt) String() string      { return fmt.Sprintf("expr(%s)", e.Expr)
 func (v *VarAssignStmt) String() string { return fmt.Sprintf("var(%s)", v.Id) }
 func (b *BlockStmt) String() string     { return fmt.Sprintf("block(%s)", b.Stmts) }
 func (w *WhileStmt) String() string     { return fmt.Sprintf("while(%s)", w.Test) }
-func (f *FuncDecStmt) String() string   { return fmt.Sprintf("func(%s, %s)", f.Id, f.Args) }
-func (p *Param) String() string         { return fmt.Sprintf("param(%s %s)", p.Id, p.Type) }
-func (i *IfStmt) String() string        { return fmt.Sprintf("if(%s)", i.Test) }
-func (d *DeferStmt) String() string     { return fmt.Sprintf("defer(%s)", d.Call) }
-func (r *RangeStmt) String() string     { return fmt.Sprintf("range(%s)", r.Id) }
-func (i *IncrDecrStmt) String() string  { return fmt.Sprintf("update(%s, %s)", i.Expr, i.Op) }
-func (r *ReturnStmt) String() string    { return fmt.Sprintf("return(%s)", r.Arg) }
-func (c *ClassDecStmt) String() string  { return fmt.Sprintf("class(%s, methods(%s))", c.Id, c.Methods) }
-func (v *SetStmt) String() string       { return fmt.Sprintf("set(%s, %s, %s)", v.Lhs, v.Name, v.Val) }
-func (p *Program) String() string       { return fmt.Sprintf("program(%s)", p.Stmts) }
+func (f *FuncDecStmt) String() string {
+	retStr := ""
+	if f.ReturnType != nil {
+		retStr = f.ReturnType.String()
+	} else {
+		retStr = "void"
+	}
+	return fmt.Sprintf("func(%s, %s, %s)", f.Id, f.Args, retStr)
+}
+func (p *Param) String() string        { return fmt.Sprintf("param(%s %s)", p.Id, p.Type) }
+func (i *IfStmt) String() string       { return fmt.Sprintf("if(%s)", i.Test) }
+func (d *DeferStmt) String() string    { return fmt.Sprintf("defer(%s)", d.Call) }
+func (r *RangeStmt) String() string    { return fmt.Sprintf("range(%s)", r.Id) }
+func (i *IncrDecrStmt) String() string { return fmt.Sprintf("update(%s, %s)", i.Expr, i.Op) }
+func (r *ReturnStmt) String() string   { return fmt.Sprintf("return(%s)", r.Arg) }
+func (c *ClassDecStmt) String() string { return fmt.Sprintf("class(%s, methods(%s))", c.Id, c.Methods) }
+func (v *SetStmt) String() string      { return fmt.Sprintf("set(%s, %s, %s)", v.Lhs, v.Name, v.Val) }
+func (p *Program) String() string      { return fmt.Sprintf("program(%s)", p.Stmts) }
 
 type Program struct{ Stmts []Stmt }

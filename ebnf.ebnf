@@ -51,7 +51,7 @@ rangeStatement ::= 'for' identifierExpression ':=' 'range' expression blockState
 
 (* second identifier is type *)
 param ::= identifier identifier;
-functionDeclaration ::= 'func' identifier '(' (param (',' param)*)? ')' blockStatement;
+functionDeclaration ::= 'func' identifier '(' (param (',' param)*)? ')' identifier blockStatement;
 methodDeclaration ::=  identifier '(' (identifier (',' identifier)*)? ')' blockStatement;
 
 statement ::= expressionStatement | variableDeclarationStatement 

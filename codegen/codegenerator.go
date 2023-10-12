@@ -79,7 +79,7 @@ func (cg *LLVMCodeGenerator) genFuncDecStmt(stmt *ast.FuncDecStmt) *ir.Func {
 		fnParams[i] = ir.NewParam(arg.Id.Name, llvmType(arg.Type.Name))
 	}
 
-	fn := cg.module.NewFunc(stmt.Id.Name, I32, fnParams...)
+	fn := cg.module.NewFunc(stmt.Id.Name, llvmType(stmt.ReturnType.Name), fnParams...)
 	block := fn.NewBlock("entry")
 
 	// to keep track of the current block to add stuff to

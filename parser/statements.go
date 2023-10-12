@@ -115,11 +115,20 @@ func (p *Parser) parseFuncDecStmt(funcType string) (ast.Stmt, error) {
 		return nil, err
 	}
 
+	retType := &ast.IdentifierExpr{Name: "void"}
+	if p.current().Type == IDENTIFIER {
+		retTypeExpr, err := p.parseIdentifierExpr()
+		if err != nil {
+			return nil, err
+		}
+		retType = retTypeExpr.(*ast.IdentifierExpr)
+	}
+
 	body, err := p.parseBlockStmt()
 	if err != nil {
 		return nil, err
 	}
-	return &ast.FuncDecStmt{Id: id.(*ast.IdentifierExpr), Args: params, Body: body.(*ast.BlockStmt)}, nil
+	return &ast.FuncDecStmt{Id: id.(*ast.IdentifierExpr), Args: params, Body: body.(*ast.BlockStmt), ReturnType: retType}, nil
 }
 
 // blockStatement ::= '{' statement* '}';
