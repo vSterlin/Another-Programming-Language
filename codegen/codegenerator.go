@@ -123,6 +123,8 @@ func (cg *LLVMCodeGenerator) genVarAssignStmt(stmt *ast.VarAssignStmt) value.Val
 
 func (cg *LLVMCodeGenerator) genIfStmt(stmt *ast.IfStmt) value.Value {
 
+	// TODO: if statement will generate an extra branch
+	// but it doesn't really affect anything
 	test := cg.genExpr(stmt.Test)
 	block := cg.getCurrentBlock()
 
@@ -148,12 +150,13 @@ func (cg *LLVMCodeGenerator) genIfStmt(stmt *ast.IfStmt) value.Value {
 		elseBlock.NewBr(exitBlock)
 	}
 
+	cg.currentBlock = exitBlock
 	if exitBlock.Term == nil {
 		if prevExitBlock != nil {
 			exitBlock.NewBr(prevExitBlock)
 		}
 		// else {
-		// 	exitBlock.NewRet(constant.NewInt(I32, 0))
+		// exitBlock.NewRet(constant.NewInt(I32, 11))
 		// }
 	}
 
