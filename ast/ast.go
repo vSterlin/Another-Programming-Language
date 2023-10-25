@@ -202,8 +202,10 @@ func (f *FuncDecStmt) String() string {
 	}
 	return fmt.Sprintf("func(%s, %s, %s)", f.Id, f.Args, retStr)
 }
-func (p *Param) String() string        { return fmt.Sprintf("param(%s %s)", p.Id, p.Type) }
-func (i *IfStmt) String() string       { return fmt.Sprintf("if(%s)", i.Test) }
+func (p *Param) String() string { return fmt.Sprintf("param(%s %s)", p.Id, p.Type) }
+func (i *IfStmt) String() string {
+	return fmt.Sprintf("if(%s, %s, %s)", i.Test, i.Consequent, i.Alternate)
+}
 func (d *DeferStmt) String() string    { return fmt.Sprintf("defer(%s)", d.Call) }
 func (r *RangeStmt) String() string    { return fmt.Sprintf("range(%s)", r.Id) }
 func (i *IncrDecrStmt) String() string { return fmt.Sprintf("update(%s, %s)", i.Expr, i.Op) }

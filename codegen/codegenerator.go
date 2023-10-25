@@ -24,8 +24,8 @@ type CodeGenerator interface {
 type LLVMCodeGenerator struct {
 	module       *ir.Module
 	currentBlock *ir.Block
+	exitBlock    *ir.Block
 	mainFunc     *ir.Func
-	currentFunc  *ir.Func
 	env          *Env
 }
 
@@ -42,7 +42,6 @@ func NewEnv(parent *Env) *Env {
 }
 
 func NewLLVMCodeGenerator() *LLVMCodeGenerator {
-
 	module := ir.NewModule()
 	return &LLVMCodeGenerator{
 		module: module,
@@ -87,17 +86,17 @@ func (cg *LLVMCodeGenerator) genFuncDecStmt(stmt *ast.FuncDecStmt) *ir.Func {
 	// to keep track of the current block to add stuff to
 	prevBlock := cg.currentBlock
 	cg.currentBlock = block
-	prevFunc := cg.currentFunc
-	cg.currentFunc = fn
 
 	cg.genBlockStmt(stmt.Body)
+
+	block = cg.getCurrentBlock()
 
 	if block.Term == nil {
 		block.NewRet(nil)
 	}
 
 	cg.currentBlock = prevBlock
-	cg.currentFunc = prevFunc
+
 	return fn
 }
 
@@ -123,7 +122,44 @@ func (cg *LLVMCodeGenerator) genVarAssignStmt(stmt *ast.VarAssignStmt) value.Val
 }
 
 func (cg *LLVMCodeGenerator) genIfStmt(stmt *ast.IfStmt) value.Value {
+
+	test := cg.genExpr(stmt.Test)
+	block := cg.getCurrentBlock()
+
+	fn := block.Parent
+	thenBlock := fn.NewBlock("")
+	elseBlock := fn.NewBlock("")
+	exitBlock := fn.NewBlock("")
+
+	prevExitBlock := cg.getExitBlock()
+	cg.exitBlock = exitBlock
+
+	block.NewCondBr(test, thenBlock, elseBlock)
+
+	cg.currentBlock = thenBlock
+	cg.genStmt(stmt.Consequent)
+	if thenBlock.Term == nil {
+		thenBlock.NewBr(exitBlock)
+	}
+
+	cg.currentBlock = elseBlock
+	cg.genStmt(stmt.Alternate)
+	if elseBlock.Term == nil {
+		elseBlock.NewBr(exitBlock)
+	}
+
+	if exitBlock.Term == nil {
+		if prevExitBlock != nil {
+			exitBlock.NewBr(prevExitBlock)
+		}
+		// else {
+		// 	exitBlock.NewRet(constant.NewInt(I32, 0))
+		// }
+	}
+
+	cg.exitBlock = prevExitBlock
 	return nil
+
 }
 
 func (cg *LLVMCodeGenerator) genReturnStmt(stmt *ast.ReturnStmt) value.Value {
@@ -145,6 +181,8 @@ func (cg *LLVMCodeGenerator) genExpr(expr ast.Expr) value.Value {
 		return genStringExpr(expr)
 	case *ast.BooleanExpr:
 		return genBooleanExpr(expr)
+	case *ast.LogicalExpr:
+		return cg.genLogicalExpr(expr)
 	case *ast.CallExpr:
 		return cg.genCallExpr(expr)
 	case *ast.IdentifierExpr:
@@ -172,6 +210,23 @@ func genBooleanExpr(expr *ast.BooleanExpr) *constant.Int {
 
 // Literals end
 
+func (cg *LLVMCodeGenerator) genLogicalExpr(expr *ast.LogicalExpr) value.Value {
+
+	lhs := cg.genExpr(expr.Lhs)
+	rhs := cg.genExpr(expr.Rhs)
+
+	block := cg.getCurrentBlock()
+
+	switch expr.Op {
+	case ast.AND:
+		return block.NewAnd(lhs, rhs)
+	case ast.OR:
+		return block.NewOr(lhs, rhs)
+	default:
+		return nil
+	}
+}
+
 func (cg *LLVMCodeGenerator) genBinaryExpr(expr *ast.BinaryExpr) value.Value {
 
 	lhs := cg.genExpr(expr.Lhs)
@@ -180,13 +235,13 @@ func (cg *LLVMCodeGenerator) genBinaryExpr(expr *ast.BinaryExpr) value.Value {
 	block := cg.getCurrentBlock()
 
 	switch expr.Op {
-	case "+":
+	case ast.ADD:
 		return block.NewAdd(lhs, rhs)
-	case "-":
+	case ast.SUB:
 		return block.NewSub(lhs, rhs)
-	case "*":
+	case ast.MUL:
 		return block.NewMul(lhs, rhs)
-	case "/":
+	case ast.DIV:
 		return block.NewSDiv(lhs, rhs)
 	default:
 		return nil
@@ -232,9 +287,10 @@ func (cg *LLVMCodeGenerator) genPrintCall(fn *ir.Func, arg value.Value) *ir.Inst
 
 func (cg *LLVMCodeGenerator) genIdentifierExpr(expr *ast.IdentifierExpr) value.Value {
 
-	if cg.currentFunc != nil {
+	currentFunc := cg.currentBlock.Parent
+	if currentFunc != nil {
 		var value *ir.Param
-		for _, param := range cg.currentFunc.Params {
+		for _, param := range currentFunc.Params {
 			if param.Name() == expr.Name {
 				value = param
 				break
@@ -255,7 +311,7 @@ func (cg *LLVMCodeGenerator) Gen(prog *ast.Program) string {
 	m := cg.module
 
 	fn := m.NewFunc("main", I32)
-	block := fn.NewBlock("entry")
+	fn.NewBlock("entry")
 	cg.mainFunc = fn
 
 	setupExternal(m)
@@ -264,6 +320,7 @@ func (cg *LLVMCodeGenerator) Gen(prog *ast.Program) string {
 		cg.genStmt(stmt)
 	}
 
+	block := cg.getCurrentBlock()
 	if block.Term == nil {
 		block.NewRet(constant.NewInt(I32, 0))
 	}
@@ -289,6 +346,10 @@ func (cg *LLVMCodeGenerator) getCurrentBlock() *ir.Block {
 		currentBlock = cg.mainFunc.Blocks[0]
 	}
 	return currentBlock
+}
+
+func (cg *LLVMCodeGenerator) getExitBlock() *ir.Block {
+	return cg.exitBlock
 }
 
 func (cg *LLVMCodeGenerator) getFunction(name string) *ir.Func {

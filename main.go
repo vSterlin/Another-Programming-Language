@@ -15,9 +15,45 @@ import (
 func main() {
 
 	compileToLLVM(`
-		x := true
-		y := false
-	`)
+
+
+	func a() int {
+		if true {
+			1 + 1
+			if true {
+				10 * 10
+			} else {
+				10 / 10
+			}
+			return 99999999 - 10
+		} else {
+			return 2 - 2
+		}
+		return 1001200 * 999
+	}
+
+	func b() int {
+		return 10
+	}
+
+	x := a()
+	z := b()
+`)
+
+	// compileToLLVM(`
+	// 	if true {
+	// 		if true {
+	// 			10 * 10
+	// 		} else {
+	// 			10 / 10
+	// 		}
+	// 		99999999 - 10
+	// 	} else {
+	// 		2 - 2
+	// 	}
+
+	// 	10000 * 999
+	// `)
 }
 
 var PRINT_AST = true
