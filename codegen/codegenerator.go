@@ -6,12 +6,14 @@ import (
 
 	"github.com/llir/llvm/ir"
 	"github.com/llir/llvm/ir/constant"
+	"github.com/llir/llvm/ir/enum"
 	"github.com/llir/llvm/ir/types"
 	"github.com/llir/llvm/ir/value"
 )
 
 var (
 	Bool = types.I1
+	Char = types.I8
 	I32  = types.I32
 	Str  = types.I8Ptr
 	Void = types.Void
@@ -84,7 +86,7 @@ func (cg *LLVMCodeGenerator) genFuncDecStmt(stmt *ast.FuncDecStmt) *ir.Func {
 	block := fn.NewBlock("entry")
 
 	// to keep track of the current block to add stuff to
-	prevBlock := cg.currentBlock
+	prevBlock := cg.getCurrentBlock()
 	cg.currentBlock = block
 
 	cg.genBlockStmt(stmt.Body)
@@ -92,7 +94,12 @@ func (cg *LLVMCodeGenerator) genFuncDecStmt(stmt *ast.FuncDecStmt) *ir.Func {
 	block = cg.getCurrentBlock()
 
 	if block.Term == nil {
-		block.NewRet(nil)
+		fn := block.Parent
+		if fn.Sig.RetType == Void {
+			block.NewRet(nil)
+		} else {
+			block.NewRet(constant.NewInt(I32, 0))
+		}
 	}
 
 	cg.currentBlock = prevBlock
@@ -246,6 +253,21 @@ func (cg *LLVMCodeGenerator) genBinaryExpr(expr *ast.BinaryExpr) value.Value {
 		return block.NewMul(lhs, rhs)
 	case ast.DIV:
 		return block.NewSDiv(lhs, rhs)
+
+	// relational
+	case "<":
+		return block.NewICmp(enum.IPredSLT, lhs, rhs)
+	case "<=":
+		return block.NewICmp(enum.IPredSLE, lhs, rhs)
+	case ">":
+		return block.NewICmp(enum.IPredSGT, lhs, rhs)
+	case ">=":
+		return block.NewICmp(enum.IPredSGE, lhs, rhs)
+	case "==":
+		return block.NewICmp(enum.IPredEQ, lhs, rhs)
+	case "!=":
+		return block.NewICmp(enum.IPredNE, lhs, rhs)
+
 	default:
 		return nil
 	}
@@ -261,36 +283,46 @@ func (cg *LLVMCodeGenerator) genCallExpr(expr *ast.CallExpr) value.Value {
 	args := []value.Value{}
 	for _, arg := range expr.Args {
 		val := cg.genExpr(arg)
+
 		args = append(args, val)
 	}
 	block := cg.getCurrentBlock()
 
 	if fn.Name() == "printf" {
-		return cg.genPrintCall(fn, args[0])
+		return cg.genPrintCall(fn, args...)
 	}
 
 	return block.NewCall(fn, args...)
 }
 
-func (cg *LLVMCodeGenerator) genPrintCall(fn *ir.Func, arg value.Value) *ir.InstCall {
+func (cg *LLVMCodeGenerator) genPrintCall(fn *ir.Func, args ...value.Value) *ir.InstCall {
 	block := cg.getCurrentBlock()
-
-	strArg := arg.(*constant.CharArray)
-	strLen := strArg.Typ.Len
-
-	strPtr := block.NewAlloca((types.NewArray(strLen, types.I8)))
-	block.NewStore(arg, strPtr)
-
 	zero := constant.NewInt(I32, 0)
-	gep := block.NewGetElementPtr(arg.(*constant.CharArray).Typ, strPtr, zero, zero)
 
-	return block.NewCall(fn, gep)
+	argList := []value.Value{}
+
+	for _, arg := range args {
+
+		switch a := arg.(type) {
+		case *constant.CharArray:
+			strLen := a.Typ.Len
+			strPtr := block.NewAlloca((types.NewArray(strLen, Char)))
+			block.NewStore(arg, strPtr)
+			gep := block.NewGetElementPtr(a.Typ, strPtr, zero, zero)
+
+			argList = append(argList, gep)
+		default:
+			argList = append(argList, a)
+		}
+	}
+
+	return block.NewCall(fn, argList...)
 
 }
 
 func (cg *LLVMCodeGenerator) genIdentifierExpr(expr *ast.IdentifierExpr) value.Value {
 
-	currentFunc := cg.currentBlock.Parent
+	currentFunc := cg.getCurrentBlock().Parent
 	if currentFunc != nil {
 		var value *ir.Param
 		for _, param := range currentFunc.Params {
@@ -338,9 +370,11 @@ func (cg *LLVMCodeGenerator) Gen(prog *ast.Program) string {
 
 // Helpers
 func setupExternal(m *ir.Module) {
-	// f :=
-	m.NewFunc("printf", I32, ir.NewParam("", Str))
-	// f.Sig.Variadic = true
+	f :=
+		m.NewFunc("printf", I32, ir.NewParam("", Str))
+	// m.NewFunc("printf", I32)
+
+	f.Sig.Variadic = true
 }
 
 func (cg *LLVMCodeGenerator) getCurrentBlock() *ir.Block {

@@ -14,46 +14,25 @@ import (
 
 func main() {
 
+	// 	compileToLLVM(`
+	// 	res := 1
+	// 	print("hola %d", res)
+	// `)
 	compileToLLVM(`
 
-
-	func a() int {
-		if true {
-			1 + 1
-			if true {
-				10 * 10
+		func fib(n int) int {
+			if n <= 1 {
+				return n
 			} else {
-				10 / 10
+				return fib(n - 1) + fib(n - 2)
 			}
-			return 99999999 - 10
-		} else {
-			return 2 - 2
+
 		}
-		return 1001200 * 999
-	}
 
-	func b() int {
-		return 10
-	}
+		res := fib(10)
+		print("%d\n",res)
+	`)
 
-	x := a()
-	z := b()
-`)
-
-	// compileToLLVM(`
-	// 	if true {
-	// 		if true {
-	// 			10 * 10
-	// 		} else {
-	// 			10 / 10
-	// 		}
-	// 		99999999 - 10
-	// 	} else {
-	// 		2 - 2
-	// 	}
-
-	// 	10000 * 999
-	// `)
 }
 
 var PRINT_AST = true
