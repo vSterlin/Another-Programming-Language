@@ -30,7 +30,7 @@ func main() {
 		}
 
 		res := fib(10)
-		print("%d\n",res)
+		print(res)
 	`)
 
 }

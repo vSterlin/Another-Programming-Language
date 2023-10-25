@@ -208,9 +208,8 @@ func genNumberExpr(expr *ast.NumberExpr) *constant.Int {
 }
 
 func genStringExpr(expr *ast.StringExpr) *constant.CharArray {
-	// unescape
 	text := strings.Replace(expr.Val, "\\n", "\n", -1) + "\x00"
-	str := constant.NewCharArrayFromString(text)
+	str := llvmStr(text)
 	return str
 }
 
@@ -288,27 +287,26 @@ func (cg *LLVMCodeGenerator) genCallExpr(expr *ast.CallExpr) value.Value {
 	}
 	block := cg.getCurrentBlock()
 
-	if fn.Name() == "printf" {
+	if expr.Callee.(*ast.IdentifierExpr).Name == "print" && fn.Name() == "printf" {
 		return cg.genPrintCall(fn, args...)
+	}
+	if fn.Name() == "printf" {
+		return cg.genPrintfCall(fn, args...)
 	}
 
 	return block.NewCall(fn, args...)
 }
 
-func (cg *LLVMCodeGenerator) genPrintCall(fn *ir.Func, args ...value.Value) *ir.InstCall {
+func (cg *LLVMCodeGenerator) genPrintfCall(fn *ir.Func, args ...value.Value) *ir.InstCall {
+
 	block := cg.getCurrentBlock()
-	zero := constant.NewInt(I32, 0)
-
 	argList := []value.Value{}
-
 	for _, arg := range args {
 
 		switch a := arg.(type) {
 		case *constant.CharArray:
-			strLen := a.Typ.Len
-			strPtr := block.NewAlloca((types.NewArray(strLen, Char)))
-			block.NewStore(arg, strPtr)
-			gep := block.NewGetElementPtr(a.Typ, strPtr, zero, zero)
+
+			gep := getElementPtrFromString(block, a)
 
 			argList = append(argList, gep)
 		default:
@@ -317,6 +315,28 @@ func (cg *LLVMCodeGenerator) genPrintCall(fn *ir.Func, args ...value.Value) *ir.
 	}
 
 	return block.NewCall(fn, argList...)
+
+}
+
+func (cg *LLVMCodeGenerator) genPrintCall(fn *ir.Func, args ...value.Value) *ir.InstCall {
+
+	formatStr := ""
+
+	for _, arg := range args {
+		switch arg.(type) {
+		case *constant.CharArray:
+			formatStr = formatStr + "%s\n"
+
+		default:
+			formatStr = formatStr + "%d\n"
+
+		}
+	}
+
+	formatPtr := llvmStr(formatStr)
+	args = append([]value.Value{formatPtr}, args...)
+
+	return cg.genPrintfCall(fn, args...)
 
 }
 
@@ -370,11 +390,9 @@ func (cg *LLVMCodeGenerator) Gen(prog *ast.Program) string {
 
 // Helpers
 func setupExternal(m *ir.Module) {
-	f :=
-		m.NewFunc("printf", I32, ir.NewParam("", Str))
-	// m.NewFunc("printf", I32)
-
+	f := m.NewFunc("printf", I32, ir.NewParam("", Str))
 	f.Sig.Variadic = true
+
 }
 
 func (cg *LLVMCodeGenerator) getCurrentBlock() *ir.Block {
@@ -413,4 +431,18 @@ func llvmType(t string) types.Type {
 	default:
 		return Void
 	}
+}
+
+func getElementPtrFromString(block *ir.Block, str *constant.CharArray) *ir.InstGetElementPtr {
+	zero := constant.NewInt(I32, 0)
+	strLen := str.Typ.Len
+	strPtr := block.NewAlloca((types.NewArray(strLen, Char)))
+	block.NewStore(str, strPtr)
+	gep := block.NewGetElementPtr(str.Typ, strPtr, zero, zero)
+	return gep
+}
+
+func llvmStr(s string) *constant.CharArray {
+	s = strings.Replace(s, "\\n", "\n", -1) + "\x00"
+	return constant.NewCharArrayFromString(s)
 }
