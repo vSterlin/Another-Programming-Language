@@ -14,28 +14,23 @@ import (
 
 func main() {
 
-	// 	compileToLLVM(`
-	// 	res := 1
-	// 	print("hola %d", res)
-	// `)
 	compileToLLVM(`
 
-		func fib(n int) int {
-			if n <= 1 {
-				return n
-			} else {
-				return fib(n - 1) + fib(n - 2)
+		i := 0
+
+		while i < 10 {
+			j := 0
+			i = i + 1
+			while j <= 3 {
+				print(j)
+				j = j + 1
 			}
-
 		}
-
-		res := fib(10)
-		print(res)
 	`)
 
 }
 
-var PRINT_AST = true
+var PRINT_AST = false
 
 func buildAST(code string) *ast.Program {
 	l := lexer.NewLexer(code)

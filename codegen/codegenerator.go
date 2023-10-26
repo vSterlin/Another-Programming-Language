@@ -64,6 +64,8 @@ func (cg *LLVMCodeGenerator) genStmt(stmt ast.Stmt) value.Value {
 		return cg.genVarAssignStmt(stmt)
 	case *ast.IfStmt:
 		return cg.genIfStmt(stmt)
+	case *ast.WhileStmt:
+		return cg.genWhileStmt(stmt)
 	case *ast.ReturnStmt:
 		return cg.genReturnStmt(stmt)
 	default:
@@ -119,11 +121,18 @@ func (cg *LLVMCodeGenerator) genVarAssignStmt(stmt *ast.VarAssignStmt) value.Val
 	init := cg.genExpr(stmt.Init)
 
 	block := cg.getCurrentBlock()
-	initType := init.Type()
-	alloc := block.NewAlloca(initType)
-	block.NewStore(init, alloc)
 
-	cg.env.vars[varName] = alloc
+	if stmt.Op == ":=" {
+
+		initType := init.Type()
+		alloc := block.NewAlloca(initType)
+		block.NewStore(init, alloc)
+
+		cg.env.vars[varName] = alloc
+	} else {
+		alloc := cg.env.vars[varName]
+		block.NewStore(init, alloc)
+	}
 
 	return nil
 }
@@ -170,6 +179,45 @@ func (cg *LLVMCodeGenerator) genIfStmt(stmt *ast.IfStmt) value.Value {
 	cg.exitBlock = prevExitBlock
 	return nil
 
+}
+
+func (cg *LLVMCodeGenerator) genWhileStmt(stmt *ast.WhileStmt) value.Value {
+
+	block := cg.getCurrentBlock()
+
+	fn := block.Parent
+
+	whileBlock := fn.NewBlock("")
+	bodyBlock := fn.NewBlock("")
+	exitBlock := fn.NewBlock("")
+
+	prevExitBlock := cg.getExitBlock()
+	cg.exitBlock = whileBlock
+
+	block.NewBr(whileBlock)
+
+	cg.currentBlock = whileBlock
+	test := cg.genExpr(stmt.Test)
+	whileBlock.NewCondBr(test, bodyBlock, exitBlock)
+
+	cg.currentBlock = bodyBlock
+	cg.genStmt(stmt.Body)
+
+	if bodyBlock.Term == nil {
+		bodyBlock.NewBr(whileBlock)
+	}
+
+	cg.currentBlock = exitBlock
+
+	if exitBlock.Term == nil {
+		if prevExitBlock != nil {
+			exitBlock.NewBr(prevExitBlock)
+		}
+		// else {
+		// 	exitBlock.NewBr(whileBlock)
+		// }
+	}
+	return nil
 }
 
 func (cg *LLVMCodeGenerator) genReturnStmt(stmt *ast.ReturnStmt) value.Value {
