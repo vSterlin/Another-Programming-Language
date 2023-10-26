@@ -187,7 +187,19 @@ func (cg *LLVMCodeGenerator) genIdentifierExpr(expr *ast.IdentifierExpr) value.V
 	}
 
 	value := cg.env.vars[expr.Name]
+
 	block := cg.getCurrentBlock()
-	load := block.NewLoad((value.ElemType), value)
-	return load
+
+	switch val := value.(type) {
+
+	case *ir.InstAlloca:
+		load := block.NewLoad((val.ElemType), value)
+		return load
+	case *ir.Global:
+		load := block.NewLoad((val.Typ.ElemType), value)
+		return load
+	default:
+		return value
+	}
+
 }

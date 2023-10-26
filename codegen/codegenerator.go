@@ -6,6 +6,7 @@ import (
 	"github.com/llir/llvm/ir"
 	"github.com/llir/llvm/ir/constant"
 	"github.com/llir/llvm/ir/types"
+	"github.com/llir/llvm/ir/value"
 )
 
 var (
@@ -29,13 +30,13 @@ type LLVMCodeGenerator struct {
 }
 
 type Env struct {
-	vars   map[string]*ir.InstAlloca
+	vars   map[string]value.Value
 	parent *Env
 }
 
 func NewEnv(parent *Env) *Env {
 	return &Env{
-		vars:   make(map[string]*ir.InstAlloca),
+		vars:   make(map[string]value.Value),
 		parent: parent,
 	}
 }

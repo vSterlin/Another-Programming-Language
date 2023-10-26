@@ -15,17 +15,17 @@ import (
 func main() {
 
 	compileToLLVM(`
+		i := 10
 
-		i := 0
-
-		while i < 10 {
-			j := 0
-			i = i + 1
-			while j <= 3 {
-				print(j)
-				j = j + 1
-			}
+		func a() int {
+			x := 11 + i
+			print(x)
+			return x
 		}
+
+		a()
+	 
+
 	`)
 
 }
