@@ -15,16 +15,10 @@ import (
 func main() {
 
 	compileToLLVM(`
-		i := 10
+		h := "hello"
+		w := "world"	 
 
-		func a() int {
-			x := 11 + i
-			print(x)
-			return x
-		}
-
-		a()
-	 
+		printf("%s\n", h)
 
 	`)
 

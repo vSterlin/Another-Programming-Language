@@ -5,6 +5,7 @@ import (
 	"language/ast"
 	. "language/lexer"
 	"strconv"
+	"strings"
 )
 
 func (p *Parser) parseNumberExpr() (ast.Expr, error) {
@@ -30,6 +31,7 @@ func (p *Parser) parseBooleanExpr() (ast.Expr, error) {
 // TODO: review if some error handling is needed
 func (p *Parser) parseStringExpr() (ast.Expr, error) {
 	val := p.current().Value
+	val = strings.Replace(val, "\\n", "\n", -1) + "\x00"
 	p.next()
 
 	return &ast.StringExpr{Val: val}, nil

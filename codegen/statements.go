@@ -79,18 +79,19 @@ func (cg *LLVMCodeGenerator) genVarAssignStmt(stmt *ast.VarAssignStmt) value.Val
 
 	block := cg.getCurrentBlock()
 
+	// TODO: FIX THIS
 	if stmt.Op == ":=" {
 
 		initType := init.Type()
 
-		if block.Parent.Name() == "main" {
-			global := cg.module.NewGlobalDef(varName, init.(constant.Constant))
-			cg.env.vars[varName] = global
-		} else {
-			alloc := block.NewAlloca(initType)
-			block.NewStore(init, alloc)
-			cg.env.vars[varName] = alloc
-		}
+		// if block.Parent.Name() == "main" {
+		// 	global := cg.module.NewGlobalDef(varName, init)
+		// 	cg.env.vars[varName] = global
+		// } else {
+		alloc := block.NewAlloca(initType)
+		block.NewStore(init, alloc)
+		cg.env.vars[varName] = alloc
+		// }
 	} else {
 		alloc := cg.env.vars[varName]
 		block.NewStore(init, alloc)

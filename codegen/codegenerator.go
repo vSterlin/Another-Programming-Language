@@ -26,18 +26,21 @@ type LLVMCodeGenerator struct {
 	currentBlock *ir.Block
 	exitBlock    *ir.Block
 	mainFunc     *ir.Func
-	env          *Env
+
+	env *Env
 }
 
 type Env struct {
-	vars   map[string]value.Value
-	parent *Env
+	vars    map[string]value.Value
+	strings map[string]*ir.Global
+	parent  *Env
 }
 
 func NewEnv(parent *Env) *Env {
 	return &Env{
-		vars:   make(map[string]value.Value),
-		parent: parent,
+		vars:    make(map[string]value.Value),
+		strings: make(map[string]*ir.Global),
+		parent:  parent,
 	}
 }
 

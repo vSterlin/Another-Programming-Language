@@ -1,8 +1,6 @@
 package codegen
 
 import (
-	"strings"
-
 	"github.com/llir/llvm/ir"
 	"github.com/llir/llvm/ir/constant"
 	"github.com/llir/llvm/ir/types"
@@ -59,9 +57,4 @@ func getElementPtrFromString(block *ir.Block, str *constant.CharArray) *ir.InstG
 	block.NewStore(str, strPtr)
 	gep := block.NewGetElementPtr(str.Typ, strPtr, zero, zero)
 	return gep
-}
-
-func llvmStr(s string) *constant.CharArray {
-	s = strings.Replace(s, "\\n", "\n", -1) + "\x00"
-	return constant.NewCharArrayFromString(s)
 }

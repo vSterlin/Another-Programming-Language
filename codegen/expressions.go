@@ -1,8 +1,8 @@
 package codegen
 
 import (
+	"fmt"
 	"language/ast"
-	"strings"
 
 	"github.com/llir/llvm/ir"
 	"github.com/llir/llvm/ir/constant"
@@ -18,7 +18,7 @@ func (cg *LLVMCodeGenerator) genExpr(expr ast.Expr) value.Value {
 	case *ast.NumberExpr:
 		return genNumberExpr(expr)
 	case *ast.StringExpr:
-		return genStringExpr(expr)
+		return cg.genStringExpr(expr)
 	case *ast.BooleanExpr:
 		return genBooleanExpr(expr)
 	case *ast.LogicalExpr:
@@ -37,10 +37,23 @@ func genNumberExpr(expr *ast.NumberExpr) *constant.Int {
 	return constant.NewInt(I32, int64(expr.Val))
 }
 
-func genStringExpr(expr *ast.StringExpr) *constant.CharArray {
-	text := strings.Replace(expr.Val, "\\n", "\n", -1) + "\x00"
-	str := llvmStr(text)
-	return str
+func (cg *LLVMCodeGenerator) genStringExpr(expr *ast.StringExpr) value.Value {
+	text := expr.Val
+
+	var str *ir.Global
+	if globalStr, ok := cg.env.strings[text]; ok {
+		str = globalStr
+	} else {
+		name := fmt.Sprintf(".str.%d", (len(cg.env.strings)))
+		str = cg.module.NewGlobalDef(name, constant.NewCharArrayFromString(text))
+		cg.env.strings[text] = str
+	}
+
+	zero := constant.NewInt(I32, 0)
+
+	val := constant.NewGetElementPtr(str.ContentType, str, zero, zero)
+
+	return val
 }
 
 func genBooleanExpr(expr *ast.BooleanExpr) *constant.Int {
@@ -117,9 +130,9 @@ func (cg *LLVMCodeGenerator) genCallExpr(expr *ast.CallExpr) value.Value {
 	}
 	block := cg.getCurrentBlock()
 
-	if expr.Callee.(*ast.IdentifierExpr).Name == "print" && fn.Name() == "printf" {
-		return cg.genPrintCall(fn, args...)
-	}
+	// if expr.Callee.(*ast.IdentifierExpr).Name == "print" && fn.Name() == "printf" {
+	// 	return cg.genPrintCall(fn, args...)
+	// }
 	if fn.Name() == "printf" {
 		return cg.genPrintfCall(fn, args...)
 	}
@@ -148,27 +161,27 @@ func (cg *LLVMCodeGenerator) genPrintfCall(fn *ir.Func, args ...value.Value) *ir
 
 }
 
-func (cg *LLVMCodeGenerator) genPrintCall(fn *ir.Func, args ...value.Value) *ir.InstCall {
+// func (cg *LLVMCodeGenerator) genPrintCall(fn *ir.Func, args ...value.Value) *ir.InstCall {
 
-	formatStr := ""
+// 	formatStr := ""
 
-	for _, arg := range args {
-		switch arg.(type) {
-		case *constant.CharArray:
-			formatStr = formatStr + "%s\n"
+// 	for _, arg := range args {
+// 		switch arg.(type) {
+// 		case *constant.CharArray:
+// 			formatStr = formatStr + "%s\n"
 
-		default:
-			formatStr = formatStr + "%d\n"
+// 		default:
+// 			formatStr = formatStr + "%d\n"
 
-		}
-	}
+// 		}
+// 	}
 
-	formatPtr := llvmStr(formatStr)
-	args = append([]value.Value{formatPtr}, args...)
+// 	formatPtr := llvmStr(formatStr)
+// 	args = append([]value.Value{formatPtr}, args...)
 
-	return cg.genPrintfCall(fn, args...)
+// 	return cg.genPrintfCall(fn, args...)
 
-}
+// }
 
 func (cg *LLVMCodeGenerator) genIdentifierExpr(expr *ast.IdentifierExpr) value.Value {
 
