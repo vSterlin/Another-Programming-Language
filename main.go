@@ -15,10 +15,7 @@ import (
 func main() {
 
 	compileToLLVM(`
-		h := "hello"
-		w := "world"	 
-
-		printf("%s\n", h)
+	1 + 10;
 
 	`)
 
@@ -68,7 +65,7 @@ func interpret(code string) {
 
 func compileToLLVM(code string) {
 	prog := buildAST(code)
-	cg := codegen.NewLLVMCodeGenerator()
+	cg := codegen.NewCodeGenerator()
 	output := cg.Gen(prog)
 	writeToFile(output)
 }
@@ -87,5 +84,5 @@ func repl() {
 }
 
 func writeToFile(code string) {
-	os.WriteFile("build/out.ll", []byte(code), 0644)
+	os.WriteFile("build/out.c", []byte(code), 0644)
 }

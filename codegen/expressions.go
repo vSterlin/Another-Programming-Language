@@ -1,218 +1,80 @@
 package codegen
 
 import (
-	"fmt"
 	"language/ast"
-
-	"github.com/llir/llvm/ir"
-	"github.com/llir/llvm/ir/constant"
-	"github.com/llir/llvm/ir/enum"
-	"github.com/llir/llvm/ir/value"
+	"strconv"
 )
 
-func (cg *LLVMCodeGenerator) genExpr(expr ast.Expr) value.Value {
+func (cg *CodeGenerator) genExpr(expr ast.Expr) (string, error) {
 	switch expr := expr.(type) {
 
 	case *ast.BinaryExpr:
 		return cg.genBinaryExpr(expr)
 	case *ast.NumberExpr:
-		return genNumberExpr(expr)
+		return cg.genNumberExpr(expr)
 	case *ast.StringExpr:
-		return cg.genStringExpr(expr)
+		return "", cg.genStringExpr(expr)
 	case *ast.BooleanExpr:
-		return genBooleanExpr(expr)
+		return "", genBooleanExpr(expr)
 	case *ast.LogicalExpr:
-		return cg.genLogicalExpr(expr)
+		return "", cg.genLogicalExpr(expr)
 	case *ast.CallExpr:
-		return cg.genCallExpr(expr)
+		return "", cg.genCallExpr(expr)
 	case *ast.IdentifierExpr:
-		return cg.genIdentifierExpr(expr)
+		return "", cg.genIdentifierExpr(expr)
 	default:
-		return nil
+		return "", nil
 	}
 }
 
 // Literals start
-func genNumberExpr(expr *ast.NumberExpr) *constant.Int {
-	return constant.NewInt(I32, int64(expr.Val))
+func (cg *CodeGenerator) genNumberExpr(expr *ast.NumberExpr) (string, error) {
+	return strconv.Itoa(expr.Val), nil
+}
+func (cg *CodeGenerator) genStringExpr(expr *ast.StringExpr) error {
+
+	return nil
 }
 
-func (cg *LLVMCodeGenerator) genStringExpr(expr *ast.StringExpr) value.Value {
-	text := expr.Val
-
-	var str *ir.Global
-	if globalStr, ok := cg.env.strings[text]; ok {
-		str = globalStr
-	} else {
-		name := fmt.Sprintf(".str.%d", (len(cg.env.strings)))
-		str = cg.module.NewGlobalDef(name, constant.NewCharArrayFromString(text))
-		cg.env.strings[text] = str
-	}
-
-	zero := constant.NewInt(I32, 0)
-
-	val := constant.NewGetElementPtr(str.ContentType, str, zero, zero)
-
-	return val
-}
-
-func genBooleanExpr(expr *ast.BooleanExpr) *constant.Int {
-	return constant.NewBool(expr.Val)
+func genBooleanExpr(expr *ast.BooleanExpr) error {
+	return nil
 }
 
 // Literals end
 
-func (cg *LLVMCodeGenerator) genLogicalExpr(expr *ast.LogicalExpr) value.Value {
-
-	lhs := cg.genExpr(expr.Lhs)
-	rhs := cg.genExpr(expr.Rhs)
-
-	block := cg.getCurrentBlock()
-
-	switch expr.Op {
-	case ast.AND:
-		return block.NewAnd(lhs, rhs)
-	case ast.OR:
-		return block.NewOr(lhs, rhs)
-	default:
-		return nil
-	}
+func (cg *CodeGenerator) genLogicalExpr(expr *ast.LogicalExpr) error {
+	return nil
 }
 
-func (cg *LLVMCodeGenerator) genBinaryExpr(expr *ast.BinaryExpr) value.Value {
+func (cg *CodeGenerator) genBinaryExpr(expr *ast.BinaryExpr) (string, error) {
+	lhs, err := cg.genExpr(expr.Lhs)
+	if err != nil {
+		return "", err
+	}
+	rhs, err := cg.genExpr(expr.Rhs)
+	if err != nil {
+		return "", err
+	}
 
-	lhs := cg.genExpr(expr.Lhs)
-	rhs := cg.genExpr(expr.Rhs)
-
-	block := cg.getCurrentBlock()
-
+	res := ""
 	switch expr.Op {
 	case ast.ADD:
-		return block.NewAdd(lhs, rhs)
+		res = lhs + " + " + rhs
 	case ast.SUB:
-		return block.NewSub(lhs, rhs)
+		res = lhs + " - " + rhs
 	case ast.MUL:
-		return block.NewMul(lhs, rhs)
+		res = lhs + " * " + rhs
 	case ast.DIV:
-		return block.NewSDiv(lhs, rhs)
-
-	// relational
-	case "<":
-		return block.NewICmp(enum.IPredSLT, lhs, rhs)
-	case "<=":
-		return block.NewICmp(enum.IPredSLE, lhs, rhs)
-	case ">":
-		return block.NewICmp(enum.IPredSGT, lhs, rhs)
-	case ">=":
-		return block.NewICmp(enum.IPredSGE, lhs, rhs)
-	case "==":
-		return block.NewICmp(enum.IPredEQ, lhs, rhs)
-	case "!=":
-		return block.NewICmp(enum.IPredNE, lhs, rhs)
-
-	default:
-		return nil
+		res = lhs + " / " + rhs
 	}
 
+	return res, nil
 }
 
-func (cg *LLVMCodeGenerator) genCallExpr(expr *ast.CallExpr) value.Value {
-	fn := cg.getFunction(expr.Callee.(*ast.IdentifierExpr).Name)
-	if fn == nil {
-		panic("Function not found")
-	}
-
-	args := []value.Value{}
-	for _, arg := range expr.Args {
-		val := cg.genExpr(arg)
-
-		args = append(args, val)
-	}
-	block := cg.getCurrentBlock()
-
-	// if expr.Callee.(*ast.IdentifierExpr).Name == "print" && fn.Name() == "printf" {
-	// 	return cg.genPrintCall(fn, args...)
-	// }
-	if fn.Name() == "printf" {
-		return cg.genPrintfCall(fn, args...)
-	}
-
-	return block.NewCall(fn, args...)
+func (cg *CodeGenerator) genCallExpr(expr *ast.CallExpr) error {
+	return nil
 }
 
-func (cg *LLVMCodeGenerator) genPrintfCall(fn *ir.Func, args ...value.Value) *ir.InstCall {
-
-	block := cg.getCurrentBlock()
-	argList := []value.Value{}
-	for _, arg := range args {
-
-		switch a := arg.(type) {
-		case *constant.CharArray:
-
-			gep := getElementPtrFromString(block, a)
-
-			argList = append(argList, gep)
-		default:
-			argList = append(argList, a)
-		}
-	}
-
-	return block.NewCall(fn, argList...)
-
-}
-
-// func (cg *LLVMCodeGenerator) genPrintCall(fn *ir.Func, args ...value.Value) *ir.InstCall {
-
-// 	formatStr := ""
-
-// 	for _, arg := range args {
-// 		switch arg.(type) {
-// 		case *constant.CharArray:
-// 			formatStr = formatStr + "%s\n"
-
-// 		default:
-// 			formatStr = formatStr + "%d\n"
-
-// 		}
-// 	}
-
-// 	formatPtr := llvmStr(formatStr)
-// 	args = append([]value.Value{formatPtr}, args...)
-
-// 	return cg.genPrintfCall(fn, args...)
-
-// }
-
-func (cg *LLVMCodeGenerator) genIdentifierExpr(expr *ast.IdentifierExpr) value.Value {
-
-	currentFunc := cg.getCurrentBlock().Parent
-	if currentFunc != nil {
-		var value *ir.Param
-		for _, param := range currentFunc.Params {
-			if param.Name() == expr.Name {
-				value = param
-				break
-			}
-		}
-		if value != nil {
-			return value
-		}
-	}
-
-	value := cg.env.vars[expr.Name]
-
-	block := cg.getCurrentBlock()
-
-	switch val := value.(type) {
-
-	case *ir.InstAlloca:
-		load := block.NewLoad((val.ElemType), value)
-		return load
-	case *ir.Global:
-		load := block.NewLoad((val.Typ.ElemType), value)
-		return load
-	default:
-		return value
-	}
-
+func (cg *CodeGenerator) genIdentifierExpr(expr *ast.IdentifierExpr) error {
+	return nil
 }
