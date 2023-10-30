@@ -15,7 +15,11 @@ import (
 func main() {
 
 	compileToLLVM(`
-	1 + 10;
+	func a() int {
+while (true) {
+	i := 0
+}
+	}
 
 	`)
 

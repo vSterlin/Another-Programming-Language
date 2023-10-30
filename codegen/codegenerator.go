@@ -5,26 +5,32 @@ import (
 )
 
 type CodeGenerator struct {
-	env     *Env
-	program string
+	env        *Env
+	imports    []string
+	identLevel int
 }
 
 func NewCodeGenerator() *CodeGenerator {
 	return &CodeGenerator{
-		env:     NewEnv(nil),
-		program: "",
+		env: NewEnv(nil),
+
+		imports: []string{
+			"sdio",
+			"stdlib"},
+
+		identLevel: 0,
 	}
 }
 
 func (cg *CodeGenerator) Gen(prog *ast.Program) string {
 	p := ""
-	p += "#include <stdio.h>\n"
-	p += "#include <stdlib.h>\n"
 
 	for _, stmt := range prog.Stmts {
 		code, _ := cg.genStmt(stmt)
 		p += code
 	}
+
+	p = cg.genImports() + p
 
 	return p
 }
