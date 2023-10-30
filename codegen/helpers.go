@@ -16,7 +16,7 @@ func (cg *CodeGenerator) genImports() string {
 
 func (cg *CodeGenerator) genTabs() string {
 	tabs := ""
-	for i := 0; i < cg.identLevel; i++ {
+	for i := 0; i < cg.indent; i++ {
 		tabs += "\t"
 	}
 	return tabs
