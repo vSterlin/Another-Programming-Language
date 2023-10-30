@@ -3,6 +3,7 @@ package codegen
 import (
 	"fmt"
 	"language/ast"
+	"strings"
 )
 
 // Statements
@@ -44,7 +45,16 @@ func (cg *CodeGenerator) genFuncDecStmt(stmt *ast.FuncDecStmt) (string, error) {
 		return "", err
 	}
 
-	return fmt.Sprintf("%s %s() %s", retType, id, body), nil
+	params := []string{}
+
+	for _, param := range stmt.Args {
+		paramStr := fmt.Sprintf("%s %s", cType(param.Type.Name), param.Id.Name)
+		params = append(params, paramStr)
+	}
+
+	paramsStr := strings.Join(params, ", ")
+
+	return fmt.Sprintf("%s %s(%s) %s", retType, id, paramsStr, body), nil
 
 }
 
@@ -66,7 +76,7 @@ func (cg *CodeGenerator) genBlockStmt(stmt *ast.BlockStmt) (string, error) {
 
 	tabs = tabs[1:]
 
-	return fmt.Sprintf("{\n%s%s}", stmts, tabs), nil
+	return fmt.Sprintf("{\n%s%s}\n", stmts, tabs), nil
 }
 
 func (cg *CodeGenerator) genVarAssignStmt(stmt *ast.VarAssignStmt) (string, error) {
@@ -81,6 +91,9 @@ func (cg *CodeGenerator) genVarAssignStmt(stmt *ast.VarAssignStmt) (string, erro
 		varType = "std::string"
 	case *ast.BooleanExpr:
 		varType = "bool"
+	default:
+		// TODO: fix
+		varType = "int"
 	}
 
 	id := stmt.Id.Name

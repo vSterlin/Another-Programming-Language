@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"language/ast"
 	"strconv"
+	"strings"
 )
 
 func (cg *CodeGenerator) genExpr(expr ast.Expr) (string, error) {
@@ -20,7 +21,7 @@ func (cg *CodeGenerator) genExpr(expr ast.Expr) (string, error) {
 	case *ast.LogicalExpr:
 		return cg.genLogicalExpr(expr)
 	case *ast.CallExpr:
-		return "", cg.genCallExpr(expr)
+		return cg.genCallExpr(expr)
 	case *ast.IdentifierExpr:
 		return cg.genIdentifierExpr(expr)
 	default:
@@ -111,8 +112,27 @@ func (cg *CodeGenerator) genBinaryExpr(expr *ast.BinaryExpr) (string, error) {
 	return res, nil
 }
 
-func (cg *CodeGenerator) genCallExpr(expr *ast.CallExpr) error {
-	return nil
+func (cg *CodeGenerator) genCallExpr(expr *ast.CallExpr) (string, error) {
+
+	callee, err := cg.genExpr(expr.Callee)
+
+	if err != nil {
+		return "", err
+	}
+
+	args := []string{}
+	for _, arg := range expr.Args {
+		argStr, err := cg.genExpr(arg)
+		if err != nil {
+			return "", err
+		}
+
+		args = append(args, argStr)
+	}
+
+	argsStr := strings.Join(args, ", ")
+
+	return fmt.Sprintf("%s(%s)", callee, argsStr), nil
 }
 
 func (cg *CodeGenerator) genIdentifierExpr(expr *ast.IdentifierExpr) (string, error) {
