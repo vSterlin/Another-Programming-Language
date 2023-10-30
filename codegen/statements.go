@@ -51,6 +51,7 @@ func (cg *CodeGenerator) genFuncDecStmt(stmt *ast.FuncDecStmt) (string, error) {
 func (cg *CodeGenerator) genBlockStmt(stmt *ast.BlockStmt) (string, error) {
 
 	stmts := ""
+	cg.indent++
 	tabs := cg.genTabs()
 	for _, stmt := range stmt.Stmts {
 		code, err := cg.genStmt(stmt)
@@ -60,6 +61,10 @@ func (cg *CodeGenerator) genBlockStmt(stmt *ast.BlockStmt) (string, error) {
 
 		stmts += fmt.Sprintf("%s%s\n", tabs, code)
 	}
+
+	cg.indent--
+
+	tabs = tabs[1:]
 
 	return fmt.Sprintf("{\n%s%s}", stmts, tabs), nil
 }

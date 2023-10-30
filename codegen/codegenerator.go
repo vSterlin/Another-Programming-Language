@@ -5,9 +5,9 @@ import (
 )
 
 type CodeGenerator struct {
-	env        *Env
-	imports    []string
-	identLevel int
+	env     *Env
+	imports []string
+	indent  int
 }
 
 func NewCodeGenerator() *CodeGenerator {
@@ -18,7 +18,7 @@ func NewCodeGenerator() *CodeGenerator {
 			"iostream",
 			"string"},
 
-		identLevel: 0,
+		indent: 0,
 	}
 }
 
