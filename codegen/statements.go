@@ -73,9 +73,9 @@ func (cg *CodeGenerator) genVarAssignStmt(stmt *ast.VarAssignStmt) (string, erro
 	case *ast.NumberExpr:
 		varType = "int"
 	case *ast.StringExpr:
-		varType = "char*"
+		varType = "std::string"
 	case *ast.BooleanExpr:
-		varType = "int"
+		varType = "bool"
 	}
 
 	id := stmt.Id.Name
@@ -124,6 +124,10 @@ func (cg *CodeGenerator) genWhileStmt(stmt *ast.WhileStmt) (string, error) {
 		return "", err
 	}
 	body, err := cg.genStmt(stmt.Body)
+	if err != nil {
+		return "", err
+	}
+
 	return fmt.Sprintf("while (%s) %s", test, body), nil
 
 }

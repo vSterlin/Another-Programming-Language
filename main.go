@@ -16,8 +16,10 @@ func main() {
 
 	compileToLLVM(`
 	func a() int {
-while (true) {
-	i := 0
+
+		if (x == 1){
+			
+			return 1
 }
 	}
 
@@ -88,5 +90,5 @@ func repl() {
 }
 
 func writeToFile(code string) {
-	os.WriteFile("build/out.c", []byte(code), 0644)
+	os.WriteFile("build/out.cpp", []byte(code), 0644)
 }

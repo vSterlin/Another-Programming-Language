@@ -15,8 +15,8 @@ func NewCodeGenerator() *CodeGenerator {
 		env: NewEnv(nil),
 
 		imports: []string{
-			"sdio",
-			"stdlib"},
+			"iostream",
+			"string"},
 
 		identLevel: 0,
 	}

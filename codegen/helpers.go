@@ -7,7 +7,7 @@ import (
 func (cg *CodeGenerator) genImports() string {
 	importStr := ""
 	for _, imp := range cg.imports {
-		importStr += fmt.Sprintf("#include <%s.h>\n", imp)
+		importStr += fmt.Sprintf("#include <%s>\n", imp)
 	}
 
 	importStr += "\n"
@@ -27,7 +27,7 @@ func cType(t string) string {
 	case "int":
 		return "int"
 	case "string":
-		return "char*"
+		return "std::string"
 	default:
 		return ""
 	}
