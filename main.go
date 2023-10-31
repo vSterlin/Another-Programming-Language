@@ -16,7 +16,7 @@ import (
 func main() {
 
 	compile(`
-	(x: number, y: number): number => {}
+	(x number, y number) number => {}
 	`)
 
 }

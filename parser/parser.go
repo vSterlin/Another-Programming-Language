@@ -50,6 +50,10 @@ func (p *Parser) peek2() *Token {
 	return p.tokens[p.pos+2]
 }
 
+func (p *Parser) peek3() *Token {
+	return p.tokens[p.pos+3]
+}
+
 func (p *Parser) isEnd() bool {
 	return p.pos >= p.len
 }

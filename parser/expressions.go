@@ -70,9 +70,7 @@ func (p *Parser) parseArrowFunc() (ast.Expr, error) {
 		if err != nil {
 			return nil, err
 		}
-		if err := p.consume(COLON); err != nil {
-			return nil, err
-		}
+
 		paramType, err := p.parseIdentifierExpr()
 		if err != nil {
 			return nil, err
@@ -84,10 +82,6 @@ func (p *Parser) parseArrowFunc() (ast.Expr, error) {
 	}
 
 	if err := p.consume(RPAREN); err != nil {
-		return nil, err
-	}
-
-	if err := p.consume(COLON); err != nil {
 		return nil, err
 	}
 
@@ -156,8 +150,8 @@ func (p *Parser) parsePrimaryExpr() (ast.Expr, error) {
 	case STRING:
 		return p.parseStringExpr()
 	case LPAREN:
-		if (p.peek().Type == IDENTIFIER && p.peek2().Type == COLON) ||
-			(p.peek().Type == RPAREN && p.peek2().Type == COLON) {
+		if (p.peek().Type == IDENTIFIER && p.peek2().Type == IDENTIFIER) ||
+			(p.peek().Type == RPAREN && p.peek3().Type == ARROW) {
 			return p.parseArrowFunc()
 		} else {
 			return p.parseParenExpr()
