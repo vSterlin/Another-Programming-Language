@@ -23,6 +23,7 @@ func main() {
 	1 + 1
 
 	true == false
+	1 == false
 	`)
 
 }
@@ -74,7 +75,12 @@ func compile(code string) {
 
 	tc := typechecker.NewTypeChecker()
 
-	tc.Check(prog)
+	err := tc.Check(prog)
+
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
 
 	cg := codegen.NewCodeGenerator()
 	output := cg.Gen(prog)

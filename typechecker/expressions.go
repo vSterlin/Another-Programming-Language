@@ -47,18 +47,14 @@ func (t *TypeChecker) checkBinaryExpr(expr *ast.BinaryExpr) (Type, error) {
 		return INVALID, err
 	}
 
-	if !expectTypesEqual(lhs, rhs) {
-		return INVALID, err
-	}
-
 	switch expr.Op {
-	case ast.ADD, ast.SUB, ast.MUL, ast.DIV, "<", ">", "<=", ">=":
-		if !expectTypesEqual(lhs, Number) {
+	case ast.ADD, ast.SUB, ast.MUL, ast.DIV, ast.LT, ast.GT, ast.LTE, ast.GTE:
+		if !areTypesEqual(lhs, rhs, Number) {
 			return INVALID, NewTypeError(fmt.Sprintf("expected %s, got %s", Number, lhs))
 		}
 
-	case "==", "!=":
-		if !expectTypesEqual(lhs, rhs) {
+	case ast.EQ, ast.NEQ:
+		if !areTypesEqual(lhs, rhs) {
 			return INVALID, NewTypeError(fmt.Sprintf("expected %s, got %s", lhs, rhs))
 		}
 

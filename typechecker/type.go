@@ -1,7 +1,5 @@
 package typechecker
 
-import "errors"
-
 type Type int
 
 const (
@@ -25,8 +23,7 @@ func (t Type) String() string {
 	}
 }
 
-// variadic function
-func expectTypesEqual(expected Type, actual ...Type) bool {
+func areTypesEqual(expected Type, actual ...Type) bool {
 	for _, a := range actual {
 		if expected != a {
 			return false
@@ -35,6 +32,14 @@ func expectTypesEqual(expected Type, actual ...Type) bool {
 	return true
 }
 
+type TypeError struct {
+	text string
+}
+
+func (t TypeError) Error() string {
+	return "type error: " + t.text
+}
+
 func NewTypeError(text string) error {
-	return errors.New("type error: " + text)
+	return &TypeError{text}
 }

@@ -35,6 +35,13 @@ const (
 	DIV BinOp = "/"
 	MOD BinOp = "%"
 	POW BinOp = "**"
+
+	EQ  BinOp = "=="
+	NEQ BinOp = "!="
+	LT  BinOp = "<"
+	GT  BinOp = ">"
+	LTE BinOp = "<="
+	GTE BinOp = ">="
 )
 
 type BinaryExpr struct {
