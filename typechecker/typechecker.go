@@ -3,12 +3,14 @@ package typechecker
 import "language/ast"
 
 type TypeChecker struct {
-	env *Env
+	env                *Env
+	currentFuncRetType Type
 }
 
 func NewTypeChecker() *TypeChecker {
 	return &TypeChecker{
-		env: NewEnv(nil),
+		env:                NewEnv(nil),
+		currentFuncRetType: INVALID,
 	}
 }
 

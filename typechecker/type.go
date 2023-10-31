@@ -23,6 +23,19 @@ func (t Type) String() string {
 	}
 }
 
+func fromString(s string) Type {
+	switch s {
+	case "number", "int":
+		return Number
+	case "string":
+		return String
+	case "boolean":
+		return Boolean
+	default:
+		return INVALID
+	}
+}
+
 func areTypesEqual(expected Type, actual ...Type) bool {
 	for _, a := range actual {
 		if expected != a {

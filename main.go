@@ -16,14 +16,9 @@ import (
 func main() {
 
 	compile(`
-	1
-	2
-	"hola"
-	true
-	1 + 1
-
-	true == false
-	1 == false
+	func sum(a int, b int) int {
+			return a + b
+	}
 	`)
 
 }
