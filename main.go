@@ -16,13 +16,12 @@ import (
 func main() {
 
 	compile(`
-	func main() number {
-	}
+	() number => { return 1 }
 	`)
 
 }
 
-var PRINT_AST = true
+var PRINT_AST = false
 
 func buildAST(code string) *ast.Program {
 	l := lexer.NewLexer(code)

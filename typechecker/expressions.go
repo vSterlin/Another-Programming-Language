@@ -22,6 +22,8 @@ func (t *TypeChecker) checkExpr(expr ast.Expr) (Type, error) {
 	case *ast.IdentifierExpr:
 		return t.checkIdentifierExpr(expr)
 
+	case *ast.ArrowFunc:
+		return t.checkArrowFunc(expr)
 	case *ast.CallExpr:
 		return t.checkCallExpr(expr)
 
@@ -95,6 +97,25 @@ func (t *TypeChecker) checkLogicalExpr(expr *ast.LogicalExpr) (Type, error) {
 
 func (t *TypeChecker) checkIdentifierExpr(expr *ast.IdentifierExpr) (Type, error) {
 	return t.env.Get(expr.Name)
+}
+
+func (t *TypeChecker) checkArrowFunc(expr *ast.ArrowFunc) (Type, error) {
+
+	for _, param := range expr.Args {
+		paramType := fromString(param.Type.Name)
+		t.env.Define(param.Id.Name, paramType)
+	}
+
+	prevFuncRetType := t.currentFuncRetType
+	t.currentFuncRetType = fromString(expr.ReturnType.Name)
+
+	err := t.checkBlockStmt(expr.Body, NewEnv(t.env))
+	if err != nil {
+		return INVALID, err
+	}
+
+	t.currentFuncRetType = prevFuncRetType
+	return t.currentFuncRetType, nil
 }
 
 func (t *TypeChecker) checkCallExpr(expr *ast.CallExpr) (Type, error) {

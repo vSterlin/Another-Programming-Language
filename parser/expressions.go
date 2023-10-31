@@ -85,10 +85,16 @@ func (p *Parser) parseArrowFunc() (ast.Expr, error) {
 		return nil, err
 	}
 
-	retType, err := p.parseIdentifierExpr()
+	var retType *ast.IdentifierExpr
 
-	if err != nil {
-		return nil, err
+	if p.current().Type == ARROW {
+		retType = &ast.IdentifierExpr{Name: "void"}
+	} else {
+		r, err := p.parseIdentifierExpr()
+		if err != nil {
+			return nil, err
+		}
+		retType = r
 	}
 
 	if err := p.consume(ARROW); err != nil {
@@ -151,9 +157,10 @@ func (p *Parser) parsePrimaryExpr() (ast.Expr, error) {
 		return p.parseStringExpr()
 	case LPAREN:
 		if (p.peek().Type == IDENTIFIER && p.peek2().Type == IDENTIFIER) ||
-			(p.peek().Type == RPAREN && p.peek3().Type == ARROW) {
+			(p.peek().Type == RPAREN && (p.peek2().Type == ARROW || p.peek3().Type == ARROW)) {
 			return p.parseArrowFunc()
 		} else {
+
 			return p.parseParenExpr()
 		}
 	case LBRACK:
