@@ -6,6 +6,7 @@ const (
 	Number Type = iota
 	String
 	Boolean
+	Void
 
 	INVALID
 )
@@ -18,6 +19,8 @@ func (t Type) String() string {
 		return "string"
 	case Boolean:
 		return "boolean"
+	case Void:
+		return "void"
 	default:
 		return "invalid"
 	}
@@ -31,6 +34,8 @@ func fromString(s string) Type {
 		return String
 	case "boolean":
 		return Boolean
+	case "void":
+		return Void
 	default:
 		return INVALID
 	}

@@ -34,7 +34,14 @@ func (t *TypeChecker) checkBlockStmt(stmt *ast.BlockStmt, env *Env) error {
 	t.env = env
 	defer func() { t.env = prevEnv }()
 
-	needsToReturn := t.currentFuncRetType != INVALID
+	needsToReturn := t.currentFuncRetType != INVALID && t.currentFuncRetType != Void
+
+	if len(stmt.Stmts) == 0 {
+		if needsToReturn {
+			return NewTypeError("missing return statement")
+		}
+		return nil
+	}
 
 	for i, s := range stmt.Stmts {
 		err := t.checkStmt(s)
@@ -43,7 +50,6 @@ func (t *TypeChecker) checkBlockStmt(stmt *ast.BlockStmt, env *Env) error {
 		}
 
 		if needsToReturn {
-
 			if i == len(stmt.Stmts)-1 && !hasReturned(s) {
 				return NewTypeError("missing return statement")
 			}
