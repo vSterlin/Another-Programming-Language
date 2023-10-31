@@ -19,5 +19,7 @@ func (t *TypeChecker) Check(prog *ast.Program) error {
 			return err
 		}
 	}
+
+	// Not sure what to return here.
 	return nil
 }

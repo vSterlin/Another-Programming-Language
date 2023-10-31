@@ -1,11 +1,16 @@
 package typechecker
 
-import "language/ast"
+import (
+	"fmt"
+	"language/ast"
+)
 
 func (t *TypeChecker) checkStmt(stmt ast.Stmt) error {
 	switch stmt := stmt.(type) {
 	case *ast.ExprStmt:
-		return t.checkExpr(stmt.Expr)
+		t, err := t.checkExpr(stmt.Expr)
+		fmt.Println(t)
+		return err
 	default:
 		panic("unknown statement type")
 	}

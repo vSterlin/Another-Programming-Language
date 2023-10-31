@@ -9,17 +9,20 @@ import (
 	"language/interpreter"
 	"language/lexer"
 	"language/parser"
+	"language/typechecker"
 	"os"
 )
 
 func main() {
 
-	compileToLLVM(`
-	func sum(x int, y int) int {
-		return x + y
-	}
+	compile(`
+	1
+	2
+	"hola"
+	true
+	1 + 1
 
-	x := sum(1, 2)
+	true == false
 	`)
 
 }
@@ -66,8 +69,13 @@ func interpret(code string) {
 
 }
 
-func compileToLLVM(code string) {
+func compile(code string) {
 	prog := buildAST(code)
+
+	tc := typechecker.NewTypeChecker()
+
+	tc.Check(prog)
+
 	cg := codegen.NewCodeGenerator()
 	output := cg.Gen(prog)
 	writeToFile(output)
