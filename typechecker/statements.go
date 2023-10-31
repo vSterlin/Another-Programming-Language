@@ -115,6 +115,8 @@ func (t *TypeChecker) checkFuncDecStmt(stmt *ast.FuncDecStmt) error {
 
 	t.currentFuncRetType = prevFuncRetType
 
+	t.env.DefineFunction(stmt.Id.Name, stmt)
+
 	return nil
 }
 

@@ -1,14 +1,18 @@
 package typechecker
 
+import "language/ast"
+
 type Env struct {
-	parent *Env
-	vars   map[string]Type
+	parent    *Env
+	vars      map[string]Type
+	functions map[string]*ast.FuncDecStmt
 }
 
 func NewEnv(parent *Env) *Env {
 	return &Env{
-		parent: parent,
-		vars:   make(map[string]Type),
+		parent:    parent,
+		vars:      make(map[string]Type),
+		functions: make(map[string]*ast.FuncDecStmt),
 	}
 }
 
@@ -41,4 +45,22 @@ func (e *Env) Get(name string) (Type, error) {
 
 	return INVALID, NewTypeError("undefined variable: " + name)
 
+}
+
+func (e *Env) DefineFunction(name string, stmt *ast.FuncDecStmt) {
+	e.functions[name] = stmt
+}
+
+func (e *Env) GetFunction(name string) (*ast.FuncDecStmt, error) {
+	f, ok := e.functions[name]
+
+	if ok {
+		return f, nil
+	}
+
+	if e.parent != nil {
+		return e.parent.GetFunction(name)
+	}
+
+	return nil, NewTypeError("undefined function: " + name)
 }

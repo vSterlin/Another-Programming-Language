@@ -22,6 +22,9 @@ func (t *TypeChecker) checkExpr(expr ast.Expr) (Type, error) {
 	case *ast.IdentifierExpr:
 		return t.checkIdentifierExpr(expr)
 
+	case *ast.CallExpr:
+		return t.checkCallExpr(expr)
+
 	default:
 		panic("unknown expression type")
 
@@ -92,4 +95,39 @@ func (t *TypeChecker) checkLogicalExpr(expr *ast.LogicalExpr) (Type, error) {
 
 func (t *TypeChecker) checkIdentifierExpr(expr *ast.IdentifierExpr) (Type, error) {
 	return t.env.Get(expr.Name)
+}
+
+func (t *TypeChecker) checkCallExpr(expr *ast.CallExpr) (Type, error) {
+
+	// TODO:
+	funcName := (expr.Callee.(*ast.IdentifierExpr)).Name
+
+	funcDef, err := t.env.GetFunction(funcName)
+
+	if err != nil {
+		return INVALID, NewTypeError(fmt.Sprintf("undefined function: %s", funcName))
+	}
+
+	if len(funcDef.Args) != len(expr.Args) {
+		return INVALID, NewTypeError(
+			fmt.Sprintf("expected %d arguments, got %d",
+				len(funcDef.Args), len(expr.Args)))
+	}
+
+	for i, arg := range expr.Args {
+		argType, err := t.checkExpr(arg)
+		if err != nil {
+			return INVALID, err
+		}
+		expectedType := fromString(funcDef.Args[i].Type.Name)
+		if !areTypesEqual(argType, expectedType) {
+			return INVALID, NewTypeError(
+				fmt.Sprintf("expected argument %d to be of type %s, got %s",
+					i+1, expectedType, argType))
+		}
+	}
+
+	retType := fromString(funcDef.ReturnType.Name)
+
+	return retType, nil
 }

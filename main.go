@@ -19,6 +19,12 @@ func main() {
 	func sum(a int, b int) int {
 			return a + b
 	}
+
+	x := sum(1, 2)
+
+	x()
+
+
 	`)
 
 }
