@@ -48,7 +48,7 @@ func (p *Parser) parseRangeStmt() (ast.Stmt, error) {
 		return nil, err
 	}
 
-	return &ast.RangeStmt{Id: id.(*ast.IdentifierExpr), Expr: ex, Body: body.(*ast.BlockStmt)}, nil
+	return &ast.RangeStmt{Id: id, Expr: ex, Body: body}, nil
 }
 
 // variableAssignmentStatement ::= identifier ('=' | ':=') expression;
@@ -103,7 +103,7 @@ func (p *Parser) parseFuncDecStmt(funcType string) (ast.Stmt, error) {
 		}
 		paramType, err := p.parseIdentifierExpr()
 
-		param := &ast.Param{Id: paramName.(*ast.IdentifierExpr), Type: paramType.(*ast.IdentifierExpr)}
+		param := &ast.Param{Id: paramName, Type: paramType}
 
 		params = append(params, param)
 		if p.current().Type == COMMA {
@@ -121,18 +121,18 @@ func (p *Parser) parseFuncDecStmt(funcType string) (ast.Stmt, error) {
 		if err != nil {
 			return nil, err
 		}
-		retType = retTypeExpr.(*ast.IdentifierExpr)
+		retType = retTypeExpr
 	}
 
 	body, err := p.parseBlockStmt()
 	if err != nil {
 		return nil, err
 	}
-	return &ast.FuncDecStmt{Id: id.(*ast.IdentifierExpr), Args: params, Body: body.(*ast.BlockStmt), ReturnType: retType}, nil
+	return &ast.FuncDecStmt{Id: id, Args: params, Body: body, ReturnType: retType}, nil
 }
 
 // blockStatement ::= '{' statement* '}';
-func (p *Parser) parseBlockStmt() (ast.Stmt, error) {
+func (p *Parser) parseBlockStmt() (*ast.BlockStmt, error) {
 	if err := p.consume(LBRACE); err != nil {
 		return nil, err
 	}
@@ -250,7 +250,7 @@ func (p *Parser) parseClassDecStmt() (ast.Stmt, error) {
 	if err := p.consume(RBRACE); err != nil {
 		return nil, err
 	}
-	return &ast.ClassDecStmt{Id: id.(*ast.IdentifierExpr), Methods: methods}, nil
+	return &ast.ClassDecStmt{Id: id, Methods: methods}, nil
 }
 
 // statement ::= expression | variableDeclarationStatement

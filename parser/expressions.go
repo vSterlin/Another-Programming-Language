@@ -38,7 +38,7 @@ func (p *Parser) parseStringExpr() (ast.Expr, error) {
 }
 
 // TODO: review if some error handling is needed
-func (p *Parser) parseIdentifierExpr() (ast.Expr, error) {
+func (p *Parser) parseIdentifierExpr() (*ast.IdentifierExpr, error) {
 	name := p.current().Value
 	p.next()
 	return &ast.IdentifierExpr{Name: name}, nil
@@ -50,10 +50,64 @@ func (p *Parser) parseParenExpr() (ast.Expr, error) {
 	if err != nil {
 		return nil, err
 	}
+
 	if err := p.consume(RPAREN); err != nil {
 		return nil, err
 	}
 	return val, nil
+}
+
+// arrowFunction ::= '(' (param (',' param)*)? ')' ':' identifier '=>' expression;
+func (p *Parser) parseArrowFunc() (ast.Expr, error) {
+
+	// eat LPAREN
+	p.next()
+
+	params := []*ast.Param{}
+
+	for !p.isEnd() && p.current().Type != RPAREN {
+		paramId, err := p.parseIdentifierExpr()
+		if err != nil {
+			return nil, err
+		}
+		if err := p.consume(COLON); err != nil {
+			return nil, err
+		}
+		paramType, err := p.parseIdentifierExpr()
+		if err != nil {
+			return nil, err
+		}
+		params = append(params, &ast.Param{Id: paramId, Type: paramType})
+		if p.current().Type == COMMA {
+			p.next()
+		}
+	}
+
+	if err := p.consume(RPAREN); err != nil {
+		return nil, err
+	}
+
+	if err := p.consume(COLON); err != nil {
+		return nil, err
+	}
+
+	retType, err := p.parseIdentifierExpr()
+
+	if err != nil {
+		return nil, err
+	}
+
+	if err := p.consume(ARROW); err != nil {
+		return nil, err
+	}
+
+	body, err := p.parseBlockStmt()
+	if err != nil {
+		return nil, err
+	}
+
+	return &ast.ArrowFunc{Args: params, Body: body, ReturnType: retType}, nil
+
 }
 
 // arrayExpression ::= '[' (expression (',' expression)*)? ']';
@@ -81,7 +135,7 @@ func (p *Parser) parseArrayExpr() (ast.Expr, error) {
 
 }
 
-// primaryExpression ::= identifier | number | boolean | string | '(' expression ')' | arrayExpression;
+// primaryExpression ::= identifier | number | boolean | string | '(' expression ')' | arrayExpression | arrowFunction;
 func (p *Parser) parsePrimaryExpr() (ast.Expr, error) {
 
 	switch p.current().Type {
@@ -102,7 +156,12 @@ func (p *Parser) parsePrimaryExpr() (ast.Expr, error) {
 	case STRING:
 		return p.parseStringExpr()
 	case LPAREN:
-		return p.parseParenExpr()
+		if (p.peek().Type == IDENTIFIER && p.peek2().Type == COLON) ||
+			(p.peek().Type == RPAREN && p.peek2().Type == COLON) {
+			return p.parseArrowFunc()
+		} else {
+			return p.parseParenExpr()
+		}
 	case LBRACK:
 		return p.parseArrayExpr()
 
@@ -207,7 +266,7 @@ func (p *Parser) parseSliceExpr() (ast.Expr, error) {
 		return nil, err
 	}
 
-	return &ast.SliceExpr{Id: id.(*ast.IdentifierExpr), Low: low, High: high, Step: step}, nil
+	return &ast.SliceExpr{Id: id, Low: low, High: high, Step: step}, nil
 
 }
 

@@ -82,6 +82,12 @@ type SliceExpr struct {
 
 type ThisExpr struct{}
 
+type ArrowFunc struct {
+	Args       []*Param        `json:"arguments"`
+	Body       *BlockStmt      `json:"body"`
+	ReturnType *IdentifierExpr `json:"returnType"`
+}
+
 func (n *NumberExpr) exprNode()     {}
 func (v *IdentifierExpr) exprNode() {}
 func (b *BooleanExpr) exprNode()    {}
@@ -93,6 +99,7 @@ func (a *ArrayExpr) exprNode()      {}
 func (s *SliceExpr) exprNode()      {}
 func (m *MemberExpr) exprNode()     {}
 func (t *ThisExpr) exprNode()       {}
+func (a *ArrowFunc) exprNode()      {}
 
 func (n *NumberExpr) String() string     { return fmt.Sprintf("number(%d)", n.Val) }
 func (v *IdentifierExpr) String() string { return fmt.Sprintf("identifier(%s)", v.Name) }
@@ -105,6 +112,7 @@ func (a *ArrayExpr) String() string      { return fmt.Sprintf("array(%s)", a.Ele
 func (s *SliceExpr) String() string      { return fmt.Sprintf("slice(%s)", s.Id) }
 func (m *MemberExpr) String() string     { return fmt.Sprintf("member(%s, %s)", m.Obj, m.Prop) }
 func (t *ThisExpr) String() string       { return ("this") }
+func (a *ArrowFunc) String() string      { return fmt.Sprintf("arrow(%s, %s)", a.Args, a.Body) }
 
 // Statements
 type Stmt interface {

@@ -16,20 +16,12 @@ import (
 func main() {
 
 	compile(`
-	func sum(a int, b int) int {
-			return a + b
-	}
-
-	x := sum(1, 2)
-
-	x()
-
-
+	(x: number, y: number): number => {}
 	`)
 
 }
 
-var PRINT_AST = false
+var PRINT_AST = true
 
 func buildAST(code string) *ast.Program {
 	l := lexer.NewLexer(code)

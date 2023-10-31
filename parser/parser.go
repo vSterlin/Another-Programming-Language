@@ -42,6 +42,14 @@ func (p *Parser) next() {
 	p.pos++
 }
 
+func (p *Parser) peek() *Token {
+	return p.tokens[p.pos+1]
+}
+
+func (p *Parser) peek2() *Token {
+	return p.tokens[p.pos+2]
+}
+
 func (p *Parser) isEnd() bool {
 	return p.pos >= p.len
 }

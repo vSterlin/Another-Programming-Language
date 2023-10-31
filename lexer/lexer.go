@@ -70,6 +70,8 @@ const (
 	IDENTIFIER
 	STRING
 
+	ARROW
+
 	EOF
 	UNKNOWN
 )
@@ -140,6 +142,8 @@ var operators map[string]TokenType = map[string]TokenType{
 	":": COLON,
 
 	".": DOT,
+
+	"=>": ARROW,
 }
 
 func NewLexer(input string) *Lexer {
@@ -262,6 +266,10 @@ func (l *Lexer) tryTokenizeOperator() *Token {
 					val += string(l.peek())
 					l.next()
 					tokType = EQ
+				} else if l.peek() == '>' {
+					val += string(l.peek())
+					l.next()
+					tokType = ARROW
 				}
 			case GT:
 				if l.peek() == '=' {

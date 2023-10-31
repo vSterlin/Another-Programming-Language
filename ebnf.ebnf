@@ -1,7 +1,7 @@
 
 arrayExpression ::= '[' (expression (',' expression)*)? ']';
 
-primaryExpression ::= identifier | number | boolean | '(' expression ')' | arrayExpression | sliceExpression;
+primaryExpression ::= identifier | number | boolean | '(' expression ')' | arrayExpression | sliceExpression | arrowFunction
 
 arguments ::= '(' (expression (',' expression)*)? ')';
 callExpression ::= memberExpression ('(' arguments? ')')?;
@@ -53,6 +53,9 @@ rangeStatement ::= 'for' identifierExpression ':=' 'range' expression blockState
 param ::= identifier identifier;
 functionDeclaration ::= 'func' identifier '(' (param (',' param)*)? ')' identifier blockStatement;
 methodDeclaration ::=  identifier '(' (identifier (',' identifier)*)? ')' blockStatement;
+
+arrowFunction ::= '(' (param (',' param)*)? ')' ':' identifier '=>' expression;
+
 
 statement ::= expressionStatement | variableDeclarationStatement 
     | blockStatement | whileStatement | ifStatement 
