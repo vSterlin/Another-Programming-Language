@@ -17,7 +17,8 @@ func main() {
 
 	compile(`
 	x := (a string) number => { return 1 }
-	x("hello")
+
+	x(1)
 
 	`)
 

@@ -82,7 +82,11 @@ func (t *TypeChecker) checkVarAssignStmt(stmt *ast.VarAssignStmt) error {
 	}
 
 	if stmt.Op == ":=" {
+
 		t.env.Define(stmt.Id.Name, initType)
+		if initType.IsFunc() {
+			t.env.DefineFunction(stmt.Id.Name, initType.(FuncType))
+		}
 		return nil
 	} else {
 
@@ -107,7 +111,7 @@ func (t *TypeChecker) checkFuncDecStmt(stmt *ast.FuncDecStmt) error {
 	t.env.Define(stmt.Id.Name, retType)
 
 	funcType := FuncType{
-		Args:       make([]Type, len(stmt.Args)),
+		Args:       []Type{},
 		ReturnType: retType,
 	}
 

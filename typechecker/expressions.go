@@ -106,7 +106,7 @@ func (t *TypeChecker) checkArrowFunc(expr *ast.ArrowFunc) (Type, error) {
 	defer func() { t.currentFuncRetType = prevFuncRetType }()
 
 	funcType := FuncType{
-		Args:       make([]Type, len(expr.Args)),
+		Args:       []Type{},
 		ReturnType: retType,
 	}
 

@@ -46,6 +46,7 @@ import "strings"
 type Type interface {
 	String() string
 	Equals(Type) bool
+	IsFunc() bool
 }
 
 type NumberType struct{}
@@ -72,6 +73,13 @@ func (t FuncType) String() string {
 	return "func(" + strings.Join(args, ", ") + ") " + t.ReturnType.String()
 }
 func (t InvalidType) String() string { return "invalid" }
+
+func (t NumberType) IsFunc() bool  { return false }
+func (t StringType) IsFunc() bool  { return false }
+func (t BooleanType) IsFunc() bool { return false }
+func (t VoidType) IsFunc() bool    { return false }
+func (t FuncType) IsFunc() bool    { return true }
+func (t InvalidType) IsFunc() bool { return false }
 
 func (t NumberType) Equals(other Type) bool {
 	_, ok := other.(NumberType)
