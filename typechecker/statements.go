@@ -106,9 +106,15 @@ func (t *TypeChecker) checkFuncDecStmt(stmt *ast.FuncDecStmt) error {
 
 	t.env.Define(stmt.Id.Name, retType)
 
+	funcType := FuncType{
+		Args:       make([]Type, len(stmt.Args)),
+		ReturnType: retType,
+	}
+
 	for _, param := range stmt.Args {
 		paramType := fromString(param.Type.Name)
 		t.env.Define(param.Id.Name, paramType)
+		funcType.Args = append(funcType.Args, paramType)
 	}
 
 	prevFuncRetType := t.currentFuncRetType
@@ -121,7 +127,7 @@ func (t *TypeChecker) checkFuncDecStmt(stmt *ast.FuncDecStmt) error {
 
 	t.currentFuncRetType = prevFuncRetType
 
-	t.env.DefineFunction(stmt.Id.Name, stmt)
+	t.env.DefineFunction(stmt.Id.Name, funcType)
 
 	return nil
 }

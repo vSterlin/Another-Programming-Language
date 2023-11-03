@@ -105,7 +105,7 @@ func (t *TypeChecker) checkArrowFunc(expr *ast.ArrowFunc) (Type, error) {
 	t.currentFuncRetType = retType
 	defer func() { t.currentFuncRetType = prevFuncRetType }()
 
-	arrFuncType := ArrowFuncType{
+	funcType := FuncType{
 		Args:       make([]Type, len(expr.Args)),
 		ReturnType: retType,
 	}
@@ -113,7 +113,7 @@ func (t *TypeChecker) checkArrowFunc(expr *ast.ArrowFunc) (Type, error) {
 	for _, param := range expr.Args {
 		paramType := fromString(param.Type.Name)
 		t.env.Define(param.Id.Name, paramType)
-		arrFuncType.Args = append(arrFuncType.Args, paramType)
+		funcType.Args = append(funcType.Args, paramType)
 	}
 
 	err := t.checkBlockStmt(expr.Body, NewEnv(t.env))
@@ -121,8 +121,7 @@ func (t *TypeChecker) checkArrowFunc(expr *ast.ArrowFunc) (Type, error) {
 		return Invalid, err
 	}
 
-	fmt.Printf("%#v\n", arrFuncType)
-	return arrFuncType, nil
+	return funcType, nil
 
 }
 
@@ -148,7 +147,7 @@ func (t *TypeChecker) checkCallExpr(expr *ast.CallExpr) (Type, error) {
 		if err != nil {
 			return Invalid, err
 		}
-		expectedType := fromString(funcDef.Args[i].Type.Name)
+		expectedType := (funcDef.Args[i])
 		if !areTypesEqual(argType, expectedType) {
 			return Invalid, NewTypeError(
 				fmt.Sprintf("expected argument %d to be of type %s, got %s",
@@ -156,7 +155,7 @@ func (t *TypeChecker) checkCallExpr(expr *ast.CallExpr) (Type, error) {
 		}
 	}
 
-	retType := fromString(funcDef.ReturnType.Name)
+	retType := funcDef.ReturnType
 
 	return retType, nil
 }

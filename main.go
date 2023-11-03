@@ -16,8 +16,9 @@ import (
 func main() {
 
 	compile(`
-	x := () number => { return 1 }
-	x = () number => { return 10 }
+	x := (a string) number => { return 1 }
+	x("hello")
+
 	`)
 
 }

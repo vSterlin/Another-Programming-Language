@@ -1,18 +1,16 @@
 package typechecker
 
-import "language/ast"
-
 type Env struct {
 	parent    *Env
 	vars      map[string]Type
-	functions map[string]*ast.FuncDecStmt
+	functions map[string]FuncType
 }
 
 func NewEnv(parent *Env) *Env {
 	return &Env{
 		parent:    parent,
 		vars:      make(map[string]Type),
-		functions: make(map[string]*ast.FuncDecStmt),
+		functions: make(map[string]FuncType),
 	}
 }
 
@@ -47,11 +45,11 @@ func (e *Env) Get(name string) (Type, error) {
 
 }
 
-func (e *Env) DefineFunction(name string, stmt *ast.FuncDecStmt) {
+func (e *Env) DefineFunction(name string, stmt FuncType) {
 	e.functions[name] = stmt
 }
 
-func (e *Env) GetFunction(name string) (*ast.FuncDecStmt, error) {
+func (e *Env) GetFunction(name string) (FuncType, error) {
 	f, ok := e.functions[name]
 
 	if ok {
@@ -62,5 +60,5 @@ func (e *Env) GetFunction(name string) (*ast.FuncDecStmt, error) {
 		return e.parent.GetFunction(name)
 	}
 
-	return nil, NewTypeError("undefined function: " + name)
+	return FuncType{}, NewTypeError("undefined function: " + name)
 }

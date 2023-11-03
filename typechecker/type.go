@@ -52,7 +52,7 @@ type NumberType struct{}
 type StringType struct{}
 type BooleanType struct{}
 type VoidType struct{}
-type ArrowFuncType struct {
+type FuncType struct {
 	Args       []Type
 	ReturnType Type
 }
@@ -63,7 +63,7 @@ func (t NumberType) String() string  { return "number" }
 func (t StringType) String() string  { return "string" }
 func (t BooleanType) String() string { return "boolean" }
 func (t VoidType) String() string    { return "void" }
-func (t ArrowFuncType) String() string {
+func (t FuncType) String() string {
 	args := []string{}
 	for _, arg := range t.Args {
 		args = append(args, arg.String())
@@ -93,8 +93,8 @@ func (t VoidType) Equals(other Type) bool {
 	return ok
 }
 
-func (t ArrowFuncType) Equals(other Type) bool {
-	otherFuncType, ok := other.(ArrowFuncType)
+func (t FuncType) Equals(other Type) bool {
+	otherFuncType, ok := other.(FuncType)
 	if !ok {
 		return false
 	}
