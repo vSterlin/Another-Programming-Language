@@ -1,4 +1,6 @@
 
+type ::= identifier | '(' identifier* ')' '=>' type;
+
 arrayExpression ::= '[' (expression (',' expression)*)? ']';
 
 primaryExpression ::= identifier | number | boolean | '(' expression ')' | arrayExpression | sliceExpression | arrowFunction
@@ -50,7 +52,7 @@ ifStatement ::= 'if' expression blockStatement ('else if' expression blockStatem
 rangeStatement ::= 'for' identifierExpression ':=' 'range' expression blockStatement;
 
 (* second identifier is type *)
-param ::= identifier identifier;
+param ::= identifier type;
 functionDeclaration ::= 'func' identifier '(' (param (',' param)*)? ')' identifier blockStatement;
 methodDeclaration ::=  identifier '(' (identifier (',' identifier)*)? ')' blockStatement;
 

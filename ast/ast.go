@@ -88,6 +88,23 @@ type ArrowFunc struct {
 	ReturnType *IdentifierExpr `json:"returnType"`
 }
 
+type typeExpr interface {
+	Expr
+	typeExprNode()
+}
+
+type FuncTypeExpr struct {
+	Args       []*TypeExpr     `json:"arguments"`
+	ReturnType *IdentifierExpr `json:"returnType"`
+}
+
+type TypeExpr struct {
+	Type typeExpr `json:"type"`
+}
+
+func (i *IdentifierExpr) typeExprNode() {}
+func (f *FuncTypeExpr) typeExprNode()   {}
+
 func (n *NumberExpr) exprNode()     {}
 func (v *IdentifierExpr) exprNode() {}
 func (b *BooleanExpr) exprNode()    {}
@@ -100,6 +117,8 @@ func (s *SliceExpr) exprNode()      {}
 func (m *MemberExpr) exprNode()     {}
 func (t *ThisExpr) exprNode()       {}
 func (a *ArrowFunc) exprNode()      {}
+func (f *FuncTypeExpr) exprNode()   {}
+func (t *TypeExpr) exprNode()       {}
 
 func (n *NumberExpr) String() string     { return fmt.Sprintf("number(%d)", n.Val) }
 func (v *IdentifierExpr) String() string { return fmt.Sprintf("identifier(%s)", v.Name) }
@@ -113,6 +132,8 @@ func (s *SliceExpr) String() string      { return fmt.Sprintf("slice(%s)", s.Id)
 func (m *MemberExpr) String() string     { return fmt.Sprintf("member(%s, %s)", m.Obj, m.Prop) }
 func (t *ThisExpr) String() string       { return ("this") }
 func (a *ArrowFunc) String() string      { return fmt.Sprintf("arrow(%s, %s)", a.Args, a.Body) }
+func (f *FuncTypeExpr) String() string   { return fmt.Sprintf("func(%s, %s)", f.Args, f.ReturnType) }
+func (t *TypeExpr) String() string       { return fmt.Sprintf("type(%s)", t.Type) }
 
 // Statements
 type Stmt interface {
@@ -150,7 +171,7 @@ type WhileStmt struct {
 
 type Param struct {
 	Id   *IdentifierExpr `json:"identifier"`
-	Type *IdentifierExpr `json:"type"`
+	Type *TypeExpr       `json:"type"`
 }
 
 type FuncDecStmt struct {

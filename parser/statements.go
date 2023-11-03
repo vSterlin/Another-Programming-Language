@@ -101,7 +101,7 @@ func (p *Parser) parseFuncDecStmt(funcType string) (ast.Stmt, error) {
 		if err != nil {
 			return nil, err
 		}
-		paramType, err := p.parseIdentifierExpr()
+		paramType, err := p.parseTypeExpr()
 
 		param := &ast.Param{Id: paramName, Type: paramType}
 

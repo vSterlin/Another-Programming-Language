@@ -1,6 +1,9 @@
 package typechecker
 
-import "strings"
+import (
+	"language/ast"
+	"strings"
+)
 
 // type Type int
 
@@ -132,6 +135,25 @@ func fromString(s string) Type {
 		return BooleanType{}
 	case "void":
 		return VoidType{}
+	default:
+		return InvalidType{}
+	}
+}
+
+func fromAstNode(typeNode *ast.TypeExpr) Type {
+	switch typeNode.Type.(type) {
+	case *ast.IdentifierExpr:
+		return fromString(typeNode.Type.(*ast.IdentifierExpr).Name)
+	case *ast.FuncTypeExpr:
+		funcTypeExpr := typeNode.Type.(*ast.FuncTypeExpr)
+		args := []Type{}
+		for _, arg := range funcTypeExpr.Args {
+			args = append(args, fromAstNode(arg))
+		}
+		return FuncType{
+			Args:       args,
+			ReturnType: fromString(funcTypeExpr.ReturnType.Name),
+		}
 	default:
 		return InvalidType{}
 	}

@@ -71,7 +71,7 @@ func (p *Parser) parseArrowFunc() (ast.Expr, error) {
 			return nil, err
 		}
 
-		paramType, err := p.parseIdentifierExpr()
+		paramType, err := p.parseTypeExpr()
 		if err != nil {
 			return nil, err
 		}
@@ -444,4 +444,50 @@ func (p *Parser) parseOrExpr() (ast.Expr, error) {
 // expression ::= logicOrExpression;
 func (p *Parser) parseExpr() (ast.Expr, error) {
 	return p.parseOrExpr()
+}
+
+// type ::= identifier | '(' identifier* ')' '=>' type;
+func (p *Parser) parseTypeExpr() (*ast.TypeExpr, error) {
+
+	if p.current().Type == LPAREN {
+		p.next()
+
+		params := []*ast.TypeExpr{}
+
+		for !p.isEnd() && p.current().Type != RPAREN {
+
+			paramType, err := p.parseIdentifierExpr()
+			if err != nil {
+				return nil, err
+			}
+			params = append(params, &ast.TypeExpr{Type: paramType})
+
+			if p.current().Type == COMMA {
+				p.next()
+			}
+		}
+
+		if err := p.consume(RPAREN); err != nil {
+			return nil, err
+		}
+
+		if err := p.consume(ARROW); err != nil {
+			return nil, err
+		}
+
+		retType, err := p.parseIdentifierExpr()
+		if err != nil {
+			return nil, err
+		}
+
+		return &ast.TypeExpr{Type: &ast.FuncTypeExpr{Args: params, ReturnType: retType}}, nil
+	} else {
+
+		t, err := p.parseIdentifierExpr()
+		if err != nil {
+			return nil, err
+		}
+		return &ast.TypeExpr{Type: t}, nil
+	}
+
 }

@@ -13,18 +13,22 @@ import (
 	"os"
 )
 
+func iCallFunc(f func(int, int) int) {
+	f(1, 2)
+}
+
 func main() {
 
 	compile(`
-	x := (a string) number => { return 1 }
-
-	x(1)
+		func iCallFunc(f (number, number) => number ){
+			f(1, 2)
+		}
 
 	`)
 
 }
 
-var PRINT_AST = false
+var PRINT_AST = true
 
 func buildAST(code string) *ast.Program {
 	l := lexer.NewLexer(code)

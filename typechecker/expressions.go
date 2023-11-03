@@ -111,7 +111,7 @@ func (t *TypeChecker) checkArrowFunc(expr *ast.ArrowFunc) (Type, error) {
 	}
 
 	for _, param := range expr.Args {
-		paramType := fromString(param.Type.Name)
+		paramType := fromAstNode(param.Type)
 		t.env.Define(param.Id.Name, paramType)
 		funcType.Args = append(funcType.Args, paramType)
 	}

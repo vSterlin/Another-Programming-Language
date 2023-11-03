@@ -16,6 +16,9 @@ func NewEnv(parent *Env) *Env {
 
 func (e *Env) Define(name string, t Type) {
 	e.vars[name] = t
+	if t.IsFunc() {
+		e.DefineFunction(name, t.(FuncType))
+	}
 }
 
 func (e *Env) Assign(name string, t Type) error {

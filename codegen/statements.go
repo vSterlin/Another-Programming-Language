@@ -3,7 +3,6 @@ package codegen
 import (
 	"fmt"
 	"language/ast"
-	"strings"
 )
 
 // Statements
@@ -11,8 +10,8 @@ func (cg *CodeGenerator) genStmt(stmt ast.Stmt) (string, error) {
 	switch stmt := stmt.(type) {
 	case *ast.ExprStmt:
 		return cg.genExprStmt(stmt)
-	case *ast.FuncDecStmt:
-		return cg.genFuncDecStmt(stmt)
+	// case *ast.FuncDecStmt:
+	// 	return cg.genFuncDecStmt(stmt)
 	case *ast.BlockStmt:
 		return cg.genBlockStmt(stmt)
 	case *ast.VarAssignStmt:
@@ -34,29 +33,30 @@ func (cg *CodeGenerator) genExprStmt(stmt *ast.ExprStmt) (string, error) {
 
 }
 
-func (cg *CodeGenerator) genFuncDecStmt(stmt *ast.FuncDecStmt) (string, error) {
+// TODO: fix
+// func (cg *CodeGenerator) genFuncDecStmt(stmt *ast.FuncDecStmt) (string, error) {
 
-	retType := cType(stmt.ReturnType.Name)
+// 	retType := cType(stmt.ReturnType.Name)
 
-	id := stmt.Id.Name
+// 	id := stmt.Id.Name
 
-	body, err := cg.genBlockStmt(stmt.Body)
-	if err != nil {
-		return "", err
-	}
+// 	body, err := cg.genBlockStmt(stmt.Body)
+// 	if err != nil {
+// 		return "", err
+// 	}
 
-	params := []string{}
+// 	params := []string{}
 
-	for _, param := range stmt.Args {
-		paramStr := fmt.Sprintf("%s %s", cType(param.Type.Name), param.Id.Name)
-		params = append(params, paramStr)
-	}
+// 	for _, param := range stmt.Args {
+// 		paramStr := fmt.Sprintf("%s %s", cType(param.Type.Name), param.Id.Name)
+// 		params = append(params, paramStr)
+// 	}
 
-	paramsStr := strings.Join(params, ", ")
+// 	paramsStr := strings.Join(params, ", ")
 
-	return fmt.Sprintf("%s %s(%s) %s", retType, id, paramsStr, body), nil
+// 	return fmt.Sprintf("%s %s(%s) %s", retType, id, paramsStr, body), nil
 
-}
+// }
 
 func (cg *CodeGenerator) genBlockStmt(stmt *ast.BlockStmt) (string, error) {
 

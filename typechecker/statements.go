@@ -82,11 +82,7 @@ func (t *TypeChecker) checkVarAssignStmt(stmt *ast.VarAssignStmt) error {
 	}
 
 	if stmt.Op == ":=" {
-
 		t.env.Define(stmt.Id.Name, initType)
-		if initType.IsFunc() {
-			t.env.DefineFunction(stmt.Id.Name, initType.(FuncType))
-		}
 		return nil
 	} else {
 
@@ -116,8 +112,10 @@ func (t *TypeChecker) checkFuncDecStmt(stmt *ast.FuncDecStmt) error {
 	}
 
 	for _, param := range stmt.Args {
-		paramType := fromString(param.Type.Name)
+		paramType := fromAstNode(param.Type)
+
 		t.env.Define(param.Id.Name, paramType)
+
 		funcType.Args = append(funcType.Args, paramType)
 	}
 
