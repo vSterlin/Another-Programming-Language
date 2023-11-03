@@ -130,7 +130,12 @@ func (t *TypeChecker) checkCallExpr(expr *ast.CallExpr) (Type, error) {
 	// TODO:
 	funcName := (expr.Callee.(*ast.IdentifierExpr)).Name
 
-	funcDef, err := t.env.GetFunction(funcName)
+	funcVar, err := t.env.Get(funcName)
+
+	funcDef, ok := funcVar.(FuncType)
+	if !ok {
+		return Invalid, NewTypeError(fmt.Sprintf("expected %s to be a function", funcName))
+	}
 
 	if err != nil {
 		return Invalid, NewTypeError(fmt.Sprintf("undefined function: %s", funcName))

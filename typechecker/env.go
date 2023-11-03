@@ -8,17 +8,13 @@ type Env struct {
 
 func NewEnv(parent *Env) *Env {
 	return &Env{
-		parent:    parent,
-		vars:      make(map[string]Type),
-		functions: make(map[string]FuncType),
+		parent: parent,
+		vars:   make(map[string]Type),
 	}
 }
 
 func (e *Env) Define(name string, t Type) {
 	e.vars[name] = t
-	if t.IsFunc() {
-		e.DefineFunction(name, t.(FuncType))
-	}
 }
 
 func (e *Env) Assign(name string, t Type) error {
@@ -46,22 +42,4 @@ func (e *Env) Get(name string) (Type, error) {
 
 	return Invalid, NewTypeError("undefined variable: " + name)
 
-}
-
-func (e *Env) DefineFunction(name string, stmt FuncType) {
-	e.functions[name] = stmt
-}
-
-func (e *Env) GetFunction(name string) (FuncType, error) {
-	f, ok := e.functions[name]
-
-	if ok {
-		return f, nil
-	}
-
-	if e.parent != nil {
-		return e.parent.GetFunction(name)
-	}
-
-	return FuncType{}, NewTypeError("undefined function: " + name)
 }

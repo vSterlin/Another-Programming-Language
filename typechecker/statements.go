@@ -104,8 +104,6 @@ func (t *TypeChecker) checkFuncDecStmt(stmt *ast.FuncDecStmt) error {
 
 	retType := fromString(stmt.ReturnType.Name)
 
-	t.env.Define(stmt.Id.Name, retType)
-
 	funcType := FuncType{
 		Args:       []Type{},
 		ReturnType: retType,
@@ -129,7 +127,7 @@ func (t *TypeChecker) checkFuncDecStmt(stmt *ast.FuncDecStmt) error {
 
 	t.currentFuncRetType = prevFuncRetType
 
-	t.env.DefineFunction(stmt.Id.Name, funcType)
+	t.env.Define(stmt.Id.Name, funcType)
 
 	return nil
 }

@@ -20,12 +20,21 @@ func iCallFunc(f func(int, int) int) {
 func main() {
 
 	compile(`
-		func iCallFunc(f (number, number) => number ){
-			f(1, 2)
+		a := 1
+		b := 2
+
+		func f(add () => number) number {
+			return 1
 		}
 
-		iCallFunc((a string, b string) string => { return a + b })
-		
+		func sum() string {
+			return "a + b"
+		}
+
+
+
+
+		f(sum)
 
 	`)
 
