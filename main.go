@@ -24,11 +24,14 @@ func main() {
 			f(1, 2)
 		}
 
+		iCallFunc((a string, b string) string => { return a + b })
+		
+
 	`)
 
 }
 
-var PRINT_AST = true
+var PRINT_AST = false
 
 func buildAST(code string) *ast.Program {
 	l := lexer.NewLexer(code)

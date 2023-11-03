@@ -1,50 +1,10 @@
 package typechecker
 
 import (
+	"fmt"
 	"language/ast"
 	"strings"
 )
-
-// type Type int
-
-// const (
-// 	Number Type = iota
-// 	String
-// 	Boolean
-// 	Void
-
-// 	INVALID
-// )
-
-// func (t Type) String() string {
-// 	switch t {
-// 	case Number:
-// 		return "number"
-// 	case String:
-// 		return "string"
-// 	case Boolean:
-// 		return "boolean"
-// 	case Void:
-// 		return "void"
-// 	default:
-// 		return "invalid"
-// 	}
-// }
-
-// func fromString(s string) Type {
-// 	switch s {
-// 	case "number", "int":
-// 		return Number
-// 	case "string":
-// 		return String
-// 	case "boolean":
-// 		return Boolean
-// 	case "void":
-// 		return Void
-// 	default:
-// 		return INVALID
-// 	}
-// }
 
 type Type interface {
 	String() string
@@ -73,7 +33,7 @@ func (t FuncType) String() string {
 		args = append(args, arg.String())
 	}
 
-	return "func(" + strings.Join(args, ", ") + ") " + t.ReturnType.String()
+	return fmt.Sprintf("func(%s) => %s", strings.Join(args, ", "), t.ReturnType.String())
 }
 func (t InvalidType) String() string { return "invalid" }
 
