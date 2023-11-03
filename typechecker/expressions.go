@@ -49,11 +49,11 @@ func (t *TypeChecker) checkBinaryExpr(expr *ast.BinaryExpr) (Type, error) {
 
 	lhs, err := t.checkExpr(expr.Lhs)
 	if err != nil {
-		return INVALID, err
+		return Invalid, err
 	}
 	rhs, err := t.checkExpr(expr.Rhs)
 	if err != nil {
-		return INVALID, err
+		return Invalid, err
 	}
 
 	switch expr.Op {
@@ -62,12 +62,12 @@ func (t *TypeChecker) checkBinaryExpr(expr *ast.BinaryExpr) (Type, error) {
 			return String, nil
 		}
 		if !areTypesEqual(lhs, rhs, Number) {
-			return INVALID, NewTypeError(fmt.Sprintf("expected %s, got %s", Number, lhs))
+			return Invalid, NewTypeError(fmt.Sprintf("expected %s, got %s", Number, lhs))
 		}
 
 	case ast.EQ, ast.NEQ:
 		if !areTypesEqual(lhs, rhs) {
-			return INVALID, NewTypeError(fmt.Sprintf("expected %s, got %s", lhs, rhs))
+			return Invalid, NewTypeError(fmt.Sprintf("expected %s, got %s", lhs, rhs))
 		}
 
 	}
@@ -79,15 +79,15 @@ func (t *TypeChecker) checkLogicalExpr(expr *ast.LogicalExpr) (Type, error) {
 
 	lhs, err := t.checkExpr(expr.Lhs)
 	if err != nil {
-		return INVALID, err
+		return Invalid, err
 	}
 	rhs, err := t.checkExpr(expr.Rhs)
 	if err != nil {
-		return INVALID, err
+		return Invalid, err
 	}
 
 	if !areTypesEqual(lhs, rhs, Boolean) {
-		return INVALID, NewTypeError(
+		return Invalid, NewTypeError(
 			fmt.Sprintf("expected both operands to be of type %s, got %s and %s",
 				Boolean, lhs, rhs))
 	}
@@ -100,22 +100,30 @@ func (t *TypeChecker) checkIdentifierExpr(expr *ast.IdentifierExpr) (Type, error
 }
 
 func (t *TypeChecker) checkArrowFunc(expr *ast.ArrowFunc) (Type, error) {
+	retType := fromString(expr.ReturnType.Name)
+	prevFuncRetType := t.currentFuncRetType
+	t.currentFuncRetType = retType
+	defer func() { t.currentFuncRetType = prevFuncRetType }()
+
+	arrFuncType := ArrowFuncType{
+		Args:       make([]Type, len(expr.Args)),
+		ReturnType: retType,
+	}
 
 	for _, param := range expr.Args {
 		paramType := fromString(param.Type.Name)
 		t.env.Define(param.Id.Name, paramType)
+		arrFuncType.Args = append(arrFuncType.Args, paramType)
 	}
-
-	prevFuncRetType := t.currentFuncRetType
-	t.currentFuncRetType = fromString(expr.ReturnType.Name)
 
 	err := t.checkBlockStmt(expr.Body, NewEnv(t.env))
 	if err != nil {
-		return INVALID, err
+		return Invalid, err
 	}
 
-	t.currentFuncRetType = prevFuncRetType
-	return t.currentFuncRetType, nil
+	fmt.Printf("%#v\n", arrFuncType)
+	return arrFuncType, nil
+
 }
 
 func (t *TypeChecker) checkCallExpr(expr *ast.CallExpr) (Type, error) {
@@ -126,11 +134,11 @@ func (t *TypeChecker) checkCallExpr(expr *ast.CallExpr) (Type, error) {
 	funcDef, err := t.env.GetFunction(funcName)
 
 	if err != nil {
-		return INVALID, NewTypeError(fmt.Sprintf("undefined function: %s", funcName))
+		return Invalid, NewTypeError(fmt.Sprintf("undefined function: %s", funcName))
 	}
 
 	if len(funcDef.Args) != len(expr.Args) {
-		return INVALID, NewTypeError(
+		return Invalid, NewTypeError(
 			fmt.Sprintf("expected %d arguments, got %d",
 				len(funcDef.Args), len(expr.Args)))
 	}
@@ -138,11 +146,11 @@ func (t *TypeChecker) checkCallExpr(expr *ast.CallExpr) (Type, error) {
 	for i, arg := range expr.Args {
 		argType, err := t.checkExpr(arg)
 		if err != nil {
-			return INVALID, err
+			return Invalid, err
 		}
 		expectedType := fromString(funcDef.Args[i].Type.Name)
 		if !areTypesEqual(argType, expectedType) {
-			return INVALID, NewTypeError(
+			return Invalid, NewTypeError(
 				fmt.Sprintf("expected argument %d to be of type %s, got %s",
 					i+1, expectedType, argType))
 		}

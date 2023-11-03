@@ -34,7 +34,7 @@ func (t *TypeChecker) checkBlockStmt(stmt *ast.BlockStmt, env *Env) error {
 	t.env = env
 	defer func() { t.env = prevEnv }()
 
-	needsToReturn := t.currentFuncRetType != INVALID && t.currentFuncRetType != Void
+	needsToReturn := !t.currentFuncRetType.Equals(Invalid) && !t.currentFuncRetType.Equals(Void)
 
 	if len(stmt.Stmts) == 0 {
 		if needsToReturn {
@@ -156,8 +156,8 @@ func (t *TypeChecker) checkWhileStmt(stmt *ast.WhileStmt) error {
 		return err
 	}
 
-	if !areTypesEqual(testType, Boolean) {
-		return NewTypeError(fmt.Sprintf("expected %s, got %s", Boolean, testType))
+	if !areTypesEqual(testType, BooleanType{}) {
+		return NewTypeError(fmt.Sprintf("expected %s, got %s", BooleanType{}, testType))
 	}
 
 	return t.checkStmt(stmt.Body)
@@ -169,7 +169,7 @@ func (t *TypeChecker) checkReturnStmt(stmt *ast.ReturnStmt) error {
 
 	expectedType := t.currentFuncRetType
 
-	if expectedType == INVALID {
+	if expectedType == Invalid {
 		return NewTypeError("return statement outside of function")
 	}
 

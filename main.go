@@ -16,7 +16,8 @@ import (
 func main() {
 
 	compile(`
-	() number => { return 1 }
+	x := () number => { return 1 }
+	x = () number => { return 10 }
 	`)
 
 }

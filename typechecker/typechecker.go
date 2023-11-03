@@ -10,7 +10,7 @@ type TypeChecker struct {
 func NewTypeChecker() *TypeChecker {
 	return &TypeChecker{
 		env:                NewEnv(nil),
-		currentFuncRetType: INVALID,
+		currentFuncRetType: Invalid,
 	}
 }
 

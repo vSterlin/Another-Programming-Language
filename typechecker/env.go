@@ -43,7 +43,7 @@ func (e *Env) Get(name string) (Type, error) {
 		return e.parent.Get(name)
 	}
 
-	return INVALID, NewTypeError("undefined variable: " + name)
+	return Invalid, NewTypeError("undefined variable: " + name)
 
 }
 
