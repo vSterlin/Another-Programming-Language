@@ -96,7 +96,8 @@ func (t *TypeChecker) checkLogicalExpr(expr *ast.LogicalExpr) (Type, error) {
 }
 
 func (t *TypeChecker) checkIdentifierExpr(expr *ast.IdentifierExpr) (Type, error) {
-	return t.env.Get(expr.Name)
+	typ, err, _ := t.env.Get(expr.Name)
+	return typ, err
 }
 
 func (t *TypeChecker) checkArrowFunc(expr *ast.ArrowFunc) (Type, error) {
@@ -130,7 +131,7 @@ func (t *TypeChecker) checkCallExpr(expr *ast.CallExpr) (Type, error) {
 	// TODO:
 	funcName := (expr.Callee.(*ast.IdentifierExpr)).Name
 
-	funcVar, err := t.env.Get(funcName)
+	funcVar, err, _ := t.env.Get(funcName)
 
 	funcDef, ok := funcVar.(FuncType)
 	if !ok {

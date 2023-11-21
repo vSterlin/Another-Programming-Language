@@ -20,9 +20,11 @@ func iCallFunc(f func(int, int) int) {
 func main() {
 
 	compile(`
-		a := 1
-		
-		() => { a }
+	count := 0
+	() number => {
+		count = count + 1
+		return count
+	}
 	`)
 
 }

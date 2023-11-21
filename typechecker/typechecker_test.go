@@ -88,13 +88,11 @@ func TestArrowFuncScope(t *testing.T) {
 func TestArrowFuncScope2(t *testing.T) {
 
 	prog := buildProgram(`
-	func makeCounter() () => number {
 		count := 0
-		return () => {
+		() number => {
 			count = count + 1
 			return count
 		}
-	}
 	`)
 
 	tc := NewTypeChecker()
