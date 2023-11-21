@@ -21,19 +21,8 @@ func main() {
 
 	compile(`
 		a := 1
-		b := 2
-
-		func f(add () => number) number {
-			return 1
-		}
-
-	
-		sum := () number => { return 1 + 2 }
-
 		
-
-		f(() number => { return 1 + 2 })
-
+		() => { a }
 	`)
 
 }

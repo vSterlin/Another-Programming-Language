@@ -43,10 +43,49 @@ func TestCheckExpr(t *testing.T) {
 	}
 }
 
-func TestCheckStmt(t *testing.T) {
+func TestVarDecStmt(t *testing.T) {
+
+	definedVarProg := buildProgram(`
+		a := 1
+		a
+	`)
+
+	tc := NewTypeChecker()
+
+	err := tc.Check(definedVarProg)
+
+	if err != nil {
+		t.Errorf("Expected no error, got: %s", err)
+	}
+
+	undefinedVarProg := buildProgram("iDontExist")
+
+	err = tc.Check(undefinedVarProg)
+
+	if err == nil {
+		t.Errorf("Expected error, got none")
+	}
 
 }
 
+func TestArrowFuncScope(t *testing.T) {
+
+	prog := buildProgram(`
+		a := 1
+		() => { a }
+	`)
+
+	tc := NewTypeChecker()
+
+	err := tc.Check(prog)
+
+	if err != nil {
+		t.Errorf("Expected no error, got: %s", err)
+	}
+
+}
+
+// helpers
 func buildProgram(code string) *ast.Program {
 	tokens, _ := lexer.NewLexer(code).GetTokens()
 	p := parser.NewParser(tokens)

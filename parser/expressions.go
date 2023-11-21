@@ -195,12 +195,17 @@ func (p *Parser) parseMemberExpr() (ast.Expr, error) {
 // callExpression ::= memberExpression ('(' arguments? ')')?;
 func (p *Parser) parseCallExpr() (ast.Expr, error) {
 
+	prev := p.current()
 	calleeId, err := p.parseMemberExpr()
 	if err != nil {
 		return nil, err
 	}
 
-	if p.isEnd() || p.current().Type != LPAREN {
+	if p.isEnd() ||
+		// maybe there's a nicer way to do this.
+		// But we don't wanna parse it as call if it's a primitive type
+		p.tokenTypeEqual(prev.Type, NUMBER, STRING, BOOLEAN) ||
+		p.current().Type != LPAREN {
 		return calleeId, nil
 	}
 
