@@ -18,7 +18,7 @@ func (e *Env) Define(name string, t Type) {
 }
 
 func (e *Env) Assign(name string, t Type) error {
-	_, err, foundEnv := e.Get(name)
+	_, foundEnv, err := e.Get(name)
 
 	if err == nil {
 		return err
@@ -29,17 +29,17 @@ func (e *Env) Assign(name string, t Type) error {
 	return nil
 }
 
-func (e *Env) Get(name string) (Type, error, *Env) {
+func (e *Env) Get(name string) (Type, *Env, error) {
 	t, ok := e.vars[name]
 
 	if ok {
-		return t, nil, e
+		return t, e, nil
 	}
 
 	if e.parent != nil {
 		return e.parent.Get(name)
 	}
 
-	return Invalid, NewTypeError("undefined variable: " + name), nil
+	return Invalid, nil, NewTypeError("undefined variable: " + name)
 
 }

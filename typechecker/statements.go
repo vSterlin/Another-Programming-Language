@@ -86,7 +86,7 @@ func (t *TypeChecker) checkVarAssignStmt(stmt *ast.VarAssignStmt) error {
 		return nil
 	} else {
 
-		foundVar, err, _ := t.env.Get(stmt.Id.Name)
+		foundVar, _, err := t.env.Get(stmt.Id.Name)
 		if err != nil {
 			return err
 		}
