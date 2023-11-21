@@ -20,12 +20,32 @@ func iCallFunc(f func(int, int) int) {
 func main() {
 
 	compile(`
-	count := 0
-	() number => {
-		count = count + 1
-		return count
+
+ 	func makeCounter() () => int {
+		counter := 0
+		return () int => {
+			counter = counter + 1
+			return counter
+		}
 	}
+
+	func main() int {
+		counter := makeCounter()
+		c := counter()
+		print(c)
+		
+		c = counter()
+		print(c)
+
+		return 0
+	}
+	
 	`)
+
+	// () number => {
+	// 	count = count + 1
+	// 	return count
+	// }
 
 }
 

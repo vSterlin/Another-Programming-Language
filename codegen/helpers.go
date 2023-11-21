@@ -2,6 +2,7 @@ package codegen
 
 import (
 	"fmt"
+	"language/ast"
 )
 
 func (cg *CodeGenerator) genImports() string {
@@ -24,11 +25,22 @@ func (cg *CodeGenerator) genTabs() string {
 
 func cType(t string) string {
 	switch t {
-	case "int":
+	case "int", "number":
 		return "int"
 	case "string":
 		return "std::string"
 	default:
 		return ""
 	}
+}
+
+// TODO: review
+func cTypeFromAst(typeNode *ast.TypeExpr) string {
+	switch t := typeNode.Type.(type) {
+	case *ast.IdentifierExpr:
+		return cType(t.Name)
+	default:
+		return "auto"
+	}
+
 }

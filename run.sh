@@ -1,4 +1,4 @@
 go run .;
-llvm-gcc ./build/out.ll -o ./build/app;
+g++ ./build/out.cpp -std=c++20 -o ./build/app;
 ./build/app; 
 echo $?;

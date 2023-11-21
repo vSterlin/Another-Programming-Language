@@ -83,9 +83,9 @@ type SliceExpr struct {
 type ThisExpr struct{}
 
 type ArrowFunc struct {
-	Args       []*Param        `json:"arguments"`
-	Body       *BlockStmt      `json:"body"`
-	ReturnType *IdentifierExpr `json:"returnType"`
+	Args       []*Param   `json:"arguments"`
+	Body       *BlockStmt `json:"body"`
+	ReturnType *TypeExpr  `json:"returnType"`
 }
 
 type typeExpr interface {

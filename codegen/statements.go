@@ -10,8 +10,8 @@ func (cg *CodeGenerator) genStmt(stmt ast.Stmt) (string, error) {
 	switch stmt := stmt.(type) {
 	case *ast.ExprStmt:
 		return cg.genExprStmt(stmt)
-	// case *ast.FuncDecStmt:
-	// 	return cg.genFuncDecStmt(stmt)
+	case *ast.FuncDecStmt:
+		return cg.genFuncDecStmt(stmt)
 	case *ast.BlockStmt:
 		return cg.genBlockStmt(stmt)
 	case *ast.VarAssignStmt:
@@ -29,34 +29,34 @@ func (cg *CodeGenerator) genStmt(stmt ast.Stmt) (string, error) {
 }
 
 func (cg *CodeGenerator) genExprStmt(stmt *ast.ExprStmt) (string, error) {
-	return cg.genExpr(stmt.Expr)
-
+	expr, err := cg.genExpr(stmt.Expr)
+	if err != nil {
+		return "", err
+	}
+	return fmt.Sprintf("%s;", expr), nil
 }
 
 // TODO: fix
-// func (cg *CodeGenerator) genFuncDecStmt(stmt *ast.FuncDecStmt) (string, error) {
+func (cg *CodeGenerator) genFuncDecStmt(stmt *ast.FuncDecStmt) (string, error) {
 
-// 	retType := cType(stmt.ReturnType.Name)
+	funcName, err := cg.genExpr(stmt.Id)
+	if err != nil {
+		return "", err
+	}
 
-// 	id := stmt.Id.Name
+	retType, err := cg.genExpr(stmt.ReturnType)
+	if err != nil {
+		return "", err
+	}
 
-// 	body, err := cg.genBlockStmt(stmt.Body)
-// 	if err != nil {
-// 		return "", err
-// 	}
+	body, err := cg.genBlockStmt(stmt.Body)
+	if err != nil {
+		return "", err
+	}
 
-// 	params := []string{}
+	return fmt.Sprintf("%s %s() %s", retType, funcName, body), nil
 
-// 	for _, param := range stmt.Args {
-// 		paramStr := fmt.Sprintf("%s %s", cType(param.Type.Name), param.Id.Name)
-// 		params = append(params, paramStr)
-// 	}
-
-// 	paramsStr := strings.Join(params, ", ")
-
-// 	return fmt.Sprintf("%s %s(%s) %s", retType, id, paramsStr, body), nil
-
-// }
+}
 
 func (cg *CodeGenerator) genBlockStmt(stmt *ast.BlockStmt) (string, error) {
 
@@ -81,29 +81,34 @@ func (cg *CodeGenerator) genBlockStmt(stmt *ast.BlockStmt) (string, error) {
 
 func (cg *CodeGenerator) genVarAssignStmt(stmt *ast.VarAssignStmt) (string, error) {
 
-	varType := ""
-
-	switch stmt.Init.(type) {
-
-	case *ast.NumberExpr:
-		varType = "int"
-	case *ast.StringExpr:
-		varType = "std::string"
-	case *ast.BooleanExpr:
-		varType = "bool"
-	default:
-		// TODO: fix
-		varType = "int"
-	}
-
 	id := stmt.Id.Name
 
 	init, err := cg.genExpr(stmt.Init)
 	if err != nil {
 		return "", err
 	}
+	if stmt.Op == ":=" {
 
-	return fmt.Sprintf("%s %s = %s;", varType, id, init), nil
+		varType := ""
+
+		switch stmt.Init.(type) {
+
+		case *ast.NumberExpr:
+			varType = "int"
+		case *ast.StringExpr:
+			varType = "std::string"
+		case *ast.BooleanExpr:
+			varType = "bool"
+		default:
+
+			// TODO: fix
+			varType = "auto"
+		}
+
+		return fmt.Sprintf("%s %s = %s;", varType, id, init), nil
+	} else {
+		return fmt.Sprintf("%s = %s;", id, init), nil
+	}
 
 }
 

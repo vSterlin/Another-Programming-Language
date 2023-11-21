@@ -101,7 +101,7 @@ func (t *TypeChecker) checkIdentifierExpr(expr *ast.IdentifierExpr) (Type, error
 }
 
 func (t *TypeChecker) checkArrowFunc(expr *ast.ArrowFunc) (Type, error) {
-	retType := fromString(expr.ReturnType.Name)
+	retType := fromAstNode(expr.ReturnType)
 	prevFuncRetType := t.currentFuncRetType
 	t.currentFuncRetType = retType
 	defer func() { t.currentFuncRetType = prevFuncRetType }()
@@ -130,6 +130,11 @@ func (t *TypeChecker) checkCallExpr(expr *ast.CallExpr) (Type, error) {
 
 	// TODO:
 	funcName := (expr.Callee.(*ast.IdentifierExpr)).Name
+
+	if funcName == "print" {
+		// TODO: review
+		return Void, nil
+	}
 
 	funcVar, _, err := t.env.Get(funcName)
 
