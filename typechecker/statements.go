@@ -102,7 +102,7 @@ func (t *TypeChecker) checkVarAssignStmt(stmt *ast.VarAssignStmt) error {
 
 func (t *TypeChecker) checkFuncDecStmt(stmt *ast.FuncDecStmt) error {
 
-	retType := fromString(stmt.ReturnType.Name)
+	retType := fromAstNode(stmt.ReturnType)
 
 	funcType := FuncType{
 		Args:       []Type{},

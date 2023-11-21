@@ -178,7 +178,7 @@ type FuncDecStmt struct {
 	Id         *IdentifierExpr `json:"identifier"`
 	Args       []*Param        `json:"arguments"`
 	Body       *BlockStmt      `json:"body"`
-	ReturnType *IdentifierExpr `json:"returnType"`
+	ReturnType *TypeExpr       `json:"returnType"`
 }
 
 type IfStmt struct {

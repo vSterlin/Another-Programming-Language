@@ -115,13 +115,10 @@ func (p *Parser) parseFuncDecStmt(funcType string) (ast.Stmt, error) {
 		return nil, err
 	}
 
-	retType := &ast.IdentifierExpr{Name: "void"}
-	if p.current().Type == IDENTIFIER {
-		retTypeExpr, err := p.parseIdentifierExpr()
-		if err != nil {
-			return nil, err
-		}
-		retType = retTypeExpr
+	var retType *ast.TypeExpr = &ast.TypeExpr{Type: &ast.IdentifierExpr{Name: "void"}}
+
+	if p.current().Type != LBRACE {
+		retType, err = p.parseTypeExpr()
 	}
 
 	body, err := p.parseBlockStmt()

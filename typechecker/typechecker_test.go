@@ -85,6 +85,28 @@ func TestArrowFuncScope(t *testing.T) {
 
 }
 
+func TestArrowFuncScope2(t *testing.T) {
+
+	prog := buildProgram(`
+	func makeCounter() () => number {
+		count := 0
+		return () => {
+			count = count + 1
+			return count
+		}
+	}
+	`)
+
+	tc := NewTypeChecker()
+
+	err := tc.Check(prog)
+
+	if err != nil {
+		t.Errorf("Expected no error, got: %s", err)
+	}
+
+}
+
 // helpers
 func buildProgram(code string) *ast.Program {
 	tokens, _ := lexer.NewLexer(code).GetTokens()
