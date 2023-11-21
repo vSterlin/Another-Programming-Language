@@ -86,7 +86,7 @@ func (t *TypeChecker) checkVarAssignStmt(stmt *ast.VarAssignStmt) error {
 		return nil
 	} else {
 
-		foundVar, _, err := t.env.Get(stmt.Id.Name)
+		foundVar, foundEnv, err := t.env.Get(stmt.Id.Name)
 		if err != nil {
 			return err
 		}
@@ -95,7 +95,7 @@ func (t *TypeChecker) checkVarAssignStmt(stmt *ast.VarAssignStmt) error {
 			return NewTypeError(fmt.Sprintf("cannot assign value of type %s to variable of type %s", initType, foundVar))
 		}
 
-		return t.env.Assign(stmt.Id.Name, initType)
+		return foundEnv.Assign(stmt.Id.Name, initType)
 	}
 
 }
