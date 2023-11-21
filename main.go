@@ -27,14 +27,12 @@ func main() {
 			return 1
 		}
 
-		func sum() string {
-			return "a + b"
-		}
+	
+		sum := () number => { return 1 + 2 }
 
+		
 
-
-
-		f(sum)
+		f(() number => { return 1 + 2 })
 
 	`)
 
