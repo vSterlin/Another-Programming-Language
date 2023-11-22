@@ -19,24 +19,7 @@ func iCallFunc(f func(int, int) int) {
 
 func main() {
 
-	compile(`
-
- 	func fib(n int) int {
-		if n <= 1 {
-			return n
-		} else {
-			return fib(n-1) + fib(n-2)
-		}
-	}
-
-
-	func main() int {
-		fib(10)
-
-		return 0
-	}
-	
-	`)
+	compile()
 
 }
 
@@ -82,12 +65,20 @@ func interpret(code string) {
 
 }
 
-func compile(code string) {
-	prog := buildAST(code)
+func compile() {
+
+	// read source.vs file and pass it to the lexer
+	code, err := os.ReadFile("./source.vs")
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+
+	prog := buildAST(string(code))
 
 	tc := typechecker.NewTypeChecker()
 
-	err := tc.Check(prog)
+	err = tc.Check(prog)
 
 	if err != nil {
 		fmt.Println(err)
