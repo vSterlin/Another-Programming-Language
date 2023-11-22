@@ -156,6 +156,10 @@ func (l *Lexer) getToken() (*Token, error) {
 		l.skipWhitespace()
 	}
 
+	if l.pos < l.len-1 && isComment(string(l.current())+string(l.peek())) {
+		l.skipComment()
+	}
+
 	if l.pos >= l.len {
 		return &Token{Type: EOF}, nil
 	}
@@ -321,6 +325,21 @@ func (l *Lexer) skipWhitespace() {
 	for l.pos < l.len && isWhitespace(l.current()) {
 		l.next()
 	}
+}
+
+func (l *Lexer) skipComment() {
+	l.next()
+	l.next()
+	for l.pos < l.len && (l.current() != '\n' && l.current() != '\r') {
+		l.next()
+	}
+
+	l.skipWhitespace()
+
+}
+
+func isComment(chars string) bool {
+	return chars == "//"
 }
 
 func isWhitespace(char rune) bool {
