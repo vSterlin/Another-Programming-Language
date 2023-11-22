@@ -3,6 +3,7 @@ package codegen
 import (
 	"fmt"
 	"language/ast"
+	"strings"
 )
 
 func (cg *CodeGenerator) genImports() string {
@@ -29,6 +30,10 @@ func cType(t string) string {
 		return "int"
 	case "string":
 		return "std::string"
+	case "boolean":
+		return "bool"
+	case "void":
+		return "void"
 	default:
 		return ""
 	}
@@ -39,8 +44,25 @@ func cTypeFromAst(typeNode *ast.TypeExpr) string {
 	switch t := typeNode.Type.(type) {
 	case *ast.IdentifierExpr:
 		return cType(t.Name)
+	case *ast.FuncTypeExpr:
+		return cFuncTypeFromAst(t)
 	default:
 		return "auto"
 	}
+
+}
+
+func cFuncTypeFromAst(typeNode *ast.FuncTypeExpr) string {
+	args := []string{}
+	for _, arg := range typeNode.Args {
+		argStr := cTypeFromAst(arg)
+		args = append(args, argStr)
+	}
+
+	retType := cTypeFromAst(typeNode.ReturnType)
+
+	argsStr := fmt.Sprintf("std::function<%s(%s)>", retType, strings.Join(args, ", "))
+
+	return argsStr
 
 }

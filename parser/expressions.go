@@ -485,7 +485,7 @@ func (p *Parser) parseTypeExpr() (*ast.TypeExpr, error) {
 			return nil, err
 		}
 
-		return &ast.TypeExpr{Type: &ast.FuncTypeExpr{Args: params, ReturnType: retType}}, nil
+		return &ast.TypeExpr{Type: &ast.FuncTypeExpr{Args: params, ReturnType: &ast.TypeExpr{Type: retType}}}, nil
 	} else {
 
 		t, err := p.parseIdentifierExpr()

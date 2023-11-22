@@ -94,8 +94,8 @@ type typeExpr interface {
 }
 
 type FuncTypeExpr struct {
-	Args       []*TypeExpr     `json:"arguments"`
-	ReturnType *IdentifierExpr `json:"returnType"`
+	Args       []*TypeExpr `json:"arguments"`
+	ReturnType *TypeExpr   `json:"returnType"`
 }
 
 type TypeExpr struct {

@@ -112,7 +112,7 @@ func fromAstNode(typeNode *ast.TypeExpr) Type {
 		}
 		return FuncType{
 			Args:       args,
-			ReturnType: fromString(funcTypeExpr.ReturnType.Name),
+			ReturnType: fromAstNode(funcTypeExpr.ReturnType),
 		}
 	default:
 		return InvalidType{}

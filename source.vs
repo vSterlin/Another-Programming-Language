@@ -1,17 +1,10 @@
-func getStr() string {
-    return "hello"
-}
-
-func fib(n int) int {
-    if n <= 1 {
-        return n
-    } else {
-        return fib(n-1) + fib(n-2)
-    }
+func doStuff(fn () => int) int {
+   return fn()
 }
 
 
 func main() int {
-    fib(10)
+
+    doStuff(() int => { return 1 + 1 })
     return 0
 }
