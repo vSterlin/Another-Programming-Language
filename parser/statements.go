@@ -65,14 +65,6 @@ func (p *Parser) parseVarAssignStmt() (ast.Stmt, error) {
 
 	ex, _ := p.parseExpr()
 
-	// TODO: review this
-	if memExpr, ok := id.(*ast.MemberExpr); ok {
-		return &ast.SetStmt{Lhs: memExpr.Obj, Name: memExpr.Prop.(*ast.IdentifierExpr).Name, Val: ex}, nil
-	}
-
-	// if err != nil {
-	// 	return nil, err
-	// }
 	return &ast.VarAssignStmt{Id: id.(*ast.IdentifierExpr), Init: ex, Op: assignOp}, nil
 }
 
@@ -219,7 +211,7 @@ func (p *Parser) parseReturnStmt() (ast.Stmt, error) {
 	// TODO: review this
 	if err != nil {
 		return &ast.ReturnStmt{}, nil
-		// return nil, err
+
 	}
 	return &ast.ReturnStmt{Arg: arg}, nil
 }

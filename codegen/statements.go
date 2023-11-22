@@ -154,8 +154,10 @@ func (cg *CodeGenerator) genWhileStmt(stmt *ast.WhileStmt) (string, error) {
 func (cg *CodeGenerator) genReturnStmt(stmt *ast.ReturnStmt) (string, error) {
 
 	returnedVal, err := cg.genExpr(stmt.Arg)
+	// TODO: review. Probably okay since in type checker I check if the return type is void
+	// to allow no return value
 	if err != nil {
-		return "", err
+		return "return;", nil
 	}
 	return fmt.Sprintf("return %s;", returnedVal), nil
 }

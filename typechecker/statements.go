@@ -178,9 +178,14 @@ func (t *TypeChecker) checkReturnStmt(stmt *ast.ReturnStmt) error {
 		return NewTypeError("return statement outside of function")
 	}
 
-	actualType, err := t.checkExpr(stmt.Arg)
-	if err != nil {
-		return err
+	var actualType Type = Void
+
+	if !expectedType.Equals(Void) {
+		t, err := t.checkExpr(stmt.Arg)
+		if err != nil {
+			return err
+		}
+		actualType = t
 	}
 
 	if !areTypesEqual(expectedType, actualType) {

@@ -29,8 +29,7 @@ func (cg *CodeGenerator) genExpr(expr ast.Expr) (string, error) {
 	case *ast.ArrowFunc:
 		return cg.genArrowFunc(expr)
 	default:
-		panic(fmt.Sprintf("unknown expression type: %s", expr))
-		return "", nil
+		return "", fmt.Errorf("unknown expression type: %s", expr)
 	}
 }
 

@@ -28,7 +28,7 @@ func (t *TypeChecker) checkExpr(expr ast.Expr) (Type, error) {
 		return t.checkCallExpr(expr)
 
 	default:
-		panic("unknown expression type")
+		panic(fmt.Sprintf("unknown expression type: %T", expr))
 
 	}
 }
@@ -139,7 +139,6 @@ func (t *TypeChecker) checkCallExpr(expr *ast.CallExpr) (Type, error) {
 	funcName := (expr.Callee.(*ast.IdentifierExpr)).Name
 
 	if funcName == "print" {
-		// TODO: review
 		return Void, nil
 	}
 
