@@ -19,6 +19,8 @@ const (
 	RETURN
 	DEFER
 	RANGE
+	CLASS
+	THIS
 
 	keyword_end
 
@@ -36,6 +38,9 @@ const (
 
 	INCR
 	DECR
+
+	AND
+	OR
 
 	GT
 	LT
@@ -56,12 +61,16 @@ const (
 	COMMA
 	COLON
 
+	DOT
+
 	operator_end
 
 	NUMBER
 	BOOLEAN
 	IDENTIFIER
 	STRING
+
+	ARROW
 
 	EOF
 	UNKNOWN
@@ -91,6 +100,8 @@ var keywords map[string]TokenType = map[string]TokenType{
 
 	"true":  BOOLEAN,
 	"false": BOOLEAN,
+	"class": CLASS,
+	"this":  THIS,
 }
 
 var operators map[string]TokenType = map[string]TokenType{
@@ -107,6 +118,9 @@ var operators map[string]TokenType = map[string]TokenType{
 
 	"++": INCR,
 	"--": DECR,
+
+	"&&": AND,
+	"||": OR,
 
 	">":  GT,
 	"<":  LT,
@@ -126,6 +140,10 @@ var operators map[string]TokenType = map[string]TokenType{
 
 	",": COMMA,
 	":": COLON,
+
+	".": DOT,
+
+	"=>": ARROW,
 }
 
 func NewLexer(input string) *Lexer {
@@ -215,6 +233,16 @@ func (l *Lexer) tryTokenizeString() *Token {
 
 func (l *Lexer) tryTokenizeOperator() *Token {
 
+	if l.current() == '&' && l.peek() == '&' {
+		l.next()
+		l.next()
+		return &Token{Type: AND, Value: "&&"}
+	} else if l.current() == '|' && l.peek() == '|' {
+		l.next()
+		l.next()
+		return &Token{Type: OR, Value: "||"}
+	}
+
 	if tokType, ok := operators[string(l.current())]; ok {
 		val := string(l.current())
 
@@ -238,6 +266,10 @@ func (l *Lexer) tryTokenizeOperator() *Token {
 					val += string(l.peek())
 					l.next()
 					tokType = EQ
+				} else if l.peek() == '>' {
+					val += string(l.peek())
+					l.next()
+					tokType = ARROW
 				}
 			case GT:
 				if l.peek() == '=' {
