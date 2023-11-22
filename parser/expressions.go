@@ -28,16 +28,14 @@ func (p *Parser) parseBooleanExpr() (ast.Expr, error) {
 	return &ast.BooleanExpr{Val: val}, nil
 }
 
-// TODO: review if some error handling is needed
 func (p *Parser) parseStringExpr() (ast.Expr, error) {
 	val := p.current().Value
-	val = strings.Replace(val, "\\n", "\n", -1) + "\x00"
+	val = strings.Replace(val, "\\n", "\n", -1)
 	p.next()
 
 	return &ast.StringExpr{Val: val}, nil
 }
 
-// TODO: review if some error handling is needed
 func (p *Parser) parseIdentifierExpr() (*ast.IdentifierExpr, error) {
 	name := p.current().Value
 	p.next()

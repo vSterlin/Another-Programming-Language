@@ -4,8 +4,7 @@ func doStuff(fn () => int) int {
 
 
 func main() int {
-
-    x := () int => { return 1 + 1 }
+    x := () string => { return "woa" }
     doStuff(() int => { return 1 + 1 })
     return 0
 }
