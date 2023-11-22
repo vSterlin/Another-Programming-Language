@@ -37,7 +37,6 @@ func (cg *CodeGenerator) genExprStmt(stmt *ast.ExprStmt) (string, error) {
 	return fmt.Sprintf("%s;", expr), nil
 }
 
-// TODO: fix
 func (cg *CodeGenerator) genFuncDecStmt(stmt *ast.FuncDecStmt) (string, error) {
 
 	funcName, err := cg.genExpr(stmt.Id)
@@ -154,8 +153,7 @@ func (cg *CodeGenerator) genWhileStmt(stmt *ast.WhileStmt) (string, error) {
 func (cg *CodeGenerator) genReturnStmt(stmt *ast.ReturnStmt) (string, error) {
 
 	returnedVal, err := cg.genExpr(stmt.Arg)
-	// TODO: review. Probably okay since in type checker I check if the return type is void
-	// to allow no return value
+
 	if err != nil {
 		return "return;", nil
 	}

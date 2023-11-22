@@ -39,7 +39,6 @@ func cType(t string) string {
 	}
 }
 
-// TODO: review
 func cTypeFromAst(typeNode *ast.TypeExpr) string {
 	switch t := typeNode.Type.(type) {
 	case *ast.IdentifierExpr:

@@ -160,7 +160,6 @@ func (cg *CodeGenerator) genCallExpr(expr *ast.CallExpr) (string, error) {
 }
 
 func (cg *CodeGenerator) genIdentifierExpr(expr *ast.IdentifierExpr) (string, error) {
-	// TODO: need to check env here
 	return expr.Name, nil
 }
 

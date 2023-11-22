@@ -208,7 +208,6 @@ func (p *Parser) parseReturnStmt() (ast.Stmt, error) {
 		return nil, err
 	}
 	arg, err := p.parseExpr()
-	// TODO: review this
 	if err != nil {
 		return &ast.ReturnStmt{}, nil
 
