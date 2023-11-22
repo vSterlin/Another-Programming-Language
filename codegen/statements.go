@@ -99,21 +99,7 @@ func (cg *CodeGenerator) genVarAssignStmt(stmt *ast.VarAssignStmt) (string, erro
 	}
 	if stmt.Op == ":=" {
 
-		varType := ""
-
-		switch stmt.Init.(type) {
-
-		case *ast.NumberExpr:
-			varType = "int"
-		case *ast.StringExpr:
-			varType = "std::string"
-		case *ast.BooleanExpr:
-			varType = "bool"
-		default:
-
-			// TODO: fix
-			varType = "auto"
-		}
+		varType := inferFromAstNode(stmt.Init)
 
 		return fmt.Sprintf("%s %s = %s;", varType, id, init), nil
 	} else {

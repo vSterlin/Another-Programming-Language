@@ -66,3 +66,33 @@ func cFuncTypeFromAst(typeNode *ast.FuncTypeExpr) string {
 	return argsStr
 
 }
+
+func inferFromAstNode(node ast.Expr) string {
+	switch t := node.(type) {
+	case *ast.NumberExpr:
+		return Number
+	case *ast.StringExpr:
+		return String
+	case *ast.BooleanExpr:
+		return Bool
+	case *ast.ArrowFunc:
+		args := []*ast.TypeExpr{}
+		for _, arg := range t.Args {
+			args = append(args, arg.Type)
+		}
+		funcType := &ast.FuncTypeExpr{
+			Args:       args,
+			ReturnType: t.ReturnType,
+		}
+		return cFuncTypeFromAst(funcType)
+	}
+
+	return ""
+
+}
+
+const (
+	Number = "int"
+	String = "std::string"
+	Bool   = "bool"
+)
