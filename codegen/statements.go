@@ -3,6 +3,7 @@ package codegen
 import (
 	"fmt"
 	"language/ast"
+	"strings"
 )
 
 // Statements
@@ -54,7 +55,16 @@ func (cg *CodeGenerator) genFuncDecStmt(stmt *ast.FuncDecStmt) (string, error) {
 		return "", err
 	}
 
-	return fmt.Sprintf("%s %s() %s", retType, funcName, body), nil
+	args := []string{}
+
+	for _, arg := range stmt.Args {
+		argStr := fmt.Sprintf("%s %s", cTypeFromAst(arg.Type), arg.Id.Name)
+		args = append(args, argStr)
+	}
+
+	argsStr := strings.Join(args, ", ")
+
+	return fmt.Sprintf("%s %s(%s) %s", retType, funcName, argsStr, body), nil
 
 }
 

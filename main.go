@@ -21,31 +21,22 @@ func main() {
 
 	compile(`
 
- 	func makeCounter() () => int {
-		counter := 0
-		return () int => {
-			counter = counter + 1
-			return counter
+ 	func fib(n int) int {
+		if n <= 1 {
+			return n
+		} else {
+			return fib(n-1) + fib(n-2)
 		}
 	}
 
+
 	func main() int {
-		counter := makeCounter()
-		c := counter()
-		print(c)
-		
-		c = counter()
-		print(c)
+		fib(10)
 
 		return 0
 	}
 	
 	`)
-
-	// () number => {
-	// 	count = count + 1
-	// 	return count
-	// }
 
 }
 

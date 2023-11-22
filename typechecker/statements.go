@@ -108,7 +108,6 @@ func (t *TypeChecker) checkFuncDecStmt(stmt *ast.FuncDecStmt) error {
 		Args:       []Type{},
 		ReturnType: retType,
 	}
-
 	for _, param := range stmt.Args {
 		paramType := fromAstNode(param.Type)
 
@@ -116,6 +115,8 @@ func (t *TypeChecker) checkFuncDecStmt(stmt *ast.FuncDecStmt) error {
 
 		funcType.Args = append(funcType.Args, paramType)
 	}
+
+	t.env.Define(stmt.Id.Name, funcType)
 
 	prevFuncRetType := t.currentFuncRetType
 	t.currentFuncRetType = retType
@@ -126,8 +127,6 @@ func (t *TypeChecker) checkFuncDecStmt(stmt *ast.FuncDecStmt) error {
 	}
 
 	t.currentFuncRetType = prevFuncRetType
-
-	t.env.Define(stmt.Id.Name, funcType)
 
 	return nil
 }
