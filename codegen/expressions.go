@@ -29,8 +29,7 @@ func (cg *CodeGenerator) genExpr(expr ast.Expr) (string, error) {
 	case *ast.ArrowFunc:
 		return cg.genArrowFunc(expr)
 	default:
-		panic(fmt.Sprintf("unknown expression type: %s", expr))
-		return "", nil
+		return "", fmt.Errorf("unknown expression type: %s", expr)
 	}
 }
 
@@ -161,7 +160,6 @@ func (cg *CodeGenerator) genCallExpr(expr *ast.CallExpr) (string, error) {
 }
 
 func (cg *CodeGenerator) genIdentifierExpr(expr *ast.IdentifierExpr) (string, error) {
-	// TODO: need to check env here
 	return expr.Name, nil
 }
 

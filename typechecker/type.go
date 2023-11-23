@@ -119,6 +119,36 @@ func fromAstNode(typeNode *ast.TypeExpr) Type {
 	}
 }
 
+// to set return type for func calls
+func toAstNode(t Type) *ast.TypeExpr {
+
+	switch t := t.(type) {
+	case NumberType:
+		return &ast.TypeExpr{Type: &ast.IdentifierExpr{Name: "number"}}
+	case StringType:
+		return &ast.TypeExpr{Type: &ast.IdentifierExpr{Name: "string"}}
+	case BooleanType:
+		return &ast.TypeExpr{Type: &ast.IdentifierExpr{Name: "boolean"}}
+	case VoidType:
+		return &ast.TypeExpr{Type: &ast.IdentifierExpr{Name: "void"}}
+	case FuncType:
+		args := []*ast.TypeExpr{}
+		for _, arg := range t.Args {
+			args = append(args, toAstNode(arg))
+		}
+		return &ast.TypeExpr{
+			Type: &ast.FuncTypeExpr{
+				Args:       args,
+				ReturnType: toAstNode(t.ReturnType),
+			},
+		}
+	default:
+		panic("invalid type")
+
+	}
+
+}
+
 func areTypesEqual(expected Type, actual ...Type) bool {
 	for _, a := range actual {
 		if !expected.Equals(a) {

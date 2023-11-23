@@ -37,7 +37,6 @@ func (cg *CodeGenerator) genExprStmt(stmt *ast.ExprStmt) (string, error) {
 	return fmt.Sprintf("%s;", expr), nil
 }
 
-// TODO: fix
 func (cg *CodeGenerator) genFuncDecStmt(stmt *ast.FuncDecStmt) (string, error) {
 
 	funcName, err := cg.genExpr(stmt.Id)
@@ -99,21 +98,7 @@ func (cg *CodeGenerator) genVarAssignStmt(stmt *ast.VarAssignStmt) (string, erro
 	}
 	if stmt.Op == ":=" {
 
-		varType := ""
-
-		switch stmt.Init.(type) {
-
-		case *ast.NumberExpr:
-			varType = "int"
-		case *ast.StringExpr:
-			varType = "std::string"
-		case *ast.BooleanExpr:
-			varType = "bool"
-		default:
-
-			// TODO: fix
-			varType = "auto"
-		}
+		varType := inferFromAstNode(stmt.Init)
 
 		return fmt.Sprintf("%s %s = %s;", varType, id, init), nil
 	} else {
@@ -168,8 +153,9 @@ func (cg *CodeGenerator) genWhileStmt(stmt *ast.WhileStmt) (string, error) {
 func (cg *CodeGenerator) genReturnStmt(stmt *ast.ReturnStmt) (string, error) {
 
 	returnedVal, err := cg.genExpr(stmt.Arg)
+
 	if err != nil {
-		return "", err
+		return "return;", nil
 	}
 	return fmt.Sprintf("return %s;", returnedVal), nil
 }

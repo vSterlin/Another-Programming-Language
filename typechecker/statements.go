@@ -24,7 +24,7 @@ func (t *TypeChecker) checkStmt(stmt ast.Stmt) error {
 		return t.checkReturnStmt(stmt)
 
 	default:
-		panic("unknown statement type")
+		return NewTypeError(fmt.Sprintf("unknown statement type: %T", stmt))
 	}
 }
 
@@ -34,7 +34,7 @@ func (t *TypeChecker) checkBlockStmt(stmt *ast.BlockStmt, env *Env) error {
 	t.env = env
 	defer func() { t.env = prevEnv }()
 
-	needsToReturn := !t.currentFuncRetType.Equals(Invalid) && !t.currentFuncRetType.Equals(Void)
+	needsToReturn := !t.isInLoop && !t.currentFuncRetType.Equals(Invalid) && !t.currentFuncRetType.Equals(Void)
 
 	if len(stmt.Stmts) == 0 {
 		if needsToReturn {
@@ -165,7 +165,11 @@ func (t *TypeChecker) checkWhileStmt(stmt *ast.WhileStmt) error {
 		return NewTypeError(fmt.Sprintf("expected %s, got %s", BooleanType{}, testType))
 	}
 
-	return t.checkStmt(stmt.Body)
+	t.isInLoop = true
+	err = t.checkStmt(stmt.Body)
+	t.isInLoop = false
+
+	return err
 
 }
 
@@ -178,9 +182,14 @@ func (t *TypeChecker) checkReturnStmt(stmt *ast.ReturnStmt) error {
 		return NewTypeError("return statement outside of function")
 	}
 
-	actualType, err := t.checkExpr(stmt.Arg)
-	if err != nil {
-		return err
+	var actualType Type = Void
+
+	if !expectedType.Equals(Void) {
+		t, err := t.checkExpr(stmt.Arg)
+		if err != nil {
+			return err
+		}
+		actualType = t
 	}
 
 	if !areTypesEqual(expectedType, actualType) {
