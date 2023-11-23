@@ -5,12 +5,14 @@ import "language/ast"
 type TypeChecker struct {
 	env                *Env
 	currentFuncRetType Type
+	isInLoop           bool
 }
 
 func NewTypeChecker() *TypeChecker {
 	return &TypeChecker{
 		env:                NewEnv(nil),
 		currentFuncRetType: Invalid,
+		isInLoop:           false,
 	}
 }
 

@@ -34,7 +34,7 @@ func (t *TypeChecker) checkBlockStmt(stmt *ast.BlockStmt, env *Env) error {
 	t.env = env
 	defer func() { t.env = prevEnv }()
 
-	needsToReturn := !t.currentFuncRetType.Equals(Invalid) && !t.currentFuncRetType.Equals(Void)
+	needsToReturn := !t.isInLoop && !t.currentFuncRetType.Equals(Invalid) && !t.currentFuncRetType.Equals(Void)
 
 	if len(stmt.Stmts) == 0 {
 		if needsToReturn {
@@ -165,7 +165,11 @@ func (t *TypeChecker) checkWhileStmt(stmt *ast.WhileStmt) error {
 		return NewTypeError(fmt.Sprintf("expected %s, got %s", BooleanType{}, testType))
 	}
 
-	return t.checkStmt(stmt.Body)
+	t.isInLoop = true
+	err = t.checkStmt(stmt.Body)
+	t.isInLoop = false
+
+	return err
 
 }
 

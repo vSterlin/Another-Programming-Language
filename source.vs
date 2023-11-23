@@ -27,6 +27,10 @@ func main() int {
     print(f)
     n = n + 1
 
+    while {
+        1 + 1
+    }
+
 
 
     return 0
