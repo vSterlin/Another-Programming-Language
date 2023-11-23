@@ -24,7 +24,7 @@ func (t *TypeChecker) checkStmt(stmt ast.Stmt) error {
 		return t.checkReturnStmt(stmt)
 
 	default:
-		panic("unknown statement type")
+		return NewTypeError(fmt.Sprintf("unknown statement type: %T", stmt))
 	}
 }
 

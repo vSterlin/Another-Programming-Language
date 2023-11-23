@@ -28,7 +28,7 @@ func (t *TypeChecker) checkExpr(expr ast.Expr) (Type, error) {
 		return t.checkCallExpr(expr)
 
 	default:
-		panic(fmt.Sprintf("unknown expression type: %T", expr))
+		return Invalid, NewTypeError(fmt.Sprintf("unknown expression type: %T", expr))
 
 	}
 }
