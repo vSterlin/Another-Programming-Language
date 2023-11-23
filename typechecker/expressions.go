@@ -174,5 +174,7 @@ func (t *TypeChecker) checkCallExpr(expr *ast.CallExpr) (Type, error) {
 
 	retType := funcDef.ReturnType
 
+	expr.ReturnType = toAstNode(retType)
+
 	return retType, nil
 }

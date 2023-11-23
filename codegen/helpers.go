@@ -85,8 +85,7 @@ func inferFromAstNode(node ast.Expr) string {
 		}
 		return cFuncTypeFromAst(funcType)
 	case *ast.CallExpr:
-		// FIXME: Wanna have more reliable way to infer type
-		return "auto"
+		return cTypeFromAst(t.ReturnType)
 	}
 
 	return ""

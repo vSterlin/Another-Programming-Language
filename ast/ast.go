@@ -64,8 +64,9 @@ type LogicalExpr struct {
 }
 
 type CallExpr struct {
-	Callee Expr   `json:"callee"`
-	Args   []Expr `json:"arguments"`
+	Callee     Expr      `json:"callee"`
+	Args       []Expr    `json:"arguments"`
+	ReturnType *TypeExpr `json:"returnType"`
 }
 
 type ArrayExpr struct {
