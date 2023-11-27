@@ -1,6 +1,7 @@
 package codegen
 
 import (
+	"fmt"
 	"language/ast"
 )
 
@@ -23,14 +24,22 @@ func NewCodeGenerator() *CodeGenerator {
 }
 
 func (cg *CodeGenerator) Gen(prog *ast.Program) string {
-	p := ""
+	funcs := ""
+	main := ""
 
 	for _, stmt := range prog.Stmts {
 		code, _ := cg.genStmt(stmt)
-		p += code
+		if _, ok := stmt.(*ast.FuncDecStmt); ok {
+			funcs += code + "\n"
+		} else {
+			main += code + "\n"
+		}
+
 	}
 
-	p = cg.genImports() + p
+	main = fmt.Sprintf("int main() {\n%s\nreturn 0;\n}", main)
 
-	return p
+	res := cg.genImports() + funcs + main
+
+	return res
 }
