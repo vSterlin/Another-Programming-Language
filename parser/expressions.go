@@ -169,32 +169,11 @@ func (p *Parser) parsePrimaryExpr() (ast.Expr, error) {
 	return nil, NewParserError(p.pos, fmt.Sprintf("expected primary expression, got %s", p.current().Type))
 }
 
-// memberExpression ::= primaryExpression ('.' identifier)*;
-func (p *Parser) parseMemberExpr() (ast.Expr, error) {
-
-	obj, err := p.parsePrimaryExpr()
-	if err != nil {
-		return nil, err
-	}
-
-	for !p.isEnd() && p.current().Type == DOT {
-		p.next()
-		prop, err := p.parseIdentifierExpr()
-		if err != nil {
-			return nil, err
-		}
-		obj = &ast.MemberExpr{Obj: obj, Prop: prop}
-
-	}
-
-	return obj, nil
-}
-
-// callExpression ::= memberExpression ('(' arguments? ')')?;
+// callExpression ::= primaryExpression ('(' arguments? ')')?;
 func (p *Parser) parseCallExpr() (ast.Expr, error) {
 
 	prev := p.current()
-	calleeId, err := p.parseMemberExpr()
+	calleeId, err := p.parsePrimaryExpr()
 	if err != nil {
 		return nil, err
 	}

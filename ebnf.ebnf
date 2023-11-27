@@ -3,11 +3,11 @@ type ::= identifier | '(' identifier* ')' '=>' type;
 
 arrayExpression ::= '[' (expression (',' expression)*)? ']';
 
-primaryExpression ::= identifier | number | boolean | '(' expression ')' | arrayExpression | sliceExpression | arrowFunction
+primaryExpression ::= identifier | number | boolean | '(' expression ')' | arrayExpression | sliceExpression | arrowFunction;
 
 arguments ::= '(' (expression (',' expression)*)? ')';
-callExpression ::= memberExpression ('(' arguments? ')')?;
-memberExpression ::= primaryExpression ('.' identifier)*;
+callExpression ::= primaryExpression ('(' arguments? ')')?;
+
 
 
 (* I will want to change identifier to expression *)
