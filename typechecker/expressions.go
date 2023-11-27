@@ -109,17 +109,20 @@ func (t *TypeChecker) checkIdentifierExpr(expr *ast.IdentifierExpr) (Type, error
 
 func (t *TypeChecker) checkArrowFunc(expr *ast.ArrowFunc) (Type, error) {
 	retType := fromAstNode(expr.ReturnType)
-	prevFuncRetType := t.currentFuncRetType
-	t.currentFuncRetType = retType
-	defer func() { t.currentFuncRetType = prevFuncRetType }()
 
 	funcType := FuncType{
 		Args:       []Type{},
 		ReturnType: retType,
 	}
-
-	prevFuncRetType = t.currentFuncRetType
+	prevFuncRetType := t.currentFuncRetType
+	t.currentFuncRetType = retType
+	prevArrowFuncType := t.currentArrowFuncType
 	t.currentArrowFuncType = &funcType
+
+	defer func() {
+		t.currentFuncRetType = prevFuncRetType
+		t.currentArrowFuncType = prevArrowFuncType
+	}()
 
 	for _, param := range expr.Args {
 		paramType := fromAstNode(param.Type)
@@ -137,10 +140,6 @@ func (t *TypeChecker) checkArrowFunc(expr *ast.ArrowFunc) (Type, error) {
 		funcType.ReturnType = Void
 	}
 
-	t.currentFuncRetType = prevFuncRetType
-	t.currentArrowFuncType = nil
-
-	// TODO: MODIFY AST
 	expr.ReturnType = toAstNode(funcType.ReturnType)
 
 	return funcType, nil
