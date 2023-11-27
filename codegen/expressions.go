@@ -118,6 +118,7 @@ func (cg *CodeGenerator) genBinaryExpr(expr *ast.BinaryExpr) (string, error) {
 
 func (cg *CodeGenerator) genCallExpr(expr *ast.CallExpr) (string, error) {
 
+	// FIXME: calle can be a function call too
 	print, ok := expr.Callee.(*ast.IdentifierExpr)
 	if ok && print.Name == "print" {
 		args := []string{}
