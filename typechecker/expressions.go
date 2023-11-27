@@ -118,6 +118,9 @@ func (t *TypeChecker) checkArrowFunc(expr *ast.ArrowFunc) (Type, error) {
 		ReturnType: retType,
 	}
 
+	prevFuncRetType = t.currentFuncRetType
+	t.currentArrowFuncType = &funcType
+
 	for _, param := range expr.Args {
 		paramType := fromAstNode(param.Type)
 		t.env.Define(param.Id.Name, paramType)
@@ -128,6 +131,17 @@ func (t *TypeChecker) checkArrowFunc(expr *ast.ArrowFunc) (Type, error) {
 	if err != nil {
 		return Invalid, err
 	}
+
+	// TODO: change invalid to unknown to easier distinguish between
+	if funcType.ReturnType == Invalid {
+		funcType.ReturnType = Void
+	}
+
+	t.currentFuncRetType = prevFuncRetType
+	t.currentArrowFuncType = nil
+
+	// TODO: MODIFY AST
+	expr.ReturnType = toAstNode(funcType.ReturnType)
 
 	return funcType, nil
 

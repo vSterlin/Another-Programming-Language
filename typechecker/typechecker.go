@@ -3,9 +3,10 @@ package typechecker
 import "language/ast"
 
 type TypeChecker struct {
-	env                *Env
-	currentFuncRetType Type
-	isInLoop           bool
+	env                  *Env
+	currentFuncRetType   Type
+	isInLoop             bool
+	currentArrowFuncType *FuncType
 }
 
 func NewTypeChecker() *TypeChecker {

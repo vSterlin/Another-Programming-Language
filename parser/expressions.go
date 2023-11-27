@@ -86,7 +86,7 @@ func (p *Parser) parseArrowFunc() (ast.Expr, error) {
 	var retType *ast.TypeExpr
 
 	if p.current().Type == ARROW {
-		retType = &ast.TypeExpr{Type: &ast.IdentifierExpr{Name: "void"}}
+		retType = &ast.TypeExpr{Type: &ast.IdentifierExpr{Name: "invalid"}}
 	} else {
 		r, err := p.parseTypeExpr()
 		if err != nil {

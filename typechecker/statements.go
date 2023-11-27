@@ -178,7 +178,7 @@ func (t *TypeChecker) checkReturnStmt(stmt *ast.ReturnStmt) error {
 
 	expectedType := t.currentFuncRetType
 
-	if expectedType == Invalid {
+	if expectedType == Invalid && t.currentArrowFuncType == nil {
 		return NewTypeError("return statement outside of function")
 	}
 
@@ -192,7 +192,9 @@ func (t *TypeChecker) checkReturnStmt(stmt *ast.ReturnStmt) error {
 		actualType = t
 	}
 
-	if !areTypesEqual(expectedType, actualType) {
+	t.currentArrowFuncType.ReturnType = actualType
+
+	if !areTypesEqual(expectedType, actualType) && t.currentArrowFuncType == nil {
 		return NewTypeError(fmt.Sprintf("expected return type %s, got %s", expectedType, actualType))
 	}
 
