@@ -11,9 +11,11 @@ func (cg *CodeGenerator) genExpr(expr ast.Expr) (string, error) {
 	switch expr := expr.(type) {
 
 	case *ast.BinaryExpr:
-		return cg.genBinaryExpr(expr)
+		cg.genBinaryExpr(expr)
+		return "", nil
 	case *ast.NumberExpr:
-		return cg.genNumberExpr(expr)
+		cg.genNumberExpr(expr)
+		return "", nil
 	case *ast.StringExpr:
 		return cg.genStringExpr(expr)
 	case *ast.BooleanExpr:
@@ -27,15 +29,17 @@ func (cg *CodeGenerator) genExpr(expr ast.Expr) (string, error) {
 	case *ast.TypeExpr:
 		return cg.genTypeExpr(expr)
 	case *ast.ArrowFunc:
-		return cg.genArrowFunc(expr)
+		cg.genArrowFunc(expr)
+		return "", nil
 	default:
 		return "", fmt.Errorf("unknown expression type: %s", expr)
 	}
 }
 
 // Literals start
-func (cg *CodeGenerator) genNumberExpr(expr *ast.NumberExpr) (string, error) {
-	return strconv.Itoa(expr.Val), nil
+func (cg *CodeGenerator) genNumberExpr(expr *ast.NumberExpr) error {
+	cg.write(strconv.Itoa(expr.Val))
+	return nil
 }
 func (cg *CodeGenerator) genStringExpr(expr *ast.StringExpr) (string, error) {
 	str := expr.Val
@@ -77,43 +81,17 @@ func (cg *CodeGenerator) genLogicalExpr(expr *ast.LogicalExpr) (string, error) {
 	return res, nil
 }
 
-func (cg *CodeGenerator) genBinaryExpr(expr *ast.BinaryExpr) (string, error) {
-	lhs, err := cg.genExpr(expr.Lhs)
+func (cg *CodeGenerator) genBinaryExpr(expr *ast.BinaryExpr) error {
+	_, err := cg.genExpr(expr.Lhs)
 	if err != nil {
-		return "", err
-	}
-	rhs, err := cg.genExpr(expr.Rhs)
-	if err != nil {
-		return "", err
+		return err
 	}
 
-	res := ""
-	switch expr.Op {
-	case ast.ADD:
-		res = lhs + " + " + rhs
-	case ast.SUB:
-		res = lhs + " - " + rhs
-	case ast.MUL:
-		res = lhs + " * " + rhs
-	case ast.DIV:
-		res = lhs + " / " + rhs
+	cg.write(string(expr.Op))
 
-	case "==":
-		res = lhs + " == " + rhs
-	case "!=":
-		res = lhs + " != " + rhs
+	_, err = cg.genExpr(expr.Rhs)
 
-	case "<":
-		res = lhs + " < " + rhs
-	case "<=":
-		res = lhs + " <= " + rhs
-	case ">":
-		res = lhs + " > " + rhs
-	case ">=":
-		res = lhs + " >= " + rhs
-	}
-
-	return res, nil
+	return err
 }
 
 func (cg *CodeGenerator) genCallExpr(expr *ast.CallExpr) (string, error) {
@@ -167,17 +145,15 @@ func (cg *CodeGenerator) genTypeExpr(expr *ast.TypeExpr) (string, error) {
 	return cTypeFromAst(expr), nil
 }
 
-func (cg *CodeGenerator) genArrowFunc(expr *ast.ArrowFunc) (string, error) {
+func (cg *CodeGenerator) genArrowFunc(expr *ast.ArrowFunc) error {
 
-	body, err := cg.genStmt(expr.Body)
+	cg.write("[=]() mutable ")
 
-	if err != nil {
-		return "", err
-	}
+	err := cg.genStmt(expr.Body)
 
 	if err != nil {
-		return "", err
+		return err
 	}
 
-	return fmt.Sprintf("[=]() mutable %s", body), nil
+	return nil
 }

@@ -7,51 +7,48 @@ import (
 )
 
 // Statements
-func (cg *CodeGenerator) genStmt(stmt ast.Stmt) (string, error) {
+func (cg *CodeGenerator) genStmt(stmt ast.Stmt) error {
 	switch stmt := stmt.(type) {
 	case *ast.ExprStmt:
 		return cg.genExprStmt(stmt)
 	case *ast.FuncDecStmt:
 		return cg.genFuncDecStmt(stmt)
+
 	case *ast.BlockStmt:
 		return cg.genBlockStmt(stmt)
+
 	case *ast.VarAssignStmt:
 		return cg.genVarAssignStmt(stmt)
-	case *ast.IfStmt:
-		return cg.genIfStmt(stmt)
-	case *ast.WhileStmt:
-		return cg.genWhileStmt(stmt)
+
+	// case *ast.IfStmt:
+	// 	return cg.genIfStmt(stmt)
+	// case *ast.WhileStmt:
+	// 	return cg.genWhileStmt(stmt)
 	case *ast.ReturnStmt:
 		return cg.genReturnStmt(stmt)
+
 	default:
-		return "", fmt.Errorf("unknown statement type: %T", stmt)
+		return fmt.Errorf("unknown statement type: %T", stmt)
 	}
 
 }
 
-func (cg *CodeGenerator) genExprStmt(stmt *ast.ExprStmt) (string, error) {
-	expr, err := cg.genExpr(stmt.Expr)
-	if err != nil {
-		return "", err
-	}
-	return fmt.Sprintf("%s;", expr), nil
+func (cg *CodeGenerator) genExprStmt(stmt *ast.ExprStmt) error {
+	_, err := cg.genExpr(stmt.Expr)
+	return err
 }
 
-func (cg *CodeGenerator) genFuncDecStmt(stmt *ast.FuncDecStmt) (string, error) {
+func (cg *CodeGenerator) genFuncDecStmt(stmt *ast.FuncDecStmt) error {
 
+	cg.isInGlobal = false
 	funcName, err := cg.genExpr(stmt.Id)
 	if err != nil {
-		return "", err
+		return err
 	}
 
 	retType, err := cg.genExpr(stmt.ReturnType)
 	if err != nil {
-		return "", err
-	}
-
-	body, err := cg.genBlockStmt(stmt.Body)
-	if err != nil {
-		return "", err
+		return err
 	}
 
 	args := []string{}
@@ -63,99 +60,120 @@ func (cg *CodeGenerator) genFuncDecStmt(stmt *ast.FuncDecStmt) (string, error) {
 
 	argsStr := strings.Join(args, ", ")
 
-	return fmt.Sprintf("%s %s(%s) %s", retType, funcName, argsStr, body), nil
+	cg.write(fmt.Sprintf("%s %s(%s)", retType, funcName, argsStr))
+
+	err = cg.genBlockStmt(stmt.Body)
+	if err != nil {
+		return err
+	}
+
+	cg.isInGlobal = true
+
+	return nil
 
 }
 
-func (cg *CodeGenerator) genBlockStmt(stmt *ast.BlockStmt) (string, error) {
-
-	stmts := ""
+func (cg *CodeGenerator) genBlockStmt(stmt *ast.BlockStmt) error {
+	prevIsInGlobal := cg.isInGlobal
+	cg.isInGlobal = false
+	// stmts := ""
 	cg.indent++
 	tabs := cg.genTabs()
+	cg.write("{\n")
 	for _, stmt := range stmt.Stmts {
-		code, err := cg.genStmt(stmt)
+		err := cg.genStmt(stmt)
 		if err != nil {
-			return "", err
+			return err
 		}
 
-		stmts += fmt.Sprintf("%s%s\n", tabs, code)
 	}
 
 	cg.indent--
 
 	tabs = tabs[1:]
 
-	return fmt.Sprintf("{\n%s%s}\n", stmts, tabs), nil
+	cg.isInGlobal = prevIsInGlobal
+
+	cg.write("\n}\n")
+
+	return nil
 }
 
-func (cg *CodeGenerator) genVarAssignStmt(stmt *ast.VarAssignStmt) (string, error) {
+func (cg *CodeGenerator) genVarAssignStmt(stmt *ast.VarAssignStmt) error {
 
 	id := stmt.Id.Name
 
-	init, err := cg.genExpr(stmt.Init)
-	if err != nil {
-		return "", err
-	}
 	if stmt.Op == ":=" {
-
 		varType := inferFromAstNode(stmt.Init)
-
-		return fmt.Sprintf("%s %s = %s;", varType, id, init), nil
+		cg.write(fmt.Sprintf("%s %s = ", varType, id))
 	} else {
-		return fmt.Sprintf("%s = %s;", id, init), nil
+		cg.write(fmt.Sprintf("%s = ", id))
 	}
+
+	_, err := cg.genExpr(stmt.Init)
+	if err != nil {
+		return err
+	}
+	cg.write(";")
+	return nil
 
 }
 
-func (cg *CodeGenerator) genIfStmt(stmt *ast.IfStmt) (string, error) {
+// func (cg *CodeGenerator) genIfStmt(stmt *ast.IfStmt) (string, error) {
 
-	test, err := cg.genExpr(stmt.Test)
+// 	test, err := cg.genExpr(stmt.Test)
 
-	if err != nil {
-		return "", err
-	}
+// 	if err != nil {
+// 		return "", err
+// 	}
 
-	body, err := cg.genStmt(stmt.Consequent)
+// 	err = cg.genStmt(stmt.Consequent)
 
-	if err != nil {
-		return "", err
-	}
+// 	if err != nil {
+// 		return "", err
+// 	}
 
-	if stmt.Alternate != nil {
-		alternate, err := cg.genStmt(stmt.Alternate)
+// 	if stmt.Alternate != nil {
+// 		alternate, err := cg.genStmt(stmt.Alternate)
 
+// 		if err != nil {
+// 			return "", err
+// 		}
+
+// 		return fmt.Sprintf("if (%s) %s else %s", test, body, alternate), nil
+// 	}
+
+// 	return fmt.Sprintf("if (%s) %s", test, body), nil
+
+// }
+
+// func (cg *CodeGenerator) genWhileStmt(stmt *ast.WhileStmt) (string, error) {
+
+// 	test, err := cg.genExpr(stmt.Test)
+// 	if err != nil {
+// 		return "", err
+// 	}
+// 	body, err := cg.genStmt(stmt.Body)
+// 	if err != nil {
+// 		return "", err
+// 	}
+
+// 	return fmt.Sprintf("while (%s) %s", test, body), nil
+
+// }
+
+func (cg *CodeGenerator) genReturnStmt(stmt *ast.ReturnStmt) error {
+
+	cg.write(("return"))
+
+	if stmt.Arg != nil {
+		cg.write(" ")
+		_, err := cg.genExpr(stmt.Arg)
 		if err != nil {
-			return "", err
+			return err
 		}
-
-		return fmt.Sprintf("if (%s) %s else %s", test, body, alternate), nil
 	}
 
-	return fmt.Sprintf("if (%s) %s", test, body), nil
-
-}
-
-func (cg *CodeGenerator) genWhileStmt(stmt *ast.WhileStmt) (string, error) {
-
-	test, err := cg.genExpr(stmt.Test)
-	if err != nil {
-		return "", err
-	}
-	body, err := cg.genStmt(stmt.Body)
-	if err != nil {
-		return "", err
-	}
-
-	return fmt.Sprintf("while (%s) %s", test, body), nil
-
-}
-
-func (cg *CodeGenerator) genReturnStmt(stmt *ast.ReturnStmt) (string, error) {
-
-	returnedVal, err := cg.genExpr(stmt.Arg)
-
-	if err != nil {
-		return "return;", nil
-	}
-	return fmt.Sprintf("return %s;", returnedVal), nil
+	cg.write(";")
+	return nil
 }
