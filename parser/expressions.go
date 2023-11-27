@@ -142,6 +142,10 @@ func (p *Parser) parsePrimaryExpr() (ast.Expr, error) {
 		if p.pos+1 < p.len && p.tokens[p.pos+1].Type == LBRACK {
 			return p.parseSliceExpr()
 		} else {
+			//  else if p.peek().Type == LPAREN {
+			// 	fmt.Println("yoo")
+			// 	return p.parseCallExpr()
+			// }
 			return p.parseIdentifierExpr()
 		}
 	case THIS:
@@ -169,11 +173,13 @@ func (p *Parser) parsePrimaryExpr() (ast.Expr, error) {
 	return nil, NewParserError(p.pos, fmt.Sprintf("expected primary expression, got %s", p.current().Type))
 }
 
-// callExpression ::= primaryExpression ('(' arguments? ')')?;
+// callExpression ::= (identifier) ('(' arguments? ')')*;
 func (p *Parser) parseCallExpr() (ast.Expr, error) {
 
 	prev := p.current()
-	calleeId, err := p.parsePrimaryExpr()
+	fmt.Printf("prev: %v\n", prev)
+	var call ast.Expr
+	call, err := p.parsePrimaryExpr()
 	if err != nil {
 		return nil, err
 	}
@@ -183,32 +189,34 @@ func (p *Parser) parseCallExpr() (ast.Expr, error) {
 		// But we don't wanna parse it as call if it's a primitive type
 		p.tokenTypeEqual(prev.Type, NUMBER, STRING, BOOLEAN) ||
 		p.current().Type != LPAREN {
-		return calleeId, nil
+		return call, nil
 	}
 
-	args := []ast.Expr{}
-	err = p.consume(LPAREN)
-	if err != nil {
-		return nil, err
-	}
-	for !p.isEnd() && p.current().Type != RPAREN {
-		arg, err := p.parseExpr()
-		if err != nil {
+	for !p.isEnd() && p.current().Type == LPAREN {
+		if err = p.consume(LPAREN); err != nil {
 			return nil, err
 		}
-		args = append(args, arg)
-		if p.current().Type == COMMA {
-			p.next()
+		args := []ast.Expr{}
+		for !p.isEnd() && p.current().Type != RPAREN {
+			arg, err := p.parseExpr()
+			if err != nil {
+				return nil, err
+			}
+			args = append(args, arg)
+			if p.current().Type == COMMA {
+				p.next()
+			}
 		}
-	}
-	if err := p.consume(RPAREN); err != nil {
-		return nil, err
+
+		if err := p.consume(RPAREN); err != nil {
+			return nil, err
+		}
+
+		call = &ast.CallExpr{Callee: call, Args: args}
+
 	}
 
-	return &ast.CallExpr{
-		Callee: calleeId,
-		Args:   args,
-	}, nil
+	return call, nil
 
 }
 

@@ -3,10 +3,10 @@ type ::= identifier | '(' identifier* ')' '=>' type;
 
 arrayExpression ::= '[' (expression (',' expression)*)? ']';
 
-primaryExpression ::= identifier | number | boolean | '(' expression ')' | arrayExpression | sliceExpression | arrowFunction;
+primaryExpression ::= identifier | number | boolean | '(' expression ')' | arrayExpression  | arrowFunction | callExpression;
 
 arguments ::= '(' (expression (',' expression)*)? ')';
-callExpression ::= primaryExpression ('(' arguments? ')')?;
+callExpression ::= primaryExpression ('(' arguments? ')')*;
 
 
 
