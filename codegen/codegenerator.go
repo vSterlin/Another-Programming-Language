@@ -3,6 +3,7 @@ package codegen
 import (
 	"fmt"
 	"language/ast"
+	"strings"
 )
 
 type CodeGenerator struct {
@@ -32,6 +33,10 @@ func (cg *CodeGenerator) Gen(prog *ast.Program) string {
 		if _, ok := stmt.(*ast.FuncDecStmt); ok {
 			funcs += code + "\n"
 		} else {
+			// TODO: do it more efficiently
+			lines := strings.Split(code, "\n")
+			code = strings.Join(lines, "\n\t")
+			code = "\t" + code
 			main += code + "\n"
 		}
 

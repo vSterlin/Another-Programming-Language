@@ -85,7 +85,7 @@ func (cg *CodeGenerator) genBlockStmt(stmt *ast.BlockStmt) (string, error) {
 
 	tabs = tabs[1:]
 
-	return fmt.Sprintf("{\n%s%s}\n", stmts, tabs), nil
+	return fmt.Sprintf("{\n%s%s}", stmts, tabs), nil
 }
 
 func (cg *CodeGenerator) genVarAssignStmt(stmt *ast.VarAssignStmt) (string, error) {
