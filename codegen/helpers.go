@@ -86,6 +86,11 @@ func inferFromAstNode(node ast.Expr) string {
 		return cFuncTypeFromAst(funcType)
 	case *ast.CallExpr:
 		return cTypeFromAst(t.ReturnType)
+	case *ast.BinaryExpr:
+		// TODO: only good as long as we deal with ints
+		return inferFromAstNode(t.Lhs)
+	case *ast.LogicalExpr:
+		return Bool
 	}
 
 	return ""
