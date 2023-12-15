@@ -146,7 +146,7 @@ func (p *Parser) parsePrimaryExpr() (ast.Expr, error) {
 			// 	fmt.Println("yoo")
 			// 	return p.parseCallExpr()
 			// }
-			return p.parseIdentifierExpr()
+			return p.parseUpdateExpr()
 		}
 	case THIS:
 		p.next()
@@ -171,6 +171,28 @@ func (p *Parser) parsePrimaryExpr() (ast.Expr, error) {
 	}
 
 	return nil, NewParserError(p.pos, fmt.Sprintf("expected primary expression, got %s", p.current().Type))
+}
+
+// updateExpression ::= identifier ('++' | '--');
+func (p *Parser) parseUpdateExpr() (ast.Expr, error) {
+
+	id, err := p.parseIdentifierExpr()
+	if err != nil {
+		return nil, err
+	}
+
+	curr := p.current().Type
+
+	if !p.tokenTypeEqual(curr, INCR, DECR) {
+		return id, nil
+	}
+
+	p.next()
+	if curr == INCR {
+		return &ast.UpdateExpr{Arg: id, Op: "++"}, nil
+	} else {
+		return &ast.UpdateExpr{Arg: id, Op: "--"}, nil
+	}
 }
 
 // callExpression ::= (identifier) ('(' arguments? ')')*;

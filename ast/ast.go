@@ -70,6 +70,12 @@ type CallExpr struct {
 	ReturnType *TypeExpr `json:"returnType"`
 }
 
+type UpdateExpr struct {
+	// TODO: should be more than just id but fine for now
+	Arg *IdentifierExpr `json:"argument"`
+	Op  string          `json:"operator"`
+}
+
 type ArrayExpr struct {
 	Elements []Expr `json:"elements"`
 }
@@ -115,6 +121,7 @@ func (b *BinaryExpr) exprNode()     {}
 func (b *LogicalExpr) exprNode()    {}
 func (c *CallExpr) exprNode()       {}
 func (a *ArrayExpr) exprNode()      {}
+func (u *UpdateExpr) exprNode()     {}
 func (s *SliceExpr) exprNode()      {}
 func (m *MemberExpr) exprNode()     {}
 func (t *ThisExpr) exprNode()       {}
@@ -130,6 +137,7 @@ func (b *BinaryExpr) String() string     { return fmt.Sprintf("binary(%s, %s, %s
 func (b *LogicalExpr) String() string    { return fmt.Sprintf("logical(%s, %s, %s)", b.Lhs, b.Op, b.Rhs) }
 func (c *CallExpr) String() string       { return fmt.Sprintf("call(%s)", c.Callee) }
 func (a *ArrayExpr) String() string      { return fmt.Sprintf("array(%s)", a.Elements) }
+func (u *UpdateExpr) String() string     { return fmt.Sprintf("update(%s, %s)", u.Arg, u.Op) }
 func (s *SliceExpr) String() string      { return fmt.Sprintf("slice(%s)", s.Id) }
 func (m *MemberExpr) String() string     { return fmt.Sprintf("member(%s, %s)", m.Obj, m.Prop) }
 func (t *ThisExpr) String() string       { return ("this") }

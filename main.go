@@ -17,7 +17,7 @@ func main() {
 
 }
 
-var PRINT_AST = false
+var PRINT_AST = true
 
 func buildAST(code string) *ast.Program {
 	l := lexer.NewLexer(code)
