@@ -100,6 +100,8 @@ func (cg *CodeGenerator) genVarAssignStmt(stmt *ast.VarAssignStmt) (string, erro
 
 		varType := inferFromAstNode(stmt.Init)
 
+		fmt.Printf("varType: %#v\n", varType)
+
 		return fmt.Sprintf("%s %s = %s;", varType, id, init), nil
 	} else {
 		return fmt.Sprintf("%s = %s;", id, init), nil

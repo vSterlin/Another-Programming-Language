@@ -180,5 +180,13 @@ func (cg *CodeGenerator) genArrowFunc(expr *ast.ArrowFunc) (string, error) {
 		return "", err
 	}
 
-	return fmt.Sprintf("[=]() mutable %s", body), nil
+	args := []string{}
+	for _, arg := range expr.Args {
+		argStr := fmt.Sprintf("%s %s", cTypeFromAst(arg.Type), arg.Id.Name)
+		args = append(args, argStr)
+	}
+
+	argsStr := strings.Join(args, ", ")
+
+	return fmt.Sprintf("[=](%s) mutable %s", argsStr, body), nil
 }
