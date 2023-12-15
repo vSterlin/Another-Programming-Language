@@ -177,7 +177,6 @@ func (p *Parser) parsePrimaryExpr() (ast.Expr, error) {
 func (p *Parser) parseCallExpr() (ast.Expr, error) {
 
 	prev := p.current()
-	fmt.Printf("prev: %v\n", prev)
 	var call ast.Expr
 	call, err := p.parsePrimaryExpr()
 	if err != nil {

@@ -1,8 +1,12 @@
-a :=1
-b := 1
+func counter(){
+    c := 0
+    count := () => {
+        c = c + 1
+    }
 
+    return count
+}
 
-x := (a int) => { return 1 }
+c := counter()
 
-z := (a + b ) / 2
-
+c()

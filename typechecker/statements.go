@@ -192,6 +192,10 @@ func (t *TypeChecker) checkReturnStmt(stmt *ast.ReturnStmt) error {
 			return err
 		}
 		actualType = t
+	} else {
+		if stmt.Arg != nil {
+			return NewTypeError("expected no return value")
+		}
 	}
 
 	if t.currentArrowFuncType != nil {
