@@ -1,6 +1,2 @@
-x := false
-
-!!!x
-
-z := 0
-z--
+type Number int
+type Func () => int

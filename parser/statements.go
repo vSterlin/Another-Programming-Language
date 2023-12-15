@@ -241,6 +241,22 @@ func (p *Parser) parseClassDecStmt() (ast.Stmt, error) {
 	return &ast.ClassDecStmt{Id: id, Methods: methods}, nil
 }
 
+func (p *Parser) parseTypeAliasStmt() (ast.Stmt, error) {
+	if err := p.consume(TYPE); err != nil {
+		return nil, err
+	}
+	id, err := p.parseIdentifierExpr()
+	if err != nil {
+		return nil, err
+	}
+
+	typ, err := p.parseTypeExpr()
+	if err != nil {
+		return nil, err
+	}
+	return &ast.TypeAliasStmt{Id: id, Type: typ}, nil
+}
+
 // statement ::= expression | variableDeclarationStatement
 // | variableAssignmentStatement | blockStatement
 // | whileStatement | functionDeclaration
@@ -267,6 +283,8 @@ func (p *Parser) parseStmt() (ast.Stmt, error) {
 		return p.parseReturnStmt()
 	case CLASS:
 		return p.parseClassDecStmt()
+	case TYPE:
+		return p.parseTypeAliasStmt()
 	default:
 		ex, err := p.parseExpr()
 		if err != nil {

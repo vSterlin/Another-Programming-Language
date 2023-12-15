@@ -1,5 +1,6 @@
 
 type ::= identifier | '(' identifier* ')' '=>' type;
+typeAlias ::= 'type' identifier type;
 
 arrayExpression ::= '[' (expression (',' expression)*)? ']';
 
@@ -8,12 +9,8 @@ primaryExpression ::= identifier | number | boolean | '(' expression ')' | array
 arguments ::= '(' (expression (',' expression)*)? ')';
 callExpression ::= primaryExpression ('(' arguments? ')')*;
 
-
-
 (* I will want to change identifier to expression *)
 sliceExpression ::= identifier '[' expression ':' expression (':' expression)? ']'; 
-
-
 
 updateExpression ::= identifier ('++' | '--');
 unaryExpression ::= updateExpression | '!'unaryExpression;
@@ -67,5 +64,6 @@ arrowFunction ::= '(' (param (',' param)*)? ')' ':' identifier '=>' expression;
 statement ::= expressionStatement | variableDeclarationStatement 
     | blockStatement | whileStatement | ifStatement 
     | functionDeclaration | deferStatement | returnStatement;
+
 
 program ::= statement*;
