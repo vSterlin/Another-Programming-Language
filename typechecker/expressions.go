@@ -27,6 +27,11 @@ func (t *TypeChecker) checkExpr(expr ast.Expr) (Type, error) {
 	case *ast.CallExpr:
 		return t.checkCallExpr(expr)
 
+	case *ast.UnaryExpr:
+		return t.checkUnaryExpr(expr)
+	case *ast.UpdateExpr:
+		return t.checkUpdateExpr(expr)
+
 	default:
 		return Invalid, NewTypeError(fmt.Sprintf("unknown expression type: %T", expr))
 
@@ -194,4 +199,30 @@ func (t *TypeChecker) checkCallExpr(expr *ast.CallExpr) (Type, error) {
 	expr.ReturnType = toAstNode(retType)
 
 	return retType, nil
+}
+
+func (t *TypeChecker) checkUnaryExpr(expr *ast.UnaryExpr) (Type, error) {
+	argType, err := t.checkExpr(expr.Arg)
+	if err != nil {
+		return Invalid, err
+	}
+
+	if !areTypesEqual(argType, Boolean) {
+		return Invalid, NewTypeError(fmt.Sprintf("expected %s, got %s", Boolean, argType))
+	}
+
+	return Boolean, nil
+}
+
+func (t *TypeChecker) checkUpdateExpr(expr *ast.UpdateExpr) (Type, error) {
+	argType, err := t.checkExpr(expr.Arg)
+	if err != nil {
+		return Invalid, err
+	}
+
+	if !areTypesEqual(argType, Number) {
+		return Invalid, NewTypeError(fmt.Sprintf("expected %s, got %s", Number, argType))
+	}
+
+	return Number, nil
 }
