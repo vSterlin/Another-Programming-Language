@@ -22,6 +22,8 @@ func (t *TypeChecker) checkStmt(stmt ast.Stmt) error {
 		return t.checkWhileStmt(stmt)
 	case *ast.ReturnStmt:
 		return t.checkReturnStmt(stmt)
+	case *ast.TypeAliasStmt:
+		return t.checkTypeAliasStmt(stmt)
 
 	default:
 		return NewTypeError(fmt.Sprintf("unknown statement type: %T", stmt))
@@ -102,14 +104,21 @@ func (t *TypeChecker) checkVarAssignStmt(stmt *ast.VarAssignStmt) error {
 
 func (t *TypeChecker) checkFuncDecStmt(stmt *ast.FuncDecStmt) error {
 
-	retType := fromAstNode(stmt.ReturnType)
+	retType, err := resolveType(stmt.ReturnType, t.env)
+	if err != nil {
+		return err
+	}
 
 	funcType := FuncType{
 		Args:       []Type{},
 		ReturnType: retType,
 	}
 	for _, param := range stmt.Args {
-		paramType := fromAstNode(param.Type)
+		paramType, err := resolveType(param.Type, t.env)
+
+		if err != nil {
+			return err
+		}
 
 		t.env.Define(param.Id.Name, paramType)
 
@@ -121,7 +130,7 @@ func (t *TypeChecker) checkFuncDecStmt(stmt *ast.FuncDecStmt) error {
 	prevFuncRetType := t.currentFuncRetType
 	t.currentFuncRetType = retType
 
-	err := t.checkBlockStmt(stmt.Body, NewEnv(t.env))
+	err = t.checkBlockStmt(stmt.Body, NewEnv(t.env))
 	if err != nil {
 		return err
 	}
@@ -207,6 +216,19 @@ func (t *TypeChecker) checkReturnStmt(stmt *ast.ReturnStmt) error {
 	if !areTypesEqual(expectedType, actualType) {
 		return NewTypeError(fmt.Sprintf("expected return type %s, got %s", expectedType, actualType))
 	}
+
+	return nil
+}
+
+func (t *TypeChecker) checkTypeAliasStmt(stmt *ast.TypeAliasStmt) error {
+
+	aliasType, err := resolveType(stmt.Type, t.env)
+
+	if err != nil {
+		return err
+	}
+
+	t.env.DefineType(stmt.Id.Name, aliasType)
 
 	return nil
 }

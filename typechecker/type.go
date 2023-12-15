@@ -85,40 +85,6 @@ func (t InvalidType) Equals(other Type) bool {
 	return ok
 }
 
-func fromString(s string) Type {
-	switch s {
-	case "number", "int":
-		return NumberType{}
-	case "string":
-		return StringType{}
-	case "boolean":
-		return BooleanType{}
-	case "void":
-		return VoidType{}
-	default:
-		return InvalidType{}
-	}
-}
-
-func fromAstNode(typeNode *ast.TypeExpr) Type {
-	switch typeNode.Type.(type) {
-	case *ast.IdentifierExpr:
-		return fromString(typeNode.Type.(*ast.IdentifierExpr).Name)
-	case *ast.FuncTypeExpr:
-		funcTypeExpr := typeNode.Type.(*ast.FuncTypeExpr)
-		args := []Type{}
-		for _, arg := range funcTypeExpr.Args {
-			args = append(args, fromAstNode(arg))
-		}
-		return FuncType{
-			Args:       args,
-			ReturnType: fromAstNode(funcTypeExpr.ReturnType),
-		}
-	default:
-		return InvalidType{}
-	}
-}
-
 // to set return type for func calls
 func toAstNode(t Type) *ast.TypeExpr {
 
@@ -147,6 +113,41 @@ func toAstNode(t Type) *ast.TypeExpr {
 
 	}
 
+}
+
+func resolveType(astNode *ast.TypeExpr, env *Env) (Type, error) {
+	switch nodeType := astNode.Type.(type) {
+	case *ast.IdentifierExpr:
+		t, err := env.ResolveType(nodeType.Name)
+		if err != nil {
+			return Invalid, err
+		}
+		return t, nil
+	case *ast.FuncTypeExpr:
+		args := []Type{}
+		for _, arg := range nodeType.Args {
+			t, err := resolveType(arg, env)
+			if err != nil {
+				return Invalid, err
+			}
+			args = append(args, t)
+		}
+		retType, err := resolveType(nodeType.ReturnType, env)
+		if err != nil {
+			return Invalid, err
+		}
+		fmt.Printf("%#v", FuncType{
+			Args:       args,
+			ReturnType: retType,
+		})
+		return FuncType{
+			Args:       args,
+			ReturnType: retType,
+		}, nil
+	}
+
+	panic("invalid type")
+	return Invalid, nil
 }
 
 func areTypesEqual(expected Type, actual ...Type) bool {
