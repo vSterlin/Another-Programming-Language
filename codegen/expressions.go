@@ -28,6 +28,10 @@ func (cg *CodeGenerator) genExpr(expr ast.Expr) (string, error) {
 		return cg.genTypeExpr(expr)
 	case *ast.ArrowFunc:
 		return cg.genArrowFunc(expr)
+	case *ast.UnaryExpr:
+		return cg.genUnaryExpr(expr)
+	case *ast.UpdateExpr:
+		return cg.genUpdateExpr(expr)
 	default:
 		return "", fmt.Errorf("unknown expression type: %s", expr)
 	}
@@ -189,4 +193,26 @@ func (cg *CodeGenerator) genArrowFunc(expr *ast.ArrowFunc) (string, error) {
 	argsStr := strings.Join(args, ", ")
 
 	return fmt.Sprintf("[=](%s) mutable %s", argsStr, body), nil
+}
+
+func (cg *CodeGenerator) genUnaryExpr(expr *ast.UnaryExpr) (string, error) {
+	operator := "!"
+
+	arg, err := cg.genExpr(expr.Arg)
+	if err != nil {
+		return "", err
+	}
+
+	return fmt.Sprintf("%s%s", operator, arg), nil
+}
+
+func (cg *CodeGenerator) genUpdateExpr(expr *ast.UpdateExpr) (string, error) {
+	arg, err := cg.genExpr(expr.Arg)
+	if err != nil {
+		return "", err
+	}
+
+	operator := expr.Op
+
+	return fmt.Sprintf("%s%s", arg, operator), nil
 }
