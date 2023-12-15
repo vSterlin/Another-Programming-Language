@@ -45,9 +45,10 @@ const (
 )
 
 type BinaryExpr struct {
-	Op  BinOp `json:"operator"`
-	Lhs Expr  `json:"left"`
-	Rhs Expr  `json:"right"`
+	Op   BinOp     `json:"operator"`
+	Lhs  Expr      `json:"left"`
+	Rhs  Expr      `json:"right"`
+	Type *TypeExpr `json:"type"`
 }
 
 type LogicalOp string

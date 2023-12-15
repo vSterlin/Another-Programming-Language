@@ -72,14 +72,18 @@ func (t *TypeChecker) checkBinaryExpr(expr *ast.BinaryExpr) (Type, error) {
 
 	}
 
+	typ := lhs
 	switch expr.Op {
 	case ast.ADD, ast.SUB, ast.MUL, ast.DIV:
-		return Number, nil
+		typ = Number
 	case ast.LT, ast.GT, ast.LTE, ast.GTE, ast.EQ, ast.NEQ:
-		return Boolean, nil
+		typ = Boolean
 	}
 
-	return lhs, nil
+	expr.Type = toAstNode(typ)
+
+	return typ, nil
+
 }
 
 func (t *TypeChecker) checkLogicalExpr(expr *ast.LogicalExpr) (Type, error) {
