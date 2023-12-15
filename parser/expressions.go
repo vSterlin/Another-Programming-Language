@@ -148,6 +148,8 @@ func (p *Parser) parsePrimaryExpr() (ast.Expr, error) {
 			// }
 			return p.parseUpdateExpr()
 		}
+	case NOT:
+		return p.parseUnaryExpr()
 	case THIS:
 		p.next()
 		return &ast.ThisExpr{}, nil
@@ -181,6 +183,10 @@ func (p *Parser) parseUpdateExpr() (ast.Expr, error) {
 		return nil, err
 	}
 
+	if p.isEnd() {
+		return id, nil
+	}
+
 	curr := p.current().Type
 
 	if !p.tokenTypeEqual(curr, INCR, DECR) {
@@ -192,6 +198,21 @@ func (p *Parser) parseUpdateExpr() (ast.Expr, error) {
 		return &ast.UpdateExpr{Arg: id, Op: "++"}, nil
 	} else {
 		return &ast.UpdateExpr{Arg: id, Op: "--"}, nil
+	}
+}
+
+// unaryExpression ::= updateExpression | '!'unaryExpression;
+func (p *Parser) parseUnaryExpr() (ast.Expr, error) {
+
+	if p.current().Type == NOT {
+		p.next()
+		expr, err := p.parseUnaryExpr()
+		if err != nil {
+			return nil, err
+		}
+		return &ast.UnaryExpr{Op: "!", Arg: expr}, nil
+	} else {
+		return p.parseUpdateExpr()
 	}
 }
 

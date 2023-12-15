@@ -13,7 +13,10 @@ callExpression ::= primaryExpression ('(' arguments? ')')*;
 (* I will want to change identifier to expression *)
 sliceExpression ::= identifier '[' expression ':' expression (':' expression)? ']'; 
 
+
+
 updateExpression ::= identifier ('++' | '--');
+unaryExpression ::= updateExpression | '!'unaryExpression;
 
 (* Higher precedence *)
 multiplicativeOperator ::= '*' | '/' | '**' | '%';

@@ -48,6 +48,7 @@ const (
 	LTE
 	EQ
 	NEQ
+	NOT
 
 	LPAREN
 	RPAREN
@@ -128,6 +129,7 @@ var operators map[string]TokenType = map[string]TokenType{
 	"<=": LTE,
 	"==": EQ,
 	"!=": NEQ,
+	"!":  NOT,
 
 	"(": LPAREN,
 	")": RPAREN,
@@ -299,7 +301,14 @@ func (l *Lexer) tryTokenizeOperator() *Token {
 					l.next()
 					tokType = DECR
 				}
+			case NOT:
+				if l.peek() == '=' {
+					val += string(l.peek())
+					l.next()
+					tokType = NEQ
+				}
 			}
+
 		}
 
 		l.next()
