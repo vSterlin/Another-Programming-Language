@@ -58,7 +58,7 @@ param ::= identifier type;
 functionDeclaration ::= 'func' identifier '(' (param (',' param)*)? ')' identifier blockStatement;
 methodDeclaration ::=  identifier '(' (identifier (',' identifier)*)? ')' blockStatement;
 
-arrowFunction ::= '(' (param (',' param)*)? ')' ':' identifier '=>' expression;
+arrowFunction ::= '(' (param (',' param)*)? ')' ':' identifier '=>' expression | blockStatement ;
 
 
 statement ::= expressionStatement | variableDeclarationStatement 

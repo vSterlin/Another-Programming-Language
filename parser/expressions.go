@@ -55,7 +55,7 @@ func (p *Parser) parseParenExpr() (ast.Expr, error) {
 	return val, nil
 }
 
-// arrowFunction ::= '(' (param (',' param)*)? ')' ':' identifier '=>' expression;
+// arrowFunction ::= '(' (param (',' param)*)? ')' ':' identifier '=>' expression | blockStatement ;
 func (p *Parser) parseArrowFunc() (ast.Expr, error) {
 
 	// eat LPAREN
@@ -99,9 +99,21 @@ func (p *Parser) parseArrowFunc() (ast.Expr, error) {
 		return nil, err
 	}
 
-	body, err := p.parseBlockStmt()
-	if err != nil {
-		return nil, err
+	var body *ast.BlockStmt
+	if p.current().Type == LBRACE {
+		block, err := p.parseBlockStmt()
+		if err != nil {
+			return nil, err
+		}
+
+		body = block
+	} else {
+		// implicit return
+		expr, err := p.parseExpr()
+		if err != nil {
+			return nil, err
+		}
+		body = &ast.BlockStmt{Stmts: []ast.Stmt{&ast.ReturnStmt{Arg: expr}}}
 	}
 
 	return &ast.ArrowFunc{Args: params, Body: body, ReturnType: retType}, nil
