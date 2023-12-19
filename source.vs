@@ -1,7 +1,3 @@
-type num number
+a := () => 1 + 1
 
-func sum(a num, b num) num {
-    return a + b
-}
-
-print(sum(10, 11))
+print(a())
