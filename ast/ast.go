@@ -228,6 +228,11 @@ type ClassDecStmt struct {
 	Methods []*FuncDecStmt  `json:"methods"`
 }
 
+type TypeAliasStmt struct {
+	Id   *IdentifierExpr `json:"identifier"`
+	Type *TypeExpr       `json:"type"`
+}
+
 func (e *ExprStmt) stmtNode()      {}
 func (v *VarAssignStmt) stmtNode() {}
 func (b *BlockStmt) stmtNode()     {}
@@ -240,6 +245,7 @@ func (i *IncrDecrStmt) stmtNode()  {}
 func (r *ReturnStmt) stmtNode()    {}
 func (c *ClassDecStmt) stmtNode()  {}
 func (v *SetStmt) stmtNode()       {}
+func (t *TypeAliasStmt) stmtNode() {}
 func (p *Program) stmtNode()       {}
 
 func (e *ExprStmt) String() string      { return fmt.Sprintf("expr(%s)", e.Expr) }
@@ -259,12 +265,13 @@ func (p *Param) String() string { return fmt.Sprintf("param(%s %s)", p.Id, p.Typ
 func (i *IfStmt) String() string {
 	return fmt.Sprintf("if(%s, %s, %s)", i.Test, i.Consequent, i.Alternate)
 }
-func (d *DeferStmt) String() string    { return fmt.Sprintf("defer(%s)", d.Call) }
-func (r *RangeStmt) String() string    { return fmt.Sprintf("range(%s)", r.Id) }
-func (i *IncrDecrStmt) String() string { return fmt.Sprintf("update(%s, %s)", i.Expr, i.Op) }
-func (r *ReturnStmt) String() string   { return fmt.Sprintf("return(%s)", r.Arg) }
-func (c *ClassDecStmt) String() string { return fmt.Sprintf("class(%s, methods(%s))", c.Id, c.Methods) }
-func (v *SetStmt) String() string      { return fmt.Sprintf("set(%s, %s, %s)", v.Lhs, v.Name, v.Val) }
-func (p *Program) String() string      { return fmt.Sprintf("program(%s)", p.Stmts) }
+func (d *DeferStmt) String() string     { return fmt.Sprintf("defer(%s)", d.Call) }
+func (r *RangeStmt) String() string     { return fmt.Sprintf("range(%s)", r.Id) }
+func (i *IncrDecrStmt) String() string  { return fmt.Sprintf("update(%s, %s)", i.Expr, i.Op) }
+func (r *ReturnStmt) String() string    { return fmt.Sprintf("return(%s)", r.Arg) }
+func (c *ClassDecStmt) String() string  { return fmt.Sprintf("class(%s, methods(%s))", c.Id, c.Methods) }
+func (v *SetStmt) String() string       { return fmt.Sprintf("set(%s, %s, %s)", v.Lhs, v.Name, v.Val) }
+func (t *TypeAliasStmt) String() string { return fmt.Sprintf("type(%s, %s)", t.Id, t.Type) }
+func (p *Program) String() string       { return fmt.Sprintf("program(%s)", p.Stmts) }
 
 type Program struct{ Stmts []Stmt }

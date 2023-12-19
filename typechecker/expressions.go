@@ -117,7 +117,8 @@ func (t *TypeChecker) checkIdentifierExpr(expr *ast.IdentifierExpr) (Type, error
 }
 
 func (t *TypeChecker) checkArrowFunc(expr *ast.ArrowFunc) (Type, error) {
-	retType := fromAstNode(expr.ReturnType)
+	// TODO: review, probably change invalid to unknown
+	retType, _ := resolveType(expr.ReturnType, t.env)
 
 	funcType := FuncType{
 		Args:       []Type{},
@@ -134,7 +135,10 @@ func (t *TypeChecker) checkArrowFunc(expr *ast.ArrowFunc) (Type, error) {
 	}()
 
 	for _, param := range expr.Args {
-		paramType := fromAstNode(param.Type)
+		paramType, err := resolveType(param.Type, t.env)
+		if err != nil {
+			return Invalid, err
+		}
 		t.env.Define(param.Id.Name, paramType)
 		funcType.Args = append(funcType.Args, paramType)
 	}

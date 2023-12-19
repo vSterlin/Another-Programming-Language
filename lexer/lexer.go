@@ -21,6 +21,7 @@ const (
 	RANGE
 	CLASS
 	THIS
+	TYPE
 
 	keyword_end
 
@@ -103,6 +104,7 @@ var keywords map[string]TokenType = map[string]TokenType{
 	"false": BOOLEAN,
 	"class": CLASS,
 	"this":  THIS,
+	"type":  TYPE,
 }
 
 var operators map[string]TokenType = map[string]TokenType{

@@ -1,15 +1,18 @@
 package typechecker
 
+import "fmt"
+
 type Env struct {
-	parent    *Env
-	vars      map[string]Type
-	functions map[string]FuncType
+	parent *Env
+	vars   map[string]Type
+	types  map[string]Type
 }
 
 func NewEnv(parent *Env) *Env {
 	return &Env{
 		parent: parent,
 		vars:   make(map[string]Type),
+		types:  defaultTypes(),
 	}
 }
 
@@ -42,4 +45,31 @@ func (e *Env) Get(name string) (Type, *Env, error) {
 
 	return Invalid, nil, NewTypeError("undefined variable: " + name)
 
+}
+
+func defaultTypes() map[string]Type {
+	return map[string]Type{
+		"int":    Number,
+		"number": Number,
+		"string": String,
+		"bool":   Boolean,
+		"void":   Void,
+	}
+}
+
+func (e *Env) DefineType(name string, t Type) {
+	e.types[name] = t
+}
+
+func (e *Env) ResolveType(name string) (Type, error) {
+	t, ok := e.types[name]
+	fmt.Printf("t: %#v %s\n", t, name)
+
+	if ok {
+		return t, nil
+	} else if e.parent != nil {
+		return e.parent.ResolveType(name)
+	}
+
+	return Invalid, NewTypeError("undefined type: " + name)
 }
