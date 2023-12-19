@@ -115,6 +115,7 @@ func toAstNode(t Type) *ast.TypeExpr {
 
 }
 
+// it also modifies astNode
 func resolveType(astNode *ast.TypeExpr, env *Env) (Type, error) {
 	switch nodeType := astNode.Type.(type) {
 	case *ast.IdentifierExpr:
@@ -122,6 +123,10 @@ func resolveType(astNode *ast.TypeExpr, env *Env) (Type, error) {
 		if err != nil {
 			return Invalid, err
 		}
+
+		// TODO: maybe do it somewhere else
+		astNode.Type = toAstNode(t).Type
+
 		return t, nil
 	case *ast.FuncTypeExpr:
 		args := []Type{}
@@ -131,15 +136,21 @@ func resolveType(astNode *ast.TypeExpr, env *Env) (Type, error) {
 				return Invalid, err
 			}
 			args = append(args, t)
+			// TODO: maybe do it somewhere else
+			arg.Type = toAstNode(t).Type
 		}
 		retType, err := resolveType(nodeType.ReturnType, env)
 		if err != nil {
 			return Invalid, err
 		}
+		// TODO: maybe do it somewhere else
+		nodeType.ReturnType.Type = toAstNode(retType).Type
+
 		fmt.Printf("%#v", FuncType{
 			Args:       args,
 			ReturnType: retType,
 		})
+
 		return FuncType{
 			Args:       args,
 			ReturnType: retType,

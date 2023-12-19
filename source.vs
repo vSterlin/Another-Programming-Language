@@ -1,8 +1,7 @@
-func counter() () => int {
-    count := 0
-    return () => { return count++ }
+type num number
+
+func sum(a num, b num) num {
+    return a + b
 }
 
-c := counter()
-
-print(c(), c())
+print(sum(10, 11))
