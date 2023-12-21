@@ -184,7 +184,7 @@ func (p *Parser) parsePrimaryExpr() (ast.Expr, error) {
 
 	}
 
-	return nil, NewParserError(p.pos, fmt.Sprintf("expected primary expression, got %s", p.current().Type))
+	return nil, NewParserError(p.pos, fmt.Sprintf("expected primary expression, got %v", p.current().Type))
 }
 
 // updateExpression ::= identifier ('++' | '--');

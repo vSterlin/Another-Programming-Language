@@ -7,14 +7,12 @@ import (
 )
 
 type CodeGenerator struct {
-	env     *Env
 	imports []string
 	indent  int
 }
 
 func NewCodeGenerator() *CodeGenerator {
 	return &CodeGenerator{
-		env: NewEnv(nil),
 
 		imports: []string{
 			"iostream",
