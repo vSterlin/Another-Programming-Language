@@ -105,6 +105,69 @@ func TestArrowFuncScope2(t *testing.T) {
 
 }
 
+func TestValidReturnCheck(t *testing.T) {
+
+	tests := []string{
+		`
+			func t() {
+				return
+			}
+		`,
+		`
+			func t() number {
+				return 1
+			}
+		`,
+	}
+
+	for _, i := range tests {
+
+		tc := NewTypeChecker()
+
+		prog := buildProgram(i)
+		err := tc.Check(prog)
+
+		if err != nil {
+			t.Errorf("Expected no error, got: %s", err)
+		}
+
+	}
+
+}
+
+func TestInvalidReturnCheck(t *testing.T) {
+
+	tests := []string{
+		`
+			func t() number {
+				return "hello"
+			}
+		`,
+		`
+			return 1
+		`,
+		`
+			func t() {
+				return 1
+			}
+		`,
+	}
+
+	for _, i := range tests {
+
+		tc := NewTypeChecker()
+
+		prog := buildProgram(i)
+		err := tc.Check(prog)
+
+		if err == nil {
+			t.Errorf("Expected error, got none")
+		}
+
+	}
+
+}
+
 // helpers
 func buildProgram(code string) *ast.Program {
 	tokens, _ := lexer.NewLexer(code).GetTokens()
