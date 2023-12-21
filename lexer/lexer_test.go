@@ -18,7 +18,7 @@ func TestTokenTypes(t *testing.T) {
 }
 
 func TestInvalidInput(t *testing.T) {
-	l := NewLexer("!")
+	l := NewLexer("$")
 	_, err := l.getToken()
 	if err == nil {
 		t.Errorf("Expected error, got nil")
