@@ -260,6 +260,68 @@ func TestArrowFuncCodegen(t *testing.T) {
 	}
 }
 
+func TestUnaryExprCodegen(t *testing.T) {
+	tests := []struct {
+		astNode  ast.Expr
+		expected string
+	}{
+		{
+			astNode:  buildExpr("!true"),
+			expected: "!true",
+		},
+		{
+			astNode:  buildExpr("!false"),
+			expected: "!false",
+		},
+		{
+			astNode:  buildExpr("!!false"),
+			expected: "!!false",
+		},
+	}
+
+	for _, test := range tests {
+		cg := NewCodeGenerator()
+		code, err := cg.genExpr(test.astNode)
+		if err != nil {
+			t.Errorf("Error generating code: %s", err)
+		}
+
+		if code != test.expected {
+			t.Errorf("Expected %s, got %s", test.expected, code)
+		}
+
+	}
+}
+
+func TestGroupingExprCodegen(t *testing.T) {
+	tests := []struct {
+		astNode  ast.Expr
+		expected string
+	}{
+		{
+			astNode:  buildExpr("i++"),
+			expected: "i++",
+		},
+		{
+			astNode:  buildExpr("i--"),
+			expected: "i--",
+		},
+	}
+
+	for _, test := range tests {
+		cg := NewCodeGenerator()
+		code, err := cg.genExpr(test.astNode)
+		if err != nil {
+			t.Errorf("Error generating code: %s", err)
+		}
+
+		if code != test.expected {
+			t.Errorf("Expected %s, got %s", test.expected, code)
+		}
+
+	}
+}
+
 // Statement codegen tests
 
 // helpers
