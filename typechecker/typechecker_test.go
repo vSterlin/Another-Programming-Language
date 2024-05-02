@@ -168,6 +168,30 @@ func TestInvalidReturnCheck(t *testing.T) {
 
 }
 
+func TestTypeAlias(t *testing.T) {
+
+	prog := buildProgram(`type numberAlias number`)
+
+	tc := NewTypeChecker()
+
+	err := tc.Check(prog)
+
+	if err != nil {
+		t.Errorf("Expected no error, got: %s", err)
+	}
+
+	typ, err := tc.env.ResolveType("numberAlias")
+
+	if err != nil {
+		t.Errorf("Expected no error, got: %s", err)
+	}
+
+	if !typ.Equals(Number) {
+		t.Errorf("Expected Number, got: %s", typ)
+	}
+
+}
+
 // helpers
 func buildProgram(code string) *ast.Program {
 	tokens, _ := lexer.NewLexer(code).GetTokens()
