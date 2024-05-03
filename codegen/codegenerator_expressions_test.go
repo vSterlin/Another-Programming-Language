@@ -110,7 +110,7 @@ func TestLogicalExprCodegen(t *testing.T) {
 			expected: "true && true",
 		},
 		{
-			astNode:  buildExpr("true && false"),
+			astNode:  buildExpr("true || false"),
 			expected: "true || false",
 		},
 	}
