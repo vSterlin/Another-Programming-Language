@@ -12,30 +12,32 @@ import (
 
 func TestLiteralsCodegen(t *testing.T) {
 	tests := []struct {
-		astNode  ast.Expr
+		srcCode  string
 		expected string
 	}{
 		{
-			astNode:  &ast.NumberExpr{Val: 1},
+			srcCode:  "1",
 			expected: "1",
 		},
 		{
-			astNode:  &ast.StringExpr{Val: "hello"},
+			srcCode:  "\"hello\"",
 			expected: "\"hello\"",
 		},
 		{
-			astNode:  &ast.BooleanExpr{Val: true},
+			srcCode:  "true",
 			expected: "true",
 		},
 		{
-			astNode:  &ast.BooleanExpr{Val: false},
+			srcCode:  "false",
 			expected: "false",
 		},
 	}
 
 	for _, test := range tests {
 		cg := NewCodeGenerator()
-		code, err := cg.genExpr(test.astNode)
+
+		astNode := buildExpr(test.srcCode)
+		code, err := cg.genExpr(astNode)
 		if err != nil {
 			t.Errorf("Error generating code: %s", err)
 		}
@@ -49,46 +51,48 @@ func TestLiteralsCodegen(t *testing.T) {
 
 func TestBinaryExprCodegen(t *testing.T) {
 	tests := []struct {
-		astNode  ast.Expr
+		srcCode  string
 		expected string
 	}{
 		{
-			astNode:  buildExpr("1 + 1"),
+			srcCode:  "1 + 1",
 			expected: "1 + 1",
 		},
 		{
-			astNode:  buildExpr("\"hello\" + \"world\""),
+			srcCode:  "\"hello\" + \"world\"",
 			expected: "\"hello\" + \"world\"",
 		},
 		{
-			astNode:  buildExpr("1 == 1"),
+			srcCode:  "1 == 1",
 			expected: "1 == 1",
 		},
 		{
-			astNode:  buildExpr("1 != 1"),
+			srcCode:  "1 != 1",
 			expected: "1 != 1",
 		},
 		{
-			astNode:  buildExpr("1 > 1"),
+			srcCode:  "1 > 1",
 			expected: "1 > 1",
 		},
 		{
-			astNode:  buildExpr("1 < 1"),
+			srcCode:  "1 < 1",
 			expected: "1 < 1",
 		},
 		{
-			astNode:  buildExpr("1 >= 1"),
+			srcCode:  "1 >= 1",
 			expected: "1 >= 1",
 		},
 		{
-			astNode:  buildExpr("1 <= 1"),
+			srcCode:  "1 <= 1",
 			expected: "1 <= 1",
 		},
 	}
 
 	for _, test := range tests {
 		cg := NewCodeGenerator()
-		code, err := cg.genExpr(test.astNode)
+
+		astNode := buildExpr(test.srcCode)
+		code, err := cg.genExpr(astNode)
 		if err != nil {
 			t.Errorf("Error generating code: %s", err)
 		}
@@ -102,22 +106,24 @@ func TestBinaryExprCodegen(t *testing.T) {
 
 func TestLogicalExprCodegen(t *testing.T) {
 	tests := []struct {
-		astNode  ast.Expr
+		srcCode  string
 		expected string
 	}{
 		{
-			astNode:  buildExpr("true && true"),
+			srcCode:  "true && true",
 			expected: "true && true",
 		},
 		{
-			astNode:  buildExpr("true || false"),
+			srcCode:  "true || false",
 			expected: "true || false",
 		},
 	}
 
 	for _, test := range tests {
 		cg := NewCodeGenerator()
-		code, err := cg.genExpr(test.astNode)
+
+		astNode := buildExpr(test.srcCode)
+		code, err := cg.genExpr(astNode)
 		if err != nil {
 			t.Errorf("Error generating code: %s", err)
 		}
@@ -131,31 +137,32 @@ func TestLogicalExprCodegen(t *testing.T) {
 
 func TestCallExprCodegen(t *testing.T) {
 	tests := []struct {
-		astNode  ast.Expr
+		srcCode  string
 		expected string
 	}{
 		{
-			astNode:  buildExpr("foo()"),
+			srcCode:  "foo()",
 			expected: "foo()",
 		},
 		{
-			astNode:  buildExpr("foo(1)"),
+			srcCode:  "foo(1)",
 			expected: "foo(1)",
 		},
 		{
-			astNode:  buildExpr("foo(1, 2)"),
+			srcCode:  "foo(1, 2)",
 			expected: "foo(1, 2)",
 		},
-
 		{
-			astNode:  buildExpr("foo(\"bar\")"),
+			srcCode:  "foo(\"bar\")",
 			expected: "foo(\"bar\")",
 		},
 	}
 
 	for _, test := range tests {
 		cg := NewCodeGenerator()
-		code, err := cg.genExpr(test.astNode)
+
+		astNode := buildExpr(test.srcCode)
+		code, err := cg.genExpr(astNode)
 		if err != nil {
 			t.Errorf("Error generating code: %s", err)
 		}
@@ -228,26 +235,28 @@ func TestTypeExprCodegen(t *testing.T) {
 
 func TestArrowFuncCodegen(t *testing.T) {
 	tests := []struct {
-		astNode  ast.Expr
+		srcCode  string
 		expected string
 	}{
 		{
-			astNode:  buildExpr("() => {}"),
+			srcCode:  "() => {}",
 			expected: "[=]() mutable {}",
 		},
 		{
-			astNode:  buildExpr("(a int) => {}"),
+			srcCode:  "(a int) => {}",
 			expected: "[=](int a) mutable {}",
 		},
 		{
-			astNode:  buildExpr("(a int, b string) => {}"),
+			srcCode:  "(a int, b string) => {}",
 			expected: "[=](int a, std::string b) mutable {}",
 		},
 	}
 
 	for _, test := range tests {
 		cg := NewCodeGenerator()
-		code, err := cg.genExpr(test.astNode)
+
+		astNode := buildExpr(test.srcCode)
+		code, err := cg.genExpr(astNode)
 		if err != nil {
 			t.Errorf("Error generating code: %s", err)
 		}
@@ -262,26 +271,28 @@ func TestArrowFuncCodegen(t *testing.T) {
 
 func TestUnaryExprCodegen(t *testing.T) {
 	tests := []struct {
-		astNode  ast.Expr
+		srcCode  string
 		expected string
 	}{
 		{
-			astNode:  buildExpr("!true"),
+			srcCode:  "!true",
 			expected: "!true",
 		},
 		{
-			astNode:  buildExpr("!false"),
+			srcCode:  "!false",
 			expected: "!false",
 		},
 		{
-			astNode:  buildExpr("!!false"),
+			srcCode:  "!!false",
 			expected: "!!false",
 		},
 	}
 
 	for _, test := range tests {
 		cg := NewCodeGenerator()
-		code, err := cg.genExpr(test.astNode)
+
+		astNode := buildExpr(test.srcCode)
+		code, err := cg.genExpr(astNode)
 		if err != nil {
 			t.Errorf("Error generating code: %s", err)
 		}
@@ -295,22 +306,24 @@ func TestUnaryExprCodegen(t *testing.T) {
 
 func TestGroupingExprCodegen(t *testing.T) {
 	tests := []struct {
-		astNode  ast.Expr
+		srcCode  string
 		expected string
 	}{
 		{
-			astNode:  buildExpr("i++"),
+			srcCode:  "i++",
 			expected: "i++",
 		},
 		{
-			astNode:  buildExpr("i--"),
+			srcCode:  "i--",
 			expected: "i--",
 		},
 	}
 
 	for _, test := range tests {
 		cg := NewCodeGenerator()
-		code, err := cg.genExpr(test.astNode)
+
+		astNode := buildExpr(test.srcCode)
+		code, err := cg.genExpr(astNode)
 		if err != nil {
 			t.Errorf("Error generating code: %s", err)
 		}
@@ -321,8 +334,6 @@ func TestGroupingExprCodegen(t *testing.T) {
 
 	}
 }
-
-// Statement codegen tests
 
 // helpers
 func buildExpr(code string) ast.Expr {
