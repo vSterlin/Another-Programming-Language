@@ -96,8 +96,10 @@ func (cg *CodeGenerator) genVarAssignStmt(stmt *ast.VarAssignStmt) (string, erro
 	if err != nil {
 		return "", err
 	}
+
 	if stmt.Op == ":=" {
 
+		// TODO: review *important*
 		varType := inferFromAstNode(stmt.Init)
 
 		fmt.Printf("varType: %#v\n", varType)

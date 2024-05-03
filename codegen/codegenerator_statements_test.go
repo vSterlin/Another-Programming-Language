@@ -85,6 +85,158 @@ func TestFuncDecStmtCodegen(t *testing.T) {
 
 }
 
+func TestBlockStmtCodegen(t *testing.T) {
+
+	tests := []struct {
+		astNode  ast.Stmt
+		expected string
+	}{
+		{
+			astNode:  buildStmt("{}"),
+			expected: "{}",
+		},
+		{
+			astNode:  buildStmt("{1}"),
+			expected: "{1;}",
+		},
+	}
+
+	for _, test := range tests {
+		cg := NewCodeGenerator()
+		code, err := cg.genStmt(test.astNode)
+		if err != nil {
+			t.Errorf("Error generating code: %s", err)
+		}
+
+		// TODO: review
+		code = strings.ReplaceAll(code, " ", "")
+		code = strings.ReplaceAll(code, "\n", "")
+		code = strings.ReplaceAll(code, "\t", "")
+
+		if code != test.expected {
+			t.Errorf("Expected %s, got %s", test.expected, code)
+		}
+	}
+}
+
+func TestVarAssignStmtCodegen(t *testing.T) {
+
+	tests := []struct {
+		astNode  ast.Stmt
+		expected string
+	}{
+		{
+			astNode:  buildStmt("a := 1"),
+			expected: "int a = 1;",
+		},
+		{
+			astNode:  buildStmt("a := \"hello\""),
+			expected: "std::string a = \"hello\";",
+		},
+		{
+			astNode:  buildStmt("a := true"),
+			expected: "bool a = true;",
+		},
+		{
+			astNode:  buildStmt("a := false"),
+			expected: "bool a = false;",
+		},
+	}
+
+	for _, test := range tests {
+		cg := NewCodeGenerator()
+
+		code, err := cg.genStmt(test.astNode)
+		if err != nil {
+			t.Errorf("Error generating code: %s", err)
+		}
+
+		if code != test.expected {
+			t.Errorf("Expected %s, got %s", test.expected, code)
+		}
+
+	}
+}
+
+/*
+
+
+func (cg *CodeGenerator) genVarAssignStmt(stmt *ast.VarAssignStmt) (string, error) {
+
+	id := stmt.Id.Name
+
+	init, err := cg.genExpr(stmt.Init)
+	if err != nil {
+		return "", err
+	}
+	if stmt.Op == ":=" {
+
+		varType := inferFromAstNode(stmt.Init)
+
+		fmt.Printf("varType: %#v\n", varType)
+
+		return fmt.Sprintf("%s %s = %s;", varType, id, init), nil
+	} else {
+		return fmt.Sprintf("%s = %s;", id, init), nil
+	}
+
+}
+
+func (cg *CodeGenerator) genIfStmt(stmt *ast.IfStmt) (string, error) {
+
+	test, err := cg.genExpr(stmt.Test)
+
+	if err != nil {
+		return "", err
+	}
+
+	body, err := cg.genStmt(stmt.Consequent)
+
+	if err != nil {
+		return "", err
+	}
+
+	if stmt.Alternate != nil {
+		alternate, err := cg.genStmt(stmt.Alternate)
+
+		if err != nil {
+			return "", err
+		}
+
+		return fmt.Sprintf("if (%s) %s else %s", test, body, alternate), nil
+	}
+
+	return fmt.Sprintf("if (%s) %s", test, body), nil
+
+}
+
+func (cg *CodeGenerator) genWhileStmt(stmt *ast.WhileStmt) (string, error) {
+
+	test, err := cg.genExpr(stmt.Test)
+	if err != nil {
+		return "", err
+	}
+	body, err := cg.genStmt(stmt.Body)
+	if err != nil {
+		return "", err
+	}
+
+	return fmt.Sprintf("while (%s) %s", test, body), nil
+
+}
+
+func (cg *CodeGenerator) genReturnStmt(stmt *ast.ReturnStmt) (string, error) {
+
+	returnedVal, err := cg.genExpr(stmt.Arg)
+
+	if err != nil {
+		return "return;", nil
+	}
+	return fmt.Sprintf("return %s;", returnedVal), nil
+}
+
+*/
+
 // helpers
 func buildStmt(code string) ast.Stmt {
 	l := lexer.NewLexer(code)
