@@ -47,30 +47,32 @@ func TestExprStmtCodegen(t *testing.T) {
 func TestFuncDecStmtCodegen(t *testing.T) {
 
 	tests := []struct {
-		astNode  ast.Stmt
+		srcCode  string
 		expected string
 	}{
 		{
-			astNode:  buildStmt("func foo() {}"),
+			srcCode:  "func foo() {}",
 			expected: "void foo() {}",
 		},
 		{
-			astNode:  buildStmt("func foo() int {}"),
+			srcCode:  "func foo() int {}",
 			expected: "int foo() {}",
 		},
 		{
-			astNode:  buildStmt("func foo(a int) int {}"),
+			srcCode:  "func foo(a int) int {}",
 			expected: "int foo(int a) {}",
 		},
 		{
-			astNode:  buildStmt("func foo(a int, b string) int {}"),
+			srcCode:  "func foo(a int, b string) int {}",
 			expected: "int foo(int a, std::string b) {}",
 		},
 	}
 
 	for _, test := range tests {
 		cg := NewCodeGenerator()
-		code, err := cg.genStmt(test.astNode)
+
+		astNode := buildStmt(test.srcCode)
+		code, err := cg.genStmt(astNode)
 		if err != nil {
 			t.Errorf("Error generating code: %s", err)
 		}
@@ -88,22 +90,24 @@ func TestFuncDecStmtCodegen(t *testing.T) {
 func TestBlockStmtCodegen(t *testing.T) {
 
 	tests := []struct {
-		astNode  ast.Stmt
+		srcCode  string
 		expected string
 	}{
 		{
-			astNode:  buildStmt("{}"),
+			srcCode:  "{}",
 			expected: "{}",
 		},
 		{
-			astNode:  buildStmt("{1}"),
+			srcCode:  "{1}",
 			expected: "{1;}",
 		},
 	}
 
 	for _, test := range tests {
 		cg := NewCodeGenerator()
-		code, err := cg.genStmt(test.astNode)
+
+		astNode := buildStmt(test.srcCode)
+		code, err := cg.genStmt(astNode)
 		if err != nil {
 			t.Errorf("Error generating code: %s", err)
 		}
@@ -122,23 +126,23 @@ func TestBlockStmtCodegen(t *testing.T) {
 func TestVarAssignStmtCodegen(t *testing.T) {
 
 	tests := []struct {
-		astNode  ast.Stmt
+		srcCode  string
 		expected string
 	}{
 		{
-			astNode:  buildStmt("a := 1"),
+			srcCode:  "a := 1",
 			expected: "int a = 1;",
 		},
 		{
-			astNode:  buildStmt("a := \"hello\""),
+			srcCode:  "a := \"hello\"",
 			expected: "std::string a = \"hello\";",
 		},
 		{
-			astNode:  buildStmt("a := true"),
+			srcCode:  "a := true",
 			expected: "bool a = true;",
 		},
 		{
-			astNode:  buildStmt("a := false"),
+			srcCode:  "a := false",
 			expected: "bool a = false;",
 		},
 	}
@@ -146,7 +150,9 @@ func TestVarAssignStmtCodegen(t *testing.T) {
 	for _, test := range tests {
 		cg := NewCodeGenerator()
 
-		code, err := cg.genStmt(test.astNode)
+		astNode := buildStmt(test.srcCode)
+
+		code, err := cg.genStmt(astNode)
 		if err != nil {
 			t.Errorf("Error generating code: %s", err)
 		}
