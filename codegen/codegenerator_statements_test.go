@@ -8,6 +8,11 @@ import (
 	"testing"
 )
 
+type tests []struct {
+	srcCode  string
+	expected string
+}
+
 func TestExprStmtCodegen(t *testing.T) {
 	tests := []struct {
 		astNode  ast.Stmt
@@ -46,10 +51,7 @@ func TestExprStmtCodegen(t *testing.T) {
 
 func TestFuncDecStmtCodegen(t *testing.T) {
 
-	tests := []struct {
-		srcCode  string
-		expected string
-	}{
+	tests := tests{
 		{
 			srcCode:  "func foo() {}",
 			expected: "void foo() {}",
@@ -89,10 +91,7 @@ func TestFuncDecStmtCodegen(t *testing.T) {
 
 func TestBlockStmtCodegen(t *testing.T) {
 
-	tests := []struct {
-		srcCode  string
-		expected string
-	}{
+	tests := tests{
 		{
 			srcCode:  "{}",
 			expected: "{}",
@@ -112,10 +111,7 @@ func TestBlockStmtCodegen(t *testing.T) {
 			t.Errorf("Error generating code: %s", err)
 		}
 
-		// TODO: review
-		code = strings.ReplaceAll(code, " ", "")
-		code = strings.ReplaceAll(code, "\n", "")
-		code = strings.ReplaceAll(code, "\t", "")
+		code = removeWhitespace(code)
 
 		if code != test.expected {
 			t.Errorf("Expected %s, got %s", test.expected, code)
@@ -125,10 +121,7 @@ func TestBlockStmtCodegen(t *testing.T) {
 
 func TestVarAssignStmtCodegen(t *testing.T) {
 
-	tests := []struct {
-		srcCode  string
-		expected string
-	}{
+	tests := tests{
 		{
 			srcCode:  "a := 1",
 			expected: "int a = 1;",
@@ -164,84 +157,99 @@ func TestVarAssignStmtCodegen(t *testing.T) {
 	}
 }
 
-/*
-
-
-func (cg *CodeGenerator) genVarAssignStmt(stmt *ast.VarAssignStmt) (string, error) {
-
-	id := stmt.Id.Name
-
-	init, err := cg.genExpr(stmt.Init)
-	if err != nil {
-		return "", err
-	}
-	if stmt.Op == ":=" {
-
-		varType := inferFromAstNode(stmt.Init)
-
-		fmt.Printf("varType: %#v\n", varType)
-
-		return fmt.Sprintf("%s %s = %s;", varType, id, init), nil
-	} else {
-		return fmt.Sprintf("%s = %s;", id, init), nil
+func TestIfStmtCodegen(t *testing.T) {
+	tests := tests{
+		{
+			srcCode:  "if (true) {}",
+			expected: "if (true) {}",
+		},
+		{
+			srcCode:  "if (true) {} else {}",
+			expected: "if (true) {} else {}",
+		},
+		{
+			srcCode:  "if (true) {1} else {2}",
+			expected: "if (true) {1;} else {2;}",
+		},
 	}
 
-}
+	for _, test := range tests {
+		cg := NewCodeGenerator()
 
-func (cg *CodeGenerator) genIfStmt(stmt *ast.IfStmt) (string, error) {
-
-	test, err := cg.genExpr(stmt.Test)
-
-	if err != nil {
-		return "", err
-	}
-
-	body, err := cg.genStmt(stmt.Consequent)
-
-	if err != nil {
-		return "", err
-	}
-
-	if stmt.Alternate != nil {
-		alternate, err := cg.genStmt(stmt.Alternate)
-
+		astNode := buildStmt(test.srcCode)
+		code, err := cg.genStmt(astNode)
 		if err != nil {
-			return "", err
+			t.Errorf("Error generating code: %s", err)
 		}
 
-		return fmt.Sprintf("if (%s) %s else %s", test, body, alternate), nil
+		code = removeWhitespace(code)
+
+		if code != test.expected {
+			t.Errorf("Expected %s, got %s", test.expected, code)
+		}
+	}
+}
+
+func TestWhileStmtCodegen(t *testing.T) {
+	tests := tests{
+		{
+			srcCode:  "while (true) {}",
+			expected: "while (true) {}",
+		},
+		{
+			srcCode:  "while (true) {1}",
+			expected: "while (true) {1;}",
+		},
 	}
 
-	return fmt.Sprintf("if (%s) %s", test, body), nil
+	for _, test := range tests {
+		cg := NewCodeGenerator()
+
+		astNode := buildStmt(test.srcCode)
+		code, err := cg.genStmt(astNode)
+		if err != nil {
+			t.Errorf("Error generating code: %s", err)
+		}
+
+		code = removeWhitespace(code)
+
+		if code != test.expected {
+			t.Errorf("Expected %s, got %s", test.expected, code)
+		}
+	}
 
 }
 
-func (cg *CodeGenerator) genWhileStmt(stmt *ast.WhileStmt) (string, error) {
+func TestReturnStmtCodegen(t *testing.T) {
 
-	test, err := cg.genExpr(stmt.Test)
-	if err != nil {
-		return "", err
+	tests := tests{
+		// FIXME: this test is failing
+		{
+			srcCode:  "return",
+			expected: "return;",
+		},
+		{
+			srcCode:  "return 1",
+			expected: "return 1;",
+		},
 	}
-	body, err := cg.genStmt(stmt.Body)
-	if err != nil {
-		return "", err
+
+	for _, test := range tests {
+		cg := NewCodeGenerator()
+
+		astNode := buildStmt(test.srcCode)
+		code, err := cg.genStmt(astNode)
+		if err != nil {
+			t.Errorf("Error generating code: %s", err)
+		}
+
+		code = removeWhitespace(code)
+
+		if code != test.expected {
+			t.Errorf("Expected %s, got %s", test.expected, code)
+		}
 	}
-
-	return fmt.Sprintf("while (%s) %s", test, body), nil
-
 }
-
-func (cg *CodeGenerator) genReturnStmt(stmt *ast.ReturnStmt) (string, error) {
-
-	returnedVal, err := cg.genExpr(stmt.Arg)
-
-	if err != nil {
-		return "return;", nil
-	}
-	return fmt.Sprintf("return %s;", returnedVal), nil
-}
-
-*/
 
 // helpers
 func buildStmt(code string) ast.Stmt {
@@ -250,4 +258,11 @@ func buildStmt(code string) ast.Stmt {
 	p := parser.NewParser(tokens)
 	prog, _ := p.ParseProgram()
 	return prog.Stmts[0]
+}
+
+// TODO: review usage of this
+func removeWhitespace(s string) string {
+	newS := strings.ReplaceAll(s, "\n", "")
+	newS = strings.ReplaceAll(newS, "\t", "")
+	return newS
 }
