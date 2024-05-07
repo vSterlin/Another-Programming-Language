@@ -109,14 +109,37 @@ func TestValidReturnCheck(t *testing.T) {
 
 	tests := []string{
 		`
-			func t() {
-				return
-			}
+		func t() {
+			return
+		}
 		`,
 		`
-			func t() number {
-				return 1
+		func t() number {
+			return 1
+		}
+		`,
+		`
+		func t() {
+			if true {
+				return
+			} 
+		}
+		`,
+		`
+		func t() {
+			if true {
+				return
+			} else {
+				return 
 			}
+		}
+		`,
+		`
+		func t() {
+			while true {
+				return
+			}
+		}
 		`,
 	}
 
@@ -139,17 +162,49 @@ func TestInvalidReturnCheck(t *testing.T) {
 
 	tests := []string{
 		`
-			func t() number {
-				return "hello"
-			}
+		func t() number {
+			return "hello"
+		}
 		`,
 		`
+		return 1
+		`,
+		`
+		func t() {
 			return 1
+		}
 		`,
 		`
-			func t() {
+		func t() {
+			if true {
 				return 1
 			}
+		}
+		`,
+		`
+		func t() {
+			if true {
+				return
+			} else {
+				return 1
+			}
+		}
+		`,
+		`
+		func t() {
+			if true {
+				return 1
+			} else {
+				return
+			}
+		}
+		`,
+		`
+		func t() {
+			while true {
+				return 1
+			}
+		}
 		`,
 	}
 

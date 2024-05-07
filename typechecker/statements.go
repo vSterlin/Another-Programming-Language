@@ -182,12 +182,9 @@ func (t *TypeChecker) checkWhileStmt(stmt *ast.WhileStmt) error {
 
 }
 
-// TODO: review
 func (t *TypeChecker) checkReturnStmt(stmt *ast.ReturnStmt) error {
 
 	expectedType := t.currentFuncRetType
-
-	fmt.Printf("expectedType: %v\n", expectedType)
 
 	if expectedType == Invalid && t.currentArrowFuncType == nil {
 		return NewTypeError("return statement outside of function")
@@ -208,7 +205,6 @@ func (t *TypeChecker) checkReturnStmt(stmt *ast.ReturnStmt) error {
 	}
 
 	if t.currentArrowFuncType != nil {
-		fmt.Printf("actualType: %v\n", actualType)
 		t.currentArrowFuncType.ReturnType = actualType
 		return nil
 	}
