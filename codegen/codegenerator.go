@@ -1,7 +1,6 @@
 package codegen
 
 import (
-	"fmt"
 	"language/ast"
 	"strings"
 )
@@ -23,26 +22,31 @@ func NewCodeGenerator() *CodeGenerator {
 }
 
 func (cg *CodeGenerator) Gen(prog *ast.Program) string {
-	funcs := ""
-	main := ""
+
+	funcs := strings.Builder{}
+	main := strings.Builder{}
 
 	for _, stmt := range prog.Stmts {
 		code, _ := cg.genStmt(stmt)
 		if _, ok := stmt.(*ast.FuncDecStmt); ok {
-			funcs += code + "\n"
+			funcs.WriteString(code + "\n")
 		} else {
 			// TODO: do it more efficiently
 			lines := strings.Split(code, "\n")
 			code = strings.Join(lines, "\n\t")
 			code = "\t" + code
-			main += code + "\n"
+			main.WriteString(code + "\n")
 		}
 
 	}
 
-	main = fmt.Sprintf("int main() {\n%s\nreturn 0;\n}", main)
+	res := strings.Builder{}
+	res.WriteString(cg.genImports())
+	res.WriteString(funcs.String())
+	res.WriteString("int main() {\n")
+	res.WriteString(main.String())
+	res.WriteString("\nreturn 0;\n}")
 
-	res := cg.genImports() + funcs + main
+	return res.String()
 
-	return res
 }
