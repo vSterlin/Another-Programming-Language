@@ -158,6 +158,99 @@ func TestValidReturnCheck(t *testing.T) {
 
 }
 
+func TestArrowFuncReturnCheck(t *testing.T) {
+
+	tests := []string{
+		`
+		() => {
+			return
+		}
+		`,
+		`
+		() number => {
+			return 1
+		}
+		`,
+		`
+		() => {
+			if true {
+				return
+			}
+		}
+		`}
+
+	for _, i := range tests {
+
+		tc := NewTypeChecker()
+
+		prog := buildProgram(i)
+		err := tc.Check(prog)
+
+		if err != nil {
+			t.Errorf("Expected no error, got: %s", err)
+		}
+
+	}
+}
+
+func TestVoidAssignmentCheck(t *testing.T) {
+
+	prog := buildProgram(`
+		test := () => {}
+		a := test()
+	`)
+
+	tc := NewTypeChecker()
+
+	err := tc.Check(prog)
+
+	if err == nil {
+		t.Errorf("Expected error, got none")
+	}
+
+}
+
+func TestInvalidArrowFuncReturnCheck(t *testing.T) {
+	tests := []string{
+		`
+		() => {
+			return 1
+		}
+		`,
+		`
+		() => {
+			if true {
+				return 1
+			}
+		}
+		`,
+		`
+		() number => {
+			return
+		}
+		`,
+		`
+		() number => {
+			if true {
+				return
+			}
+		}
+		`}
+
+	for _, i := range tests {
+
+		tc := NewTypeChecker()
+
+		prog := buildProgram(i)
+		err := tc.Check(prog)
+
+		if err == nil {
+			t.Errorf("Expected error, got none")
+		}
+
+	}
+}
+
 func TestInvalidReturnCheck(t *testing.T) {
 
 	tests := []string{

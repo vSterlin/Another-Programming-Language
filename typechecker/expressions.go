@@ -148,13 +148,6 @@ func (t *TypeChecker) checkArrowFunc(expr *ast.ArrowFunc) (Type, error) {
 		return Invalid, err
 	}
 
-	// TODO: change invalid to unknown to easier distinguish between
-	if funcType.ReturnType == Invalid {
-		funcType.ReturnType = Void
-	}
-
-	expr.ReturnType = toAstNode(funcType.ReturnType)
-
 	return funcType, nil
 
 }
