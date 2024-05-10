@@ -164,12 +164,13 @@ func (t *TypeChecker) checkCallExpr(expr *ast.CallExpr) (Type, error) {
 	// TODO:
 	funcName := (expr.Callee.(*ast.IdentifierExpr)).Name
 
-	if funcName == "print" {
-		return Void, nil
+	if globalVar, exists := GetGlobalFuncReturnType(funcName); exists {
+		return globalVar, nil
 	}
 
 	funcVar, _, err := t.env.Get(funcName)
 
+	// REVIEW:
 	funcDef, ok := funcVar.(FuncType)
 	if !ok {
 		return Invalid, NewTypeError(fmt.Sprintf("expected %s to be a function", funcName))

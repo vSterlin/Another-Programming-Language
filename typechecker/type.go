@@ -153,9 +153,7 @@ func resolveType(astNode *ast.TypeExpr, env *Env) (Type, error) {
 		}, nil
 	}
 
-	// TODO: better handling
-	panic("invalid type")
-	return Invalid, nil
+	return Invalid, NewTypeError("invalid type")
 }
 
 func areTypesEqual(expected Type, actual ...Type) bool {

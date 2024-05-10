@@ -73,3 +73,12 @@ func (e *Env) ResolveType(name string) (Type, error) {
 
 	return Invalid, NewTypeError("undefined type: " + name)
 }
+
+func GetGlobalFuncReturnType(name string) (Type, bool) {
+	switch name {
+	case "print":
+		return Void, true
+	default:
+		return Invalid, false
+	}
+}
