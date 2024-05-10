@@ -9,7 +9,6 @@ import (
 type Type interface {
 	String() string
 	Equals(Type) bool
-	IsFunc() bool
 }
 
 type NumberType struct{}
@@ -36,13 +35,6 @@ func (t FuncType) String() string {
 	return fmt.Sprintf("func(%s) => %s", strings.Join(args, ", "), t.ReturnType.String())
 }
 func (t InvalidType) String() string { return "invalid" }
-
-func (t NumberType) IsFunc() bool  { return false }
-func (t StringType) IsFunc() bool  { return false }
-func (t BooleanType) IsFunc() bool { return false }
-func (t VoidType) IsFunc() bool    { return false }
-func (t FuncType) IsFunc() bool    { return true }
-func (t InvalidType) IsFunc() bool { return false }
 
 func (t NumberType) Equals(other Type) bool {
 	_, ok := other.(NumberType)
@@ -115,7 +107,7 @@ func toAstNode(t Type) *ast.TypeExpr {
 
 }
 
-// it also modifies astNode
+// IMPORTANT: it also modifies astNode
 func resolveType(astNode *ast.TypeExpr, env *Env) (Type, error) {
 	switch nodeType := astNode.Type.(type) {
 	case *ast.IdentifierExpr:
@@ -124,7 +116,7 @@ func resolveType(astNode *ast.TypeExpr, env *Env) (Type, error) {
 			return Invalid, err
 		}
 
-		// TODO: maybe do it somewhere else
+		// REVIEW: maybe do it somewhere else
 		astNode.Type = toAstNode(t).Type
 
 		return t, nil
@@ -136,20 +128,16 @@ func resolveType(astNode *ast.TypeExpr, env *Env) (Type, error) {
 				return Invalid, err
 			}
 			args = append(args, t)
-			// TODO: maybe do it somewhere else
+			// REVIEW: maybe another place
 			arg.Type = toAstNode(t).Type
 		}
 		retType, err := resolveType(nodeType.ReturnType, env)
 		if err != nil {
 			return Invalid, err
 		}
-		// TODO: maybe do it somewhere else
-		nodeType.ReturnType.Type = toAstNode(retType).Type
 
-		fmt.Printf("%#v", FuncType{
-			Args:       args,
-			ReturnType: retType,
-		})
+		// REVIEW: maybe another place
+		nodeType.ReturnType.Type = toAstNode(retType).Type
 
 		return FuncType{
 			Args:       args,
@@ -157,8 +145,7 @@ func resolveType(astNode *ast.TypeExpr, env *Env) (Type, error) {
 		}, nil
 	}
 
-	panic("invalid type")
-	return Invalid, nil
+	return Invalid, NewTypeError("invalid type")
 }
 
 func areTypesEqual(expected Type, actual ...Type) bool {

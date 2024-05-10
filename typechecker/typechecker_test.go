@@ -109,14 +109,37 @@ func TestValidReturnCheck(t *testing.T) {
 
 	tests := []string{
 		`
-			func t() {
-				return
-			}
+		func t() {
+			return
+		}
 		`,
 		`
-			func t() number {
-				return 1
+		func t() number {
+			return 1
+		}
+		`,
+		`
+		func t() {
+			if true {
+				return
+			} 
+		}
+		`,
+		`
+		func t() {
+			if true {
+				return
+			} else {
+				return 
 			}
+		}
+		`,
+		`
+		func t() {
+			while true {
+				return
+			}
+		}
 		`,
 	}
 
@@ -135,21 +158,146 @@ func TestValidReturnCheck(t *testing.T) {
 
 }
 
+func TestArrowFuncReturnCheck(t *testing.T) {
+
+	tests := []string{
+		`
+		() => {
+			return
+		}
+		`,
+		`
+		() number => {
+			return 1
+		}
+		`,
+		`
+		() => {
+			if true {
+				return
+			}
+		}
+		`}
+
+	for _, i := range tests {
+
+		tc := NewTypeChecker()
+
+		prog := buildProgram(i)
+		err := tc.Check(prog)
+
+		if err != nil {
+			t.Errorf("Expected no error, got: %s", err)
+		}
+
+	}
+}
+
+func TestVoidAssignmentCheck(t *testing.T) {
+
+	prog := buildProgram(`
+		test := () => {}
+		a := test()
+	`)
+
+	tc := NewTypeChecker()
+
+	err := tc.Check(prog)
+
+	if err == nil {
+		t.Errorf("Expected error, got none")
+	}
+
+}
+
+func TestInvalidArrowFuncReturnCheck(t *testing.T) {
+	tests := []string{
+		`
+		() => {
+			return 1
+		}
+		`,
+		`
+		() => {
+			if true {
+				return 1
+			}
+		}
+		`,
+		`
+		() number => {
+			return
+		}
+		`,
+		`
+		() number => {
+			if true {
+				return
+			}
+		}
+		`}
+
+	for _, i := range tests {
+
+		tc := NewTypeChecker()
+
+		prog := buildProgram(i)
+		err := tc.Check(prog)
+
+		if err == nil {
+			t.Errorf("Expected error, got none")
+		}
+
+	}
+}
+
 func TestInvalidReturnCheck(t *testing.T) {
 
 	tests := []string{
 		`
-			func t() number {
-				return "hello"
-			}
+		func t() number {
+			return "hello"
+		}
 		`,
 		`
+		return 1
+		`,
+		`
+		func t() {
 			return 1
+		}
 		`,
 		`
-			func t() {
+		func t() {
+			if true {
 				return 1
 			}
+		}
+		`,
+		`
+		func t() {
+			if true {
+				return
+			} else {
+				return 1
+			}
+		}
+		`,
+		`
+		func t() {
+			if true {
+				return 1
+			} else {
+				return
+			}
+		}
+		`,
+		`
+		func t() {
+			while true {
+				return 1
+			}
+		}
 		`,
 	}
 
@@ -188,6 +336,22 @@ func TestTypeAlias(t *testing.T) {
 
 	if !typ.Equals(Number) {
 		t.Errorf("Expected Number, got: %s", typ)
+	}
+
+}
+
+func TestGlobalFuncReturnType(t *testing.T) {
+
+	prog := buildProgram(`
+		print()
+	`)
+
+	tc := NewTypeChecker()
+
+	err := tc.Check(prog)
+
+	if err != nil {
+		t.Errorf("Expected no error, got: %s", err)
 	}
 
 }

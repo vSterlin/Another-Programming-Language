@@ -117,8 +117,12 @@ func (t *TypeChecker) checkIdentifierExpr(expr *ast.IdentifierExpr) (Type, error
 }
 
 func (t *TypeChecker) checkArrowFunc(expr *ast.ArrowFunc) (Type, error) {
-	// TODO: review, probably change invalid to unknown
-	retType, _ := resolveType(expr.ReturnType, t.env)
+
+	retType, err := resolveType(expr.ReturnType, t.env)
+
+	if err != nil {
+		return retType, err
+	}
 
 	funcType := FuncType{
 		Args:       []Type{},
@@ -143,17 +147,10 @@ func (t *TypeChecker) checkArrowFunc(expr *ast.ArrowFunc) (Type, error) {
 		funcType.Args = append(funcType.Args, paramType)
 	}
 
-	err := t.checkBlockStmt(expr.Body, NewEnv(t.env))
+	err = t.checkBlockStmt(expr.Body, NewEnv(t.env))
 	if err != nil {
 		return Invalid, err
 	}
-
-	// TODO: change invalid to unknown to easier distinguish between
-	if funcType.ReturnType == Invalid {
-		funcType.ReturnType = Void
-	}
-
-	expr.ReturnType = toAstNode(funcType.ReturnType)
 
 	return funcType, nil
 
@@ -164,12 +161,13 @@ func (t *TypeChecker) checkCallExpr(expr *ast.CallExpr) (Type, error) {
 	// TODO:
 	funcName := (expr.Callee.(*ast.IdentifierExpr)).Name
 
-	if funcName == "print" {
-		return Void, nil
+	if globalVar, exists := GetGlobalFuncReturnType(funcName); exists {
+		return globalVar, nil
 	}
 
 	funcVar, _, err := t.env.Get(funcName)
 
+	// REVIEW:
 	funcDef, ok := funcVar.(FuncType)
 	if !ok {
 		return Invalid, NewTypeError(fmt.Sprintf("expected %s to be a function", funcName))

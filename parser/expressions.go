@@ -55,7 +55,7 @@ func (p *Parser) parseParenExpr() (ast.Expr, error) {
 	return val, nil
 }
 
-// arrowFunction ::= '(' (param (',' param)*)? ')' ':' identifier '=>' expression | blockStatement ;
+// arrowFunction ::= '(' (param (',' param)*)? ')' identifier '=>' expression | blockStatement ;
 func (p *Parser) parseArrowFunc() (ast.Expr, error) {
 
 	// eat LPAREN
@@ -86,7 +86,9 @@ func (p *Parser) parseArrowFunc() (ast.Expr, error) {
 	var retType *ast.TypeExpr
 
 	if p.current().Type == ARROW {
-		retType = &ast.TypeExpr{Type: &ast.IdentifierExpr{Name: "invalid"}}
+		// REVIEW: implicit void return, but maybe it should be
+		// whatever the last statement returns
+		retType = &ast.TypeExpr{Type: &ast.IdentifierExpr{Name: "void"}}
 	} else {
 		r, err := p.parseTypeExpr()
 		if err != nil {
