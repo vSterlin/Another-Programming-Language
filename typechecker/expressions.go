@@ -117,8 +117,12 @@ func (t *TypeChecker) checkIdentifierExpr(expr *ast.IdentifierExpr) (Type, error
 }
 
 func (t *TypeChecker) checkArrowFunc(expr *ast.ArrowFunc) (Type, error) {
-	// TODO: review, probably change invalid to unknown
-	retType, _ := resolveType(expr.ReturnType, t.env)
+
+	retType, err := resolveType(expr.ReturnType, t.env)
+
+	if err != nil {
+		return retType, err
+	}
 
 	funcType := FuncType{
 		Args:       []Type{},
@@ -143,7 +147,7 @@ func (t *TypeChecker) checkArrowFunc(expr *ast.ArrowFunc) (Type, error) {
 		funcType.Args = append(funcType.Args, paramType)
 	}
 
-	err := t.checkBlockStmt(expr.Body, NewEnv(t.env))
+	err = t.checkBlockStmt(expr.Body, NewEnv(t.env))
 	if err != nil {
 		return Invalid, err
 	}
