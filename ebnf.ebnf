@@ -4,7 +4,12 @@ typeAlias ::= 'type' identifier type;
 
 arrayExpression ::= '[' (expression (',' expression)*)? ']';
 
-primaryExpression ::= identifier | number | boolean | '(' expression ')' | arrayExpression  | arrowFunction | callExpression;
+primaryExpression ::= identifier 
+                    | number 
+                    | boolean 
+                    | '(' expression ')' 
+                    | arrayExpression  
+                    | arrowFunction;
 
 arguments ::= '(' (expression (',' expression)*)? ')';
 callExpression ::= primaryExpression ('(' arguments? ')')*;
@@ -12,8 +17,12 @@ callExpression ::= primaryExpression ('(' arguments? ')')*;
 (* I will want to change identifier to expression *)
 sliceExpression ::= identifier '[' expression ':' expression (':' expression)? ']'; 
 
+unaryExpression ::=   updateExpression 
+                    | '!'unaryExpression 
+                    | callExpression 
+                    | sliceExpression;
+
 updateExpression ::= primaryExpression [('++' | '--')];
-unaryExpression ::= updateExpression | '!'unaryExpression | callExpression | sliceExpression;
 
 (* Higher precedence *)
 multiplicativeOperator ::= '*' | '/' | '**' | '%';
@@ -37,32 +46,28 @@ logicOrExpression ::= logicAndExpression (logicOrOperator logicAndExpression)*;
 expression ::= logicOrExpression;
 
 expressionStatement ::= expression;
+
 blockStatement ::= '{' statement* '}';
 deferStatement ::= 'defer' callExpression;
 
-
-
-classDeclaration ::= 'class' identifier '{' (functionDeclaration)* '}';
-
-
 variableAssignmentStatement ::= identifier ('=' | ':=' ) expression;
 returnStatement ::= 'return' [expression];
-incrementDecrementStatement ::= expression ('++' | '--');
 whileStatement ::= 'while' [expression]  blockStatement;
 ifStatement ::= 'if' expression blockStatement ('else if' expression blockStatement)* ('else' blockStatement)?;
 rangeStatement ::= 'for' identifierExpression ':=' 'range' expression blockStatement;
 
-(* second identifier is type *)
 param ::= identifier type;
 functionDeclaration ::= 'func' identifier '(' (param (',' param)*)? ')' identifier blockStatement;
-methodDeclaration ::=  identifier '(' (identifier (',' identifier)*)? ')' blockStatement;
+arrowFunction ::= '(' (param (',' param)*)? ')' type '=>' expression | blockStatement ;
 
-arrowFunction ::= '(' (param (',' param)*)? ')' ':' identifier '=>' expression | blockStatement ;
-
-
-statement ::= expressionStatement | variableDeclarationStatement 
-    | blockStatement | whileStatement | ifStatement 
-    | functionDeclaration | deferStatement | returnStatement;
+statement ::= expressionStatement 
+            | variableDeclarationStatement 
+            | blockStatement 
+            | whileStatement 
+            | ifStatement 
+            | functionDeclaration 
+            | deferStatement 
+            | returnStatement;
 
 
 program ::= statement*;
