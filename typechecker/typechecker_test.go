@@ -247,6 +247,22 @@ func TestTypeAlias(t *testing.T) {
 
 }
 
+func TestGlobalFuncReturnType(t *testing.T) {
+
+	prog := buildProgram(`
+		print()
+	`)
+
+	tc := NewTypeChecker()
+
+	err := tc.Check(prog)
+
+	if err != nil {
+		t.Errorf("Expected no error, got: %s", err)
+	}
+
+}
+
 // helpers
 func buildProgram(code string) *ast.Program {
 	tokens, _ := lexer.NewLexer(code).GetTokens()

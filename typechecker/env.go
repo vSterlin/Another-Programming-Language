@@ -1,7 +1,5 @@
 package typechecker
 
-import "fmt"
-
 type Env struct {
 	parent *Env
 	vars   map[string]Type
@@ -63,7 +61,6 @@ func (e *Env) DefineType(name string, t Type) {
 
 func (e *Env) ResolveType(name string) (Type, error) {
 	t, ok := e.types[name]
-	fmt.Printf("t: %#v %s\n", t, name)
 
 	if ok {
 		return t, nil
