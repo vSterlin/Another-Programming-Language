@@ -83,6 +83,10 @@ func (t *TypeChecker) checkVarAssignStmt(stmt *ast.VarAssignStmt) error {
 		return err
 	}
 
+	if initType.Equals(Void) {
+		return NewTypeError("cannot assign void value")
+	}
+
 	if stmt.Op == ":=" {
 		t.env.Define(stmt.Id.Name, initType)
 		return nil
