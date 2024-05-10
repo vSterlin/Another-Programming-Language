@@ -12,12 +12,12 @@ callExpression ::= primaryExpression ('(' arguments? ')')*;
 (* I will want to change identifier to expression *)
 sliceExpression ::= identifier '[' expression ':' expression (':' expression)? ']'; 
 
-updateExpression ::= identifier ('++' | '--');
-unaryExpression ::= updateExpression | '!'unaryExpression;
+updateExpression ::= primaryExpression [('++' | '--')];
+unaryExpression ::= updateExpression | '!'unaryExpression | callExpression | sliceExpression;
 
 (* Higher precedence *)
 multiplicativeOperator ::= '*' | '/' | '**' | '%';
-multiplicativeExpression ::= primaryExpression (multiplicativeOperator primaryExpression)*;
+multiplicativeExpression ::= unaryExpression (multiplicativeOperator unaryExpression)*;
 
 additiveOperator ::= '+' | '-';
 additiveExpression ::= multiplicativeExpression (additiveOperator multiplicativeExpression)*;
@@ -33,7 +33,6 @@ logicAndExpression ::= equalityExpression (logicAndOperator equalityExpression)*
 
 logicOrOperator ::= '||';
 logicOrExpression ::= logicAndExpression (logicOrOperator logicAndExpression)*;
-
 (* Lower precedence *)
 expression ::= logicOrExpression;
 

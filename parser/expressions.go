@@ -153,17 +153,8 @@ func (p *Parser) parsePrimaryExpr() (ast.Expr, error) {
 	switch p.current().Type {
 
 	case IDENTIFIER:
-		if p.pos+1 < p.len && p.tokens[p.pos+1].Type == LBRACK {
-			return p.parseSliceExpr()
-		} else {
-			//  else if p.peek().Type == LPAREN {
-			// 	fmt.Println("yoo")
-			// 	return p.parseCallExpr()
-			// }
-			return p.parseUpdateExpr()
-		}
-	case NOT:
-		return p.parseUnaryExpr()
+		return p.parseIdentifierExpr()
+
 	case THIS:
 		p.next()
 		return &ast.ThisExpr{}, nil
@@ -189,10 +180,10 @@ func (p *Parser) parsePrimaryExpr() (ast.Expr, error) {
 	return nil, NewParserError(p.pos, fmt.Sprintf("expected primary expression, got %v", p.current().Type))
 }
 
-// updateExpression ::= identifier ('++' | '--');
+// updateExpression ::= primaryExpression ('++' | '--');
 func (p *Parser) parseUpdateExpr() (ast.Expr, error) {
 
-	id, err := p.parseIdentifierExpr()
+	id, err := p.parsePrimaryExpr()
 	if err != nil {
 		return nil, err
 	}
@@ -209,13 +200,13 @@ func (p *Parser) parseUpdateExpr() (ast.Expr, error) {
 
 	p.next()
 	if curr == INCR {
-		return &ast.UpdateExpr{Arg: id, Op: "++"}, nil
+		return &ast.UpdateExpr{Arg: id, Op: ast.INC}, nil
 	} else {
-		return &ast.UpdateExpr{Arg: id, Op: "--"}, nil
+		return &ast.UpdateExpr{Arg: id, Op: ast.DEC}, nil
 	}
 }
 
-// unaryExpression ::= updateExpression | '!'unaryExpression;
+// unaryExpression ::= updateExpression | '!'unaryExpression | callExpression | sliceExpression;
 func (p *Parser) parseUnaryExpr() (ast.Expr, error) {
 
 	if p.current().Type == NOT {
@@ -225,8 +216,10 @@ func (p *Parser) parseUnaryExpr() (ast.Expr, error) {
 			return nil, err
 		}
 		return &ast.UnaryExpr{Op: "!", Arg: expr}, nil
-	} else {
+	} else if !p.isEnd() && p.peek().Type == INCR || p.peek().Type == DECR {
 		return p.parseUpdateExpr()
+	} else {
+		return p.parseCallExpr()
 	}
 }
 
@@ -276,46 +269,47 @@ func (p *Parser) parseCallExpr() (ast.Expr, error) {
 
 }
 
-// sliceExpression ::= identifier '[' expression ':' expression ' (':' expression)?]';
-func (p *Parser) parseSliceExpr() (ast.Expr, error) {
-	var err error
-	id, err := p.parseIdentifierExpr()
-	if err != nil {
-		return nil, err
-	}
+// REVIEW
+// // sliceExpression ::= identifier '[' expression ':' expression ' (':' expression)?]';
+// func (p *Parser) parseSliceExpr() (ast.Expr, error) {
+// 	var err error
+// 	id, err := p.parseIdentifierExpr()
+// 	if err != nil {
+// 		return nil, err
+// 	}
 
-	if err = p.consume(LBRACK); err != nil {
-		return nil, err
-	}
+// 	if err = p.consume(LBRACK); err != nil {
+// 		return nil, err
+// 	}
 
-	low, err := p.parseExpr()
-	if err != nil {
-		return nil, err
-	}
+// 	low, err := p.parseExpr()
+// 	if err != nil {
+// 		return nil, err
+// 	}
 
-	if err = p.consume(COLON); err != nil {
-		return nil, err
-	}
-	high, err := p.parseExpr()
-	if err != nil {
-		return nil, err
-	}
-	var step ast.Expr
-	if p.current().Type == COLON {
-		p.next()
-		step, err = p.parseExpr()
-		if err != nil {
-			return nil, err
-		}
+// 	if err = p.consume(COLON); err != nil {
+// 		return nil, err
+// 	}
+// 	high, err := p.parseExpr()
+// 	if err != nil {
+// 		return nil, err
+// 	}
+// 	var step ast.Expr
+// 	if p.current().Type == COLON {
+// 		p.next()
+// 		step, err = p.parseExpr()
+// 		if err != nil {
+// 			return nil, err
+// 		}
 
-	}
-	if err = p.consume(RBRACK); err != nil {
-		return nil, err
-	}
+// 	}
+// 	if err = p.consume(RBRACK); err != nil {
+// 		return nil, err
+// 	}
 
-	return &ast.SliceExpr{Id: id, Low: low, High: high, Step: step}, nil
+// 	return &ast.SliceExpr{Id: id, Low: low, High: high, Step: step}, nil
 
-}
+// }
 
 // equalityExpression ::= relationalExpression (equalityOperator relationalExpression)*;
 func (p *Parser) parseEqualityExpr() (ast.Expr, error) {
@@ -411,9 +405,9 @@ func (p *Parser) parseAdditiveExpr() (ast.Expr, error) {
 }
 
 // multiplicativeOperator ::= '*' | '/' | '**' | '%';
-// multiplicativeExpression ::= primaryExpression (multiplicativeOperator primaryExpression)*;
+// multiplicativeExpression ::= unaryExpression (multiplicativeOperator unaryExpression)*;
 func (p *Parser) parseMultiplicativeExpr() (ast.Expr, error) {
-	lhs, err := p.parseCallExpr()
+	lhs, err := p.parseUnaryExpr()
 
 	if err != nil {
 		return nil, err
@@ -424,7 +418,7 @@ func (p *Parser) parseMultiplicativeExpr() (ast.Expr, error) {
 		if p.tokenTypeEqual(curr.Type, MUL, DIV, POW, MOD) {
 
 			p.next()
-			rhs, err := p.parseCallExpr()
+			rhs, err := p.parseUnaryExpr()
 			if err != nil {
 				return nil, err
 			}

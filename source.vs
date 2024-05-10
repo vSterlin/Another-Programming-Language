@@ -1,5 +1,6 @@
-a := () => {
-    1 + 1
-}
+type arrF () => number
 
-x := a()
+x := () arrF => {
+    return () number => 1
+}
+z := x()

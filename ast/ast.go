@@ -75,17 +75,24 @@ type UnaryExpr struct {
 	Arg Expr   `json:"argument"`
 }
 
+type IncrDecrOp string
+
+const (
+	INC IncrDecrOp = "++"
+	DEC IncrDecrOp = "--"
+)
+
 type UpdateExpr struct {
 	// TODO: should be more than just id but fine for now
-	Arg *IdentifierExpr `json:"argument"`
-	Op  string          `json:"operator"`
+	Arg Expr       `json:"argument"`
+	Op  IncrDecrOp `json:"operator"`
 }
 
 type ArrayExpr struct {
 	Elements []Expr `json:"elements"`
 }
 
-// TODO: maybe this should be a member expr
+// REVIEW: maybe this should be a member expr
 type SliceExpr struct {
 	Id   *IdentifierExpr `json:"identifier"`
 	Low  Expr            `json:"low"`
@@ -214,11 +221,6 @@ type RangeStmt struct {
 	Body *BlockStmt      `json:"body"`
 }
 
-type IncrDecrStmt struct {
-	Expr Expr   `json:"expression"`
-	Op   string `json:"operator"`
-}
-
 type ReturnStmt struct {
 	Arg Expr `json:"argument"`
 }
@@ -241,7 +243,6 @@ func (f *FuncDecStmt) stmtNode()   {}
 func (i *IfStmt) stmtNode()        {}
 func (d *DeferStmt) stmtNode()     {}
 func (r *RangeStmt) stmtNode()     {}
-func (i *IncrDecrStmt) stmtNode()  {}
 func (r *ReturnStmt) stmtNode()    {}
 func (c *ClassDecStmt) stmtNode()  {}
 func (v *SetStmt) stmtNode()       {}
@@ -267,7 +268,6 @@ func (i *IfStmt) String() string {
 }
 func (d *DeferStmt) String() string     { return fmt.Sprintf("defer(%s)", d.Call) }
 func (r *RangeStmt) String() string     { return fmt.Sprintf("range(%s)", r.Id) }
-func (i *IncrDecrStmt) String() string  { return fmt.Sprintf("update(%s, %s)", i.Expr, i.Op) }
 func (r *ReturnStmt) String() string    { return fmt.Sprintf("return(%s)", r.Arg) }
 func (c *ClassDecStmt) String() string  { return fmt.Sprintf("class(%s, methods(%s))", c.Id, c.Methods) }
 func (v *SetStmt) String() string       { return fmt.Sprintf("set(%s, %s, %s)", v.Lhs, v.Name, v.Val) }
