@@ -216,7 +216,7 @@ func (p *Parser) parseUnaryExpr() (ast.Expr, error) {
 			return nil, err
 		}
 		return &ast.UnaryExpr{Op: "!", Arg: expr}, nil
-	} else if !p.isEnd() && p.peek().Type == INCR || p.peek().Type == DECR {
+	} else if !p.isEnd() && !p.isLastToken() && (p.peek().Type == INCR || p.peek().Type == DECR) {
 		return p.parseUpdateExpr()
 	} else {
 		return p.parseCallExpr()
