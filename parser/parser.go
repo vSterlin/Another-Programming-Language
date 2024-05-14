@@ -58,6 +58,10 @@ func (p *Parser) isEnd() bool {
 	return p.pos >= p.len
 }
 
+func (p *Parser) isLastToken() bool {
+	return p.pos == p.len-1
+}
+
 func (p *Parser) tokenTypeEqual(actual TokenType, expectedType ...TokenType) bool {
 	for _, expected := range expectedType {
 		if actual == expected {
