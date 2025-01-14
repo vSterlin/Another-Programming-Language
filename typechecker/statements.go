@@ -88,10 +88,13 @@ func (t *TypeChecker) checkVarAssignStmt(stmt *ast.VarAssignStmt) error {
 	}
 
 	if stmt.Op == ":=" {
+		foundVar, env, err := t.env.Get(stmt.Id.Name)
+		if !foundVar.Equals(Invalid) && env != nil && err == nil {
+			return NewTypeError(fmt.Sprintf("variable %s is already defined, cannot redeclare variable", stmt.Id.Name))
+		}
 		t.env.Define(stmt.Id.Name, initType)
 		return nil
 	} else {
-
 		foundVar, foundEnv, err := t.env.Get(stmt.Id.Name)
 		if err != nil {
 			return err

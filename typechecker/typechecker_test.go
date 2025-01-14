@@ -352,6 +352,8 @@ func TestVarAssignCheck(t *testing.T) {
 	}{
 		{srcCode: `a := 1	a = 1`},
 		{srcCode: `a := 1	b := 1 a = b`},
+		{srcCode: `a := 1	a := 1`, expectedErr: true},
+		{srcCode: `a := 1	a := "hello"`, expectedErr: true},
 		{srcCode: `a := 1	b := "hello" a = b`, expectedErr: true},
 		{srcCode: `a := 1	a = "hello"`, expectedErr: true},
 		{srcCode: `a = 1`, expectedErr: true},
