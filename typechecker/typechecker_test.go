@@ -326,7 +326,7 @@ func TestVarDecStmtCheck(t *testing.T) {
 		`a := (a number, b number) number => { return 1 }`,
 		`a := 1
 		b := 1
-		b := a`,
+		b = a`,
 	}
 
 	for _, i := range tests {
@@ -355,6 +355,8 @@ func TestVarAssignCheck(t *testing.T) {
 		{srcCode: `a := 1	b := "hello" a = b`, expectedErr: true},
 		{srcCode: `a := 1	a = "hello"`, expectedErr: true},
 		{srcCode: `a = 1`, expectedErr: true},
+		{srcCode: `a := 1 a := 1`, expectedErr: true},
+		{srcCode: `a := 1 a := false`, expectedErr: true},
 	}
 
 	for _, i := range tests {
