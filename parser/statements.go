@@ -207,10 +207,12 @@ func (p *Parser) parseReturnStmt() (ast.Stmt, error) {
 	if err := p.consume(RETURN); err != nil {
 		return nil, err
 	}
+	if p.isEnd() {
+		return &ast.ReturnStmt{}, nil
+	}
 	arg, err := p.parseExpr()
 	if err != nil {
 		return &ast.ReturnStmt{}, nil
-
 	}
 	return &ast.ReturnStmt{Arg: arg}, nil
 }
