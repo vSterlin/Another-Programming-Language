@@ -104,7 +104,28 @@ func TestParseIdentifierExpr(t *testing.T) {
 }
 
 func TestParseParenExpr(t *testing.T) {
-	t.Error("Not implemented")
+	tests := []struct {
+		srcCode string
+		want    ast.Expr
+	}{
+		{srcCode: "(1)", want: &ast.NumberExpr{}},
+		{srcCode: "(true)", want: &ast.BooleanExpr{}},
+		{srcCode: `("hello")`, want: &ast.StringExpr{}},
+	}
+
+	for _, tt := range tests {
+		p := NewParser(getTokens(tt.srcCode))
+		expr, err := p.parseParenExpr()
+		if err != nil {
+			t.Errorf("Expected no error, got: %s", err)
+		}
+
+		if reflect.TypeOf(tt.want) != reflect.TypeOf(expr) {
+			t.Errorf("Expected %T, got: %T", tt.want, expr)
+		}
+
+	}
+
 }
 
 func TestParseArrowFunc(t *testing.T) {

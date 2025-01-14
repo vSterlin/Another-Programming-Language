@@ -119,7 +119,7 @@ func TestBlockStmtCodegen(t *testing.T) {
 	}
 }
 
-func TestVarAssignStmtCodegen(t *testing.T) {
+func TestVarDecStmtCodegen(t *testing.T) {
 
 	tests := tests{
 		{
@@ -137,6 +137,44 @@ func TestVarAssignStmtCodegen(t *testing.T) {
 		{
 			srcCode:  "a := false",
 			expected: "bool a = false;",
+		},
+	}
+
+	for _, test := range tests {
+		cg := NewCodeGenerator()
+
+		astNode := buildStmt(test.srcCode)
+
+		code, err := cg.genStmt(astNode)
+		if err != nil {
+			t.Errorf("Error generating code: %s", err)
+		}
+
+		if code != test.expected {
+			t.Errorf("Expected %s, got %s", test.expected, code)
+		}
+
+	}
+}
+
+func TestVarAssignStmtCodegen(t *testing.T) {
+
+	tests := tests{
+		{
+			srcCode:  `a = 1`,
+			expected: `a = 1;`,
+		},
+		{
+			srcCode:  `a = "hello"`,
+			expected: `a = "hello";`,
+		},
+		{
+			srcCode:  `a = true`,
+			expected: `a = true;`,
+		},
+		{
+			srcCode:  `a = b`,
+			expected: `a = b;`,
 		},
 	}
 
