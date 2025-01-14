@@ -59,6 +59,18 @@ func TestBinaryExprCodegen(t *testing.T) {
 			expected: "1 + 1",
 		},
 		{
+			srcCode:  "1 - 1",
+			expected: "1 - 1",
+		},
+		{
+			srcCode:  "1 * 1",
+			expected: "1 * 1",
+		},
+		{
+			srcCode:  "1 / 1",
+			expected: "1 / 1",
+		},
+		{
 			srcCode:  "\"hello\" + \"world\"",
 			expected: "\"hello\" + \"world\"",
 		},
