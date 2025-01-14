@@ -316,6 +316,66 @@ func TestInvalidReturnCheck(t *testing.T) {
 
 }
 
+func TestVarDecStmtCheck(t *testing.T) {
+
+	tests := []string{
+		`a := 1`,
+		`a := "hello"`,
+		`a := true`,
+		`a := () => {}`,
+		`a := (a number, b number) number => { return 1 }`,
+		`a := 1
+		b := 1
+		b := a`,
+	}
+
+	for _, i := range tests {
+
+		tc := NewTypeChecker()
+
+		prog := buildProgram(i)
+		err := tc.Check(prog)
+
+		if err != nil {
+			t.Errorf("Expected no error, got: %s", err)
+		}
+
+	}
+
+}
+
+func TestVarAssignCheck(t *testing.T) {
+
+	tests := []struct {
+		srcCode     string
+		expectedErr bool
+	}{
+		{srcCode: `a := 1	a = 1`},
+		{srcCode: `a := 1	b := 1 a = b`},
+		{srcCode: `a := 1	b := "hello" a = b`, expectedErr: true},
+		{srcCode: `a := 1	a = "hello"`, expectedErr: true},
+		{srcCode: `a = 1`, expectedErr: true},
+	}
+
+	for _, i := range tests {
+
+		tc := NewTypeChecker()
+
+		prog := buildProgram(i.srcCode)
+		err := tc.Check(prog)
+
+		if i.expectedErr && err == nil {
+			t.Errorf("Expected error, got none")
+		}
+
+		if !i.expectedErr && err != nil {
+			t.Errorf("Expected no error, got: %s", err)
+		}
+
+	}
+
+}
+
 func TestTypeAlias(t *testing.T) {
 
 	prog := buildProgram(`type numberAlias number`)
